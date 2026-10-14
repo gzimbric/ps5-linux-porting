@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.log
+*.elf
+*.bin
+*.img
+*.img.xz
+*.dump
+*.core
+*.zip
+*.tar
+*.tgz
+*.gz
+.DS_Store

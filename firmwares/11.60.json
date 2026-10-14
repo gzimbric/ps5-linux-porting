@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "firmware": "11.60",
+  "console_model": "regular",
+  "status": "research-in-progress",
+  "linux_booted": false,
+  "upstream_base": {
+    "repository": "https://github.com/pLabs5/pLinux5-NG",
+    "commit": "d5bd6b9f45c465e466e1e97083c9f162b94aad2c"
+  },
+  "bypass": {
+    "validated": true,
+    "self_count": 1,
+    "target_count": 16,
+    "written_count": 16,
+    "verified_count": 16,
+    "error": 0
+  },
+  "checkpoints": {
+    "kernel_hook": true,
+    "ktext_redirect": true,
+    "ktext_exec_cave": true,
+    "smp_noop": true,
+    "stock_all_core_vmmcall": true,
+    "live_handler_identity": true,
+    "usb_files_loaded": true,
+    "linux_images_staged": true,
+    "modified_handler_passthrough": false,
+    "identity_cr3": false,
+    "hv_shellcode_entry": false,
+    "all_cpu_linux_barrier": false,
+    "startup_64": false
+  },
+  "known_values": {
+    "vmmcall_handler_pa": "0x62847551",
+    "balanced_vmmcall_ktext_offset": "0xC88100"
+  },
+  "artifacts": {
+    "ktext": {
+      "included": false,
+      "size": "0xD30000",
+      "sha256": "0e3439b5b4d249010fede6ad31d8969e01ad56824d3f80554545745a8f7260d5"
+    },
+    "hypervisor_window": {
+      "included": false,
+      "physical_base": "0x62832000",
+      "size": "0x30000",
+      "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
+    }
+  },
+  "last_observed_marker": "Linux images staged successfully",
+  "current_boundary": "modified VMMCALL handler redirect and identity-CR3 shellcode entry",
+  "notes": [
+    "Linux has not booted.",
+    "The active local build configuration selects the reversible HV handler passthrough diagnostic.",
+    "No PASS capture exists yet for that diagnostic."
+  ]
+}

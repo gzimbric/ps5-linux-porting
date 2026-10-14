@@ -1,0 +1,36 @@
+firmware=11.60
+model=regular
+date=2026-10-14
+overall=research-in-progress
+linux_booted=false
+
+bypass.error=0
+bypass.self=1
+bypass.targets=16
+bypass.written=16
+bypass.verified=16
+
+kernel_hook_selftest=pass
+ktext_resume_redirect=pass
+ktext_exec_cave=pass
+smp_noop_rendezvous=pass
+stock_all_core_vmmcall=pass
+live_vmmcall_handler_validation=pass
+usb_file_load=pass
+linux_physical_staging=pass
+modified_handler_passthrough=not-yet-captured
+identity_cr3_transition=not-observed
+shellcode_hv_entry=not-observed
+linux_startup_64=not-observed
+
+last_marker=Linux images staged successfully
+console_result=unresponsive-or-crash
+current_boundary=modified VMMCALL handler redirect through identity CR3 entry
+
+vmmcall_handler_pa=0x62847551
+balanced_vmmcall_ktext_offset=0xC88100
+ktext_size=0xD30000
+ktext_sha256=0e3439b5b4d249010fede6ad31d8969e01ad56824d3f80554545745a8f7260d5
+hv_window_base=0x62832000
+hv_window_size=0x30000
+hv_window_sha256=eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3

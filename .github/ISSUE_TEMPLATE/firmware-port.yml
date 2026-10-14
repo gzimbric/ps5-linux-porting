@@ -1,0 +1,42 @@
+name: Firmware port result
+description: Report a reproducible Linux porting checkpoint
+title: "[firmware] "
+labels: [research]
+body:
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware and console model
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source repository and commit
+    validations:
+      required: true
+  - type: textarea
+    id: state
+    attributes:
+      label: Starting state and prerequisites
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Last exact marker and console behavior
+    validations:
+      required: true
+  - type: textarea
+    id: conclusion
+    attributes:
+      label: Narrow conclusion
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public data check
+      options:
+        - label: I did not attach proprietary dumps, keys, disk images, built payloads, or raw private logs.
+          required: true
