@@ -23,8 +23,9 @@ the final hypervisor handoff:
 | Executable kernel-text cave | Pass |
 | All-core no-op rendezvous | Pass |
 | All-core stock VMMCALL | Pass |
-| Linux files found and loaded from USB | Pass |
-| bzImage and initrd staged in physical memory | Pass |
+| Linux files found and loaded from USB | Pass in loader-only build |
+| Full pLinux-derived ELF after initrd read | Repeated stop/freeze |
+| Sonic-style kernel page aliases | Not yet ported on 11.60 |
 | Live VMMCALL handler identity | Pass |
 | Modified handler to identity-CR3 shellcode entry | Not yet isolated |
 | Linux `startup_64` reached | Not observed |
@@ -33,13 +34,18 @@ The last captured run reached `Linux images staged successfully` and then the
 console stopped responding. That run used the now-retired split sequence:
 establish the bypass, return to GameOS userland, and launch Linux separately.
 
-The current candidate instead arms one S3 resume path before rest mode. On
-wake, the kernel-resident wrapper completes the 16-of-16 bypass strike,
-refreshes the Linux staging areas from retained physical copies, and performs
-the all-core Linux takeover before GameOS userland resumes. This matches the
-ordering used by the original PS5 Linux loader and by an independently supplied
-13.60 comparison ELF. The candidate builds and has passed two static audit
-passes, but it has not been run on hardware and Linux has not booted.
+The later pLinux-derived wake-coupled candidate repeatedly stopped immediately
+after its initrd-read checkpoint and is now superseded. Binary-level analysis
+of Sonic's known-working 13.60 ELF showed that matching only the broad
+rest/wake ordering was insufficient: Sonic preserves the official loader's
+kernel page aliases and separately installed kernel wake shellcode, while the
+11.60 candidate replaced both with a custom MP-startup wrapper.
+
+The current direction is a clean reconstruction from the official loader,
+using Sonic's ELF as the primary architecture reference and importing only the
+hardware-validated 11.60 Byepervisor hook/VMCB discovery. See the
+[Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
+[11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 
 See [the full 11.60 status](docs/11.60-status.md) before attempting another
 hardware run.

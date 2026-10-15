@@ -11,6 +11,13 @@ hypervisor and with a usable physical address space.
 
 ## 11.60 wake-coupled design
 
+The pLinux-derived wake wrapper described below is a superseded experiment, not
+the current recommended architecture. It did couple work into one wake context,
+but it did so by redirecting the MP-startup hook into a new staging wrapper.
+Sonic's known-working 13.60 ELF instead keeps the AP/VMCB strike and the kernel
+Linux wake shellcode as distinct components inside one outer payload. See
+[Sonic 13.60 binary reference](sonic-13.60-reference.md).
+
 The earlier 11.60 design separated the bypass from Linux takeover and resumed
 GameOS userland between them. That produced useful diagnostics, but it differs
 from the original loader. The current candidate lets the payload request rest
@@ -59,6 +66,12 @@ the bypass counters still look valid.
 This ordering is visible both in the upstream source and in the supplied 13.60
 comparison ELF: the resume entry patches and stages the HV/Linux path, then
 invokes the all-core rendezvous from that same execution context.
+
+The ordering alone is not enough. The known-working binary also preserves the
+official loader's pre-suspend page aliases and `prepare_resume` shellcode, while
+the superseded 11.60 wrapper replaced both. The next port must reproduce that
+memory contract and division of responsibilities, not merely run all steps
+during the same rest/wake cycle.
 
 ## Why the VMMCALL-specific handler matters
 
