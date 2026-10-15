@@ -21,8 +21,8 @@ Linux wake shellcode as distinct components inside one outer payload. The
 
 ### Validated prefix
 
-On 2026-10-15, the official-loader-derived Stage 0, Stage 1A, and Stage 1B
-diagnostics passed on a regular 11.60 console. Stage 0 read both Linux images
+On 2026-10-15, the official-loader-derived Stage 0, Stage 1A, Stage 1B, and
+Stage 2A diagnostics passed on a regular 11.60 console. Stage 0 read both Linux images
 without page-table writes. Stage 1A preflighted the source and destination
 ranges, installed and verified the official-style syscore alias PTEs, then
 reversed and verified every journaled write.
@@ -35,11 +35,18 @@ verified. This proves current-context CPU traversal of the shared subtree; it
 does not prove PID-1-context access, TLB shootdown, executable mapping, or
 post-rollback translation eviction.
 
+Stage 2A then used the official `prepare_resume` contract to publish the exact
+240-byte inert wake blob RX at `0xffff800000000000` in PID 1. It verified the
+`0x98` argument block, the four contiguous leaf PTEs, and exact blob bytes, then
+held every backing page. It did not execute the mapping or link any hook, HV,
+rest-mode, or Linux-loading path.
+
 ### Intended final component split
 
 1. Before rest, userland loads the Linux inputs and installs their kernel
    aliases using the now data-read-through-validated official-loader mapping
-   layout; executable wake-shellcode staging remains a separate boundary.
+   layout; executable wake-shellcode staging is now validated as a separate
+   boundary.
 2. A separately installed kernel wake shellcode owns Linux staging, the live
    HV-exit patch, the identity map, the all-core rendezvous, and Linux entry.
 3. The root-0 AP payload owns only dynamic VMCB discovery and NPT disable on

@@ -32,7 +32,7 @@
     "bounded_stage1_rollback_verify": true,
     "bounded_stage1b_alias_read_through": true,
     "syscore_alias_read_through": true,
-    "prepare_resume_staging": false,
+    "prepare_resume_staging": true,
     "modified_handler_passthrough": false,
     "identity_cr3": false,
     "hv_shellcode_entry": false,
@@ -70,6 +70,21 @@
       "pid1_context": false,
       "tlb_shootdown": false,
       "executable_leaves": false,
+      "cold_reboot_required": true
+    },
+    "stage2a": {
+      "result": "pass-hold-ui-confirmation-pending",
+      "source_commit": "a3c1d304daf0e297511846cc9aaab3ced8397954",
+      "sha256": "38d913b5a484a89ae46f13c9fe1c078452e1c20adf6dd6b0091f45942ad15a8b",
+      "wake_blob_sha256": "2d7927fefb6c4465be13f632edeb810f159c3e2fb178f0d01f6d8a4aacfe8281",
+      "wake_blob_bytes": 240,
+      "mapped_bytes": 16384,
+      "leaf_ptes": 4,
+      "pid1_mapping": true,
+      "executed": false,
+      "resume_hook_armed": false,
+      "hypervisor_modified": false,
+      "rest_mode_entered": false,
       "cold_reboot_required": true
     }
   },
@@ -116,14 +131,16 @@
       "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
     }
   },
-  "last_observed_marker": "11.60 STAGE 1B PASS",
-  "current_boundary": "high-firmware wake-shellcode staging without arming",
+  "last_observed_marker": "11.60 Stage 2A PASS",
+  "current_boundary": "inert S3 resume entry with stock GameOS continuation",
   "notes": [
     "Linux has not booted.",
     "The last irreversible takeover attempt used the split post-wake userland flow and stopped responding.",
     "The pLinux-derived wake-coupled candidate is superseded.",
     "The clean official-loader Stage 0 and reversible Stage 1A alias transaction both passed on hardware with a responsive UI.",
     "Stage 1B passed a 16 KiB data read-through canary through the exact mirrored syscore subtree, entered its mandatory cold-reboot hold, and left the GameOS UI responsive.",
-    "The next bounded test is wake-shellcode staging without arming; no resume hook, HV path, or rest-mode payload is authorized yet."
+    "Stage 2A published the exact 240-byte inert wake blob RX at 0xffff800000000000 in the PID-1 pmap, verified the full source bytes and page permissions, and entered its mandatory backing hold without a hook, HV write, rest mode, or Linux action.",
+    "GameOS UI responsiveness confirmation for the Stage 2A hold is pending; cleanup requires a cold reboot.",
+    "The next bounded test is a separately audited inert S3 resume invocation that restores the stock wrapper; no HV path or Linux handoff is authorized yet."
   ]
 }

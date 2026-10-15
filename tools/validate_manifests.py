@@ -71,6 +71,7 @@ def validate(path: Path) -> list[str]:
         stage0 = bounded.get("stage0")
         stage1 = bounded.get("stage1")
         stage1b = bounded.get("stage1b")
+        stage2a = bounded.get("stage2a")
         if not isinstance(stage0, dict):
             errors.append(f"{path}: bounded stage0 is not an object")
         else:
@@ -145,6 +146,43 @@ def validate(path: Path) -> list[str]:
                     stage1b.get("aliases_dereferenced")):
                 errors.append(
                     f"{path}: syscore read-through disagrees with aliases_dereferenced")
+
+        if not isinstance(stage2a, dict):
+            errors.append(f"{path}: bounded stage2a is not an object")
+        else:
+            for name in ("sha256", "wake_blob_sha256"):
+                digest = stage2a.get(name, "")
+                if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                    errors.append(f"{path}: invalid bounded stage2a {name}")
+            source_commit = stage2a.get("source_commit", "")
+            if (not isinstance(source_commit, str) or
+                    not GIT_COMMIT.fullmatch(source_commit)):
+                errors.append(f"{path}: invalid bounded stage2a source commit")
+            expected_counts = {
+                "wake_blob_bytes": 240,
+                "mapped_bytes": 16384,
+                "leaf_ptes": 4,
+            }
+            for name, expected in expected_counts.items():
+                if stage2a.get(name) != expected:
+                    errors.append(
+                        f"{path}: bounded stage2a requires {name}={expected}")
+            required_true = ("pid1_mapping", "cold_reboot_required")
+            for name in required_true:
+                if stage2a.get(name) is not True:
+                    errors.append(f"{path}: bounded stage2a requires {name}=true")
+            required_false = (
+                "executed",
+                "resume_hook_armed",
+                "hypervisor_modified",
+                "rest_mode_entered",
+            )
+            for name in required_false:
+                if stage2a.get(name) is not False:
+                    errors.append(f"{path}: bounded stage2a requires {name}=false")
+            if checkpoints.get("prepare_resume_staging") is not True:
+                errors.append(
+                    f"{path}: stage2a pass requires prepare_resume_staging=true")
 
     bypass = data.get("bypass", {})
     if bypass.get("validated") is True:

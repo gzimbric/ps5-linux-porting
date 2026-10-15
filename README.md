@@ -14,9 +14,10 @@ Linux distribution, jailbreak bundle, or ready-to-run payload release.
 The active case study is a regular PS5 on firmware 11.60.
 
 Linux does not boot yet. The port has passed the reversible bypass diagnostics,
-bounded image loading, transactional alias construction, and a one-page CPU
-read-through canary shown below. Executable wake-shellcode staging and the later
-resume/HV boundaries remain unvalidated:
+bounded image loading, transactional alias construction, a one-page CPU
+read-through canary, and bounded RX staging of the inert official wake blob.
+The wake blob has not been executed; the later resume/HV boundaries remain
+unvalidated:
 
 | Boundary | 11.60 result |
 |---|---|
@@ -30,6 +31,7 @@ resume/HV boundaries remain unvalidated:
 | Official-loader Stage 0 bounded image read | Pass; exact release hash captured, UI responsive |
 | Sonic-style kernel page-alias transaction | Pass; 10,136 PTEs verified and fully rolled back, UI responsive |
 | Read through a mirrored syscore alias subtree | Pass; full 16 KiB canary matched, four Accessed bits observed, roots rolled back |
+| Official `prepare_resume` wake staging | Pass; exact 240-byte inert blob mapped RX at `0xffff800000000000` in PID 1 and held, no hook/HV/rest/Linux path linked |
 | Live VMMCALL handler identity | Pass |
 | Modified handler to identity-CR3 shellcode entry | Not yet isolated |
 | Linux `startup_64` reached | Not observed |
@@ -49,8 +51,10 @@ The current direction is a clean reconstruction from the official loader,
 using Sonic's ELF as the primary architecture reference and importing only the
 hardware-validated 11.60 Byepervisor hook/VMCB discovery. The first two bounded
 stages now pass on hardware: image loading, a complete reversible alias
-transaction, and a data-only read-through canary. The next experiment must
-isolate wake-shellcode staging without arming rest mode or the HV path. See the
+transaction, a data-only read-through canary, and the official inert
+`prepare_resume` mapping. The next experiment must invoke that return-only
+entry through the real 11.60 S3 path and restore the stock wrapper, without
+arming the HV or Linux path. See the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 

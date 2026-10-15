@@ -30,6 +30,12 @@ class ToolTests(unittest.TestCase):
         )
         self.assertTrue(bounded["stage1b"]["aliases_dereferenced"])
         self.assertFalse(bounded["stage1b"]["tlb_shootdown"])
+        self.assertEqual(
+            bounded["stage2a"]["sha256"],
+            "38d913b5a484a89ae46f13c9fe1c078452e1c20adf6dd6b0091f45942ad15a8b",
+        )
+        self.assertTrue(bounded["stage2a"]["pid1_mapping"])
+        self.assertFalse(bounded["stage2a"]["executed"])
 
     def test_links(self):
         self.assertEqual(check_links(ROOT), [])
@@ -88,6 +94,16 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(result["last_checkpoint"], "official-stage1b-hold")
         self.assertFalse(result["linux_boot_observed"])
 
+    def test_classifier_official_stage2a(self):
+        text = "\n".join([
+            "11.60 Stage 2A: staging the inert official wake page only.",
+            "11.60 Stage 2A PASS: inert wake page staged RX at fixed alias; no hook/HV/rest/Linux action was taken",
+            "11.60 Stage 2A is holding the verified backing page. GameOS should remain responsive. Cold reboot after recording the result.",
+        ])
+        result = classify(text)
+        self.assertEqual(result["last_checkpoint"], "official-stage2a-hold")
+        self.assertFalse(result["linux_boot_observed"])
+
     def test_public_tree_rejects_binary(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
@@ -137,6 +153,15 @@ class ToolTests(unittest.TestCase):
             data["checkpoints"]["syscore_alias_read_through"] = False
             path.write_text(json.dumps(data))
             self.assertTrue(any("syscore read-through disagrees" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_executed_stage2a(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            data["bounded_loader_diagnostics"]["stage2a"]["executed"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("stage2a requires executed=false" in error
                                 for error in validate(path)))
 
 
