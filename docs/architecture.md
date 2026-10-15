@@ -9,50 +9,45 @@ configure the platform, and enter the kernel at `startup_64`.
 The high-firmware problem is reaching that boot path with all CPUs outside the
 hypervisor and with a usable physical address space.
 
-## 11.60 wake-coupled design
+## 11.60 reconstruction design
 
-The pLinux-derived wake wrapper described below is a superseded experiment, not
-the current recommended architecture. It did couple work into one wake context,
-but it did so by redirecting the MP-startup hook into a new staging wrapper.
+The pLinux-derived wake wrapper is a superseded experiment. It coupled work
+into one wake context by redirecting the MP-startup hook into a new staging
+wrapper, but it replaced the original memory contract and component boundary.
 Sonic's known-working 13.60 ELF instead keeps the AP/VMCB strike and the kernel
-Linux wake shellcode as distinct components inside one outer payload. See
+Linux wake shellcode as distinct components inside one outer payload. The
+11.60 reconstruction follows that official-loader shape. See
 [Sonic 13.60 binary reference](sonic-13.60-reference.md).
 
-The earlier 11.60 design separated the bypass from Linux takeover and resumed
-GameOS userland between them. That produced useful diagnostics, but it differs
-from the original loader. The current candidate lets the payload request rest
-after preflight and keeps the operator-controlled wake, while coupling the
-machine-state transition inside the wake path.
+### Validated prefix
 
-### Before rest mode
+On 2026-10-15, the official-loader-derived Stage 0 and Stage 1 diagnostics
+passed on a regular 11.60 console. Stage 0 read both Linux images without page
+table writes. Stage 1 preflighted the source and destination ranges, installed
+and verified the official-style syscore alias PTEs, then reversed and verified
+every journaled write. Both returned with a responsive UI.
 
-1. Load and validate the bzImage and initrd from USB.
-2. Allocate the identity-map, Linux boot, wrapper, parameter, and retained-copy
-   regions needed after S3.
-3. Record page-granular physical copy lists so wake code does not depend on
-   ordinary user mappings or file I/O.
-4. Stage a position-independent wrapper in a validated executable kernel-text
-   cave.
-5. Hook the S3 hypervisor startup call, count down, and request rest mode.
+That Stage 1 test walked and checked the target page tables; it did not make the
+new aliases active in the payload address space or read through their target
+virtual addresses. The next returning diagnostic isolates that translation
+boundary with a small data-only canary and complete rollback. No
+`prepare_resume`, executable mapping, hook, HV, rest-mode, or wake path belongs
+in that test.
 
-### In the wake kernel context
+### Intended final component split
 
-1. Preserve the hook ABI and call the original hypervisor startup routine.
-2. Discover the live GameOS VMCBs at runtime.
-3. Disable nested paging on exactly 16 target VMCBs and verify every write.
-4. Require `error=0 self=1 targets=16 written=16 verified=16`.
-5. Restore the kernel resume gate and IST state.
-6. Rebuild the identity page table and clone the live hypervisor high PML4
-   entries required while the redirect executes.
-7. Refresh the staged Linux shellcode, bzImage, initrd, and parameter blocks
-   from the retained physical copies.
-8. Validate and patch only the VMMCALL-specific VMEXIT handler.
-9. Use the kernel SMP rendezvous path to issue the balanced VMMCALL on all CPUs.
-10. Assign each arrival a compact stack slot, wait for the full barrier,
-    atomically elect one bootstrap CPU, and park every other CPU.
+1. Before rest, userland loads the Linux inputs and installs their kernel
+   aliases using the partially validated official-loader mapping layout;
+   CPU read-through remains the next bounded test.
+2. A separately installed kernel wake shellcode owns Linux staging, the live
+   HV-exit patch, the identity map, the all-core rendezvous, and Linux entry.
+3. The root-0 AP payload owns only dynamic VMCB discovery and NPT disable on
+   exactly 16 GameOS VMCBs.
+4. The S3/GP resume redirect preserves the original startup flow and enters the
+   kernel wake shellcode; it is not a replacement staging wrapper.
 
-A successful path does not return to GameOS userland. Returning is a failure
-path and must leave a diagnosable status without pretending that Linux booted.
+The final successful path will not return to GameOS userland. Until then, each
+diagnostic must be bounded, independently audited, and prove restoration.
 
 ## Why timing is part of the port
 

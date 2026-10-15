@@ -5,8 +5,8 @@
   "status": "research-in-progress",
   "linux_booted": false,
   "upstream_base": {
-    "repository": "https://github.com/pLabs5/pLinux5-NG",
-    "commit": "d5bd6b9f45c465e466e1e97083c9f162b94aad2c"
+    "repository": "https://github.com/ps5-linux/ps5-linux-loader",
+    "commit": "64637c177eaed277fb6ccce394cbb29dd047b893"
   },
   "bypass": {
     "validated": true,
@@ -25,18 +25,45 @@
     "live_handler_identity": true,
     "usb_files_loaded": true,
     "linux_images_staged": true,
+    "bounded_stage0_read_only": true,
+    "bounded_stage1_alias_transaction": true,
+    "bounded_stage1_alias_install": true,
+    "bounded_stage1_alias_verify": true,
+    "bounded_stage1_rollback_verify": true,
+    "syscore_alias_read_through": false,
+    "prepare_resume_staging": false,
     "modified_handler_passthrough": false,
     "identity_cr3": false,
     "hv_shellcode_entry": false,
     "all_cpu_linux_barrier": false,
     "startup_64": false
   },
-  "candidate_build": {
+  "bounded_loader_diagnostics": {
+    "hardware_test_date": "2026-10-15",
+    "source_commit": "779af2f58aec61351278dd36cae9306e087ee873",
+    "stage0": {
+      "result": "pass-responsive",
+      "sha256": "08f7383854600fa03d522f9a808451965ccf1e2033fda7f23e7546c0180dd719",
+      "page_table_writes": 0
+    },
+    "stage1": {
+      "result": "pass-responsive",
+      "sha256": "54774aa20bf15b4c02e1af34cf47e763ab76047e288130d33d1bf1f4ec98d1d4",
+      "logical_16k_pages": 2534,
+      "leaf_ptes": 10136,
+      "journaled_writes": 10158,
+      "temporary_table_pages": 22,
+      "rollback_verified": true,
+      "aliases_dereferenced": false
+    }
+  },
+  "superseded_candidate_build": {
     "strategy": "wake-coupled-bypass-and-linux-handoff",
+    "superseded": true,
     "built": true,
     "static_checks_passed": true,
     "audit_passes": 2,
-    "audit_result": "qualified-go-for-supervised-capture-ready-hardware-test",
+    "audit_result": "qualified-go-withdrawn-after-later-hardware-failures",
     "hardware_tested": false,
     "resume_wrapper_size": 2392,
     "resume_wrapper_relocations": 0,
@@ -73,12 +100,13 @@
       "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
     }
   },
-  "last_observed_marker": "Linux images staged successfully",
-  "current_boundary": "modified VMMCALL handler redirect and identity-CR3 shellcode entry",
+  "last_observed_marker": "11.60 STAGE 1 PASS",
+  "current_boundary": "syscore alias read-through with translation-cache handling",
   "notes": [
     "Linux has not booted.",
-    "The last hardware attempt used the split post-wake userland takeover.",
-    "The current candidate couples bypass completion and Linux handoff in the S3 wake kernel context.",
-    "The candidate has passed build and static checks but has not been tested on hardware."
+    "The last irreversible takeover attempt used the split post-wake userland flow and stopped responding.",
+    "The pLinux-derived wake-coupled candidate is superseded.",
+    "The clean official-loader Stage 0 and reversible Stage 1 alias transaction both passed on hardware with a responsive UI.",
+    "The next bounded test is alias read-through; no resume hook, HV path, or rest-mode payload is authorized yet."
   ]
 }

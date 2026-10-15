@@ -13,7 +13,14 @@ The following revisions were checked on 2026-10-15.
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
-as a working port while the final takeover is unvalidated.
+as a working port and is now a superseded historical branch.
+
+The active bounded diagnostics start from official loader commit
+`64637c177eaed277fb6ccce394cbb29dd047b893`. The Stage 0 and Stage 1 hardware
+passes were built from diagnostic source commit
+`779af2f58aec61351278dd36cae9306e087ee873`. Their tested ELF hashes are
+recorded in [the firmware status](11.60-status.md); the binaries and raw logs are
+not redistributed here.
 
 The upstream control-flow comparison uses these source files directly:
 

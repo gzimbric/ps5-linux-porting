@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
+GIT_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 REQUIRED_CHECKPOINTS = {
     "kernel_hook",
     "ktext_redirect",
@@ -18,6 +19,13 @@ REQUIRED_CHECKPOINTS = {
     "live_handler_identity",
     "usb_files_loaded",
     "linux_images_staged",
+    "bounded_stage0_read_only",
+    "bounded_stage1_alias_transaction",
+    "bounded_stage1_alias_install",
+    "bounded_stage1_alias_verify",
+    "bounded_stage1_rollback_verify",
+    "syscore_alias_read_through",
+    "prepare_resume_staging",
     "modified_handler_passthrough",
     "identity_cr3",
     "hv_shellcode_entry",
@@ -35,7 +43,8 @@ def validate(path: Path) -> list[str]:
 
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
-                "artifacts", "last_observed_marker", "current_boundary"):
+                "bounded_loader_diagnostics", "artifacts",
+                "last_observed_marker", "current_boundary"):
         if key not in data:
             errors.append(f"{path}: missing {key}")
 
@@ -49,6 +58,54 @@ def validate(path: Path) -> list[str]:
 
     if data.get("linux_booted") is True and checkpoints.get("startup_64") is not True:
         errors.append(f"{path}: linux_booted requires startup_64")
+
+    bounded = data.get("bounded_loader_diagnostics")
+    if not isinstance(bounded, dict):
+        errors.append(f"{path}: bounded_loader_diagnostics is not an object")
+    else:
+        source_commit = bounded.get("source_commit", "")
+        if not isinstance(source_commit, str) or not GIT_COMMIT.fullmatch(source_commit):
+            errors.append(f"{path}: invalid bounded diagnostic source commit")
+
+        stage0 = bounded.get("stage0")
+        stage1 = bounded.get("stage1")
+        if not isinstance(stage0, dict):
+            errors.append(f"{path}: bounded stage0 is not an object")
+        else:
+            digest = stage0.get("sha256", "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid bounded stage0 SHA-256")
+            if stage0.get("result") != "pass-responsive":
+                errors.append(f"{path}: bounded stage0 result is not pass-responsive")
+            if stage0.get("page_table_writes") != 0:
+                errors.append(f"{path}: bounded stage0 must have zero page-table writes")
+
+        if not isinstance(stage1, dict):
+            errors.append(f"{path}: bounded stage1 is not an object")
+        else:
+            digest = stage1.get("sha256", "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid bounded stage1 SHA-256")
+            if stage1.get("result") != "pass-responsive":
+                errors.append(f"{path}: bounded stage1 result is not pass-responsive")
+            logical_pages = stage1.get("logical_16k_pages")
+            leaf_ptes = stage1.get("leaf_ptes")
+            journaled_writes = stage1.get("journaled_writes")
+            temporary_pages = stage1.get("temporary_table_pages")
+            counts = (logical_pages, leaf_ptes, journaled_writes, temporary_pages)
+            if any(not isinstance(value, int) or isinstance(value, bool) or value <= 0
+                   for value in counts):
+                errors.append(f"{path}: invalid bounded stage1 counts")
+            elif leaf_ptes != logical_pages * 4 or journaled_writes < leaf_ptes:
+                errors.append(f"{path}: inconsistent bounded stage1 counts")
+            if stage1.get("rollback_verified") is not True:
+                errors.append(f"{path}: bounded stage1 rollback is not verified")
+            aliases_dereferenced = stage1.get("aliases_dereferenced")
+            if not isinstance(aliases_dereferenced, bool):
+                errors.append(f"{path}: aliases_dereferenced is not boolean")
+            elif checkpoints.get("syscore_alias_read_through") != aliases_dereferenced:
+                errors.append(
+                    f"{path}: syscore read-through disagrees with aliases_dereferenced")
 
     bypass = data.get("bypass", {})
     if bypass.get("validated") is True:
@@ -71,6 +128,8 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: research image {name} must not be included")
 
     candidate = data.get("candidate_build")
+    if candidate is None:
+        candidate = data.get("superseded_candidate_build")
     if candidate is not None:
         if not isinstance(candidate, dict):
             errors.append(f"{path}: candidate_build is not an object")

@@ -60,8 +60,8 @@ diagnostics into explicit observable stages.
 
 This result rejected an opaque automated sequence; it did not prove that Linux
 takeover should be delayed until a second userland payload. The current
-candidate requests rest only after preflight, leaves wake to the operator, and
-couples bypass completion with Linux takeover inside the already-armed wrapper.
+official-loader reconstruction preserves a coupled final wake path but brings
+its inputs and component boundaries up through returning diagnostics first.
 
 ## Split post-wake Linux takeover
 
@@ -77,8 +77,10 @@ valid final boot architecture. It diverges from the original loader's coupled
 wake-time handoff and may lose assumptions about CPU, hypervisor, page-table,
 or retained-memory state.
 
-**Replacement under test:** Arm all retained inputs before rest, then perform
-the verified strike and Linux takeover in one wake kernel execution path.
+**Replacement under test:** Reconstruct the official/Sonic component split:
+preinstall the Linux aliases, keep the AP payload limited to VMCB/NPT work, and
+perform Linux staging and handoff in a separate kernel wake shellcode. The
+reversible alias-construction stage has now passed on 11.60.
 
 ## HDMI Device Link
 
@@ -109,3 +111,21 @@ marker appeared and the console stopped responding.
 **Conclusion:** The input image and large file copies are no longer the first
 failure. The next boundary to isolate is the reversible handler redirect. A
 full Linux attempt gives too little information until that diagnostic passes.
+
+## Assumption that Sonic-style aliases were not viable on 11.60
+
+**Question:** Does the official loader's per-page syscore alias contract fail
+on firmware 11.60 before the wake path is involved?
+
+**Result:** Rejected for page-table construction.
+
+A bounded official-loader-derived diagnostic preflighted 2,534 logical 16 KiB
+source pages, installed and verified 10,136 leaf PTEs, restored and verified
+10,158 journaled writes, verified every target absent, then released 22
+temporary table-page mappings. It returned normally and the UI remained
+responsive.
+
+**Remaining boundary:** The test verified the page tables and physical backing
+but deliberately did not read through the new syscore virtual aliases. Alias
+read-through with explicit translation-cache handling is the next returning
+diagnostic; `prepare_resume` remains premature until it passes.

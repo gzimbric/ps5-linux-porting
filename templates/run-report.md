@@ -11,6 +11,15 @@
 - Build mode:
 - Payload SHA-256:
 
+## Delivery
+
+- Connection attempted:
+- Connection established:
+- Upload started:
+- Upload completed:
+- Payload execution confirmed by first marker:
+- Sender-side error, if any:
+
 ## Starting state
 
 - Full reboot performed:

@@ -13,8 +13,10 @@ Linux distribution, jailbreak bundle, or ready-to-run payload release.
 
 The active case study is a regular PS5 on firmware 11.60.
 
-Linux does not boot yet. The port has passed every reversible checkpoint up to
-the final hypervisor handoff:
+Linux does not boot yet. The port has passed the reversible bypass diagnostics,
+bounded image loading, and transactional alias construction shown below. CPU
+read-through of those aliases and the later resume/HV boundaries remain
+unvalidated:
 
 | Boundary | 11.60 result |
 |---|---|
@@ -25,7 +27,9 @@ the final hypervisor handoff:
 | All-core stock VMMCALL | Pass |
 | Linux files found and loaded from USB | Pass in loader-only build |
 | Full pLinux-derived ELF after initrd read | Repeated stop/freeze |
-| Sonic-style kernel page aliases | Not yet ported on 11.60 |
+| Official-loader Stage 0 bounded image read | Pass; exact release hash captured, UI responsive |
+| Sonic-style kernel page-alias transaction | Pass; 10,136 PTEs verified and fully rolled back, UI responsive |
+| Read through installed syscore aliases | Not yet isolated |
 | Live VMMCALL handler identity | Pass |
 | Modified handler to identity-CR3 shellcode entry | Not yet isolated |
 | Linux `startup_64` reached | Not observed |
@@ -43,7 +47,11 @@ kernel page aliases and separately installed kernel wake shellcode, while the
 
 The current direction is a clean reconstruction from the official loader,
 using Sonic's ELF as the primary architecture reference and importing only the
-hardware-validated 11.60 Byepervisor hook/VMCB discovery. See the
+hardware-validated 11.60 Byepervisor hook/VMCB discovery. The first two bounded
+stages now pass on hardware: image loading and a complete reversible alias
+transaction. The next experiment will verify reads through those aliases with
+explicit translation-cache handling before any wake shellcode, rest mode, or
+HV path is linked. See the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 

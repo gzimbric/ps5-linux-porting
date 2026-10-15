@@ -9,6 +9,15 @@ from pathlib import Path
 
 
 CHECKPOINTS = [
+    ("official-stage0-start", "11.60 stage 0: regular-console diagnostic starting"),
+    ("official-stage0-read-pass", "11.60 stage 0: read-only boundary complete"),
+    ("official-stage0-pass", "11.60 STAGE 0 PASS"),
+    ("official-stage1-start", "11.60 stage 1: regular-console diagnostic starting"),
+    ("official-stage1-source-preflight", "11.60 stage 1: source preflight passed"),
+    ("official-stage1-target-preflight", "11.60 stage 1: target range preflight passed"),
+    ("official-stage1-aliases-verified", "11.60 stage 1: all alias PTEs verified"),
+    ("official-stage1-rollback", "11.60 stage 1: rollback verified"),
+    ("official-stage1-pass", "11.60 STAGE 1 PASS"),
     ("loader-start", "Welcome to pLinux5-NG"),
     ("initrd-read", "initrd read complete"),
     ("files-loaded", "fetch complete"),
