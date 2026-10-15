@@ -21,24 +21,25 @@ Linux wake shellcode as distinct components inside one outer payload. The
 
 ### Validated prefix
 
-On 2026-10-15, the official-loader-derived Stage 0 and Stage 1 diagnostics
-passed on a regular 11.60 console. Stage 0 read both Linux images without page
-table writes. Stage 1 preflighted the source and destination ranges, installed
-and verified the official-style syscore alias PTEs, then reversed and verified
-every journaled write. Both returned with a responsive UI.
+On 2026-10-15, the official-loader-derived Stage 0, Stage 1A, and Stage 1B
+diagnostics passed on a regular 11.60 console. Stage 0 read both Linux images
+without page-table writes. Stage 1A preflighted the source and destination
+ranges, installed and verified the official-style syscore alias PTEs, then
+reversed and verified every journaled write.
 
-That Stage 1 test walked and checked the target page tables; it did not make the
-new aliases active in the payload address space or read through their target
-virtual addresses. The next returning diagnostic isolates that translation
-boundary with a small data-only canary and complete rollback. No
-`prepare_resume`, executable mapping, hook, HV, rest-mode, or wake path belongs
-in that test.
+Stage 1B wired a 16 KiB data canary and three page-table allocations, installed
+four NX leaves in a new syscore subtree, mirrored that exact PML4 entry into the
+current pmap, and matched every byte through the target virtual address. All
+four leaf Accessed bits were observed before both roots were restored and
+verified. This proves current-context CPU traversal of the shared subtree; it
+does not prove PID-1-context access, TLB shootdown, executable mapping, or
+post-rollback translation eviction.
 
 ### Intended final component split
 
 1. Before rest, userland loads the Linux inputs and installs their kernel
-   aliases using the partially validated official-loader mapping layout;
-   CPU read-through remains the next bounded test.
+   aliases using the now data-read-through-validated official-loader mapping
+   layout; executable wake-shellcode staging remains a separate boundary.
 2. A separately installed kernel wake shellcode owns Linux staging, the live
    HV-exit patch, the identity map, the all-core rendezvous, and Linux entry.
 3. The root-0 AP payload owns only dynamic VMCB discovery and NPT disable on

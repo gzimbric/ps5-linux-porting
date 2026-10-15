@@ -117,7 +117,7 @@ full Linux attempt gives too little information until that diagnostic passes.
 **Question:** Does the official loader's per-page syscore alias contract fail
 on firmware 11.60 before the wake path is involved?
 
-**Result:** Rejected for page-table construction.
+**Result:** Rejected for page-table construction and bounded data read-through.
 
 A bounded official-loader-derived diagnostic preflighted 2,534 logical 16 KiB
 source pages, installed and verified 10,136 leaf PTEs, restored and verified
@@ -125,7 +125,12 @@ source pages, installed and verified 10,136 leaf PTEs, restored and verified
 temporary table-page mappings. It returned normally and the UI remained
 responsive.
 
-**Remaining boundary:** The test verified the page tables and physical backing
-but deliberately did not read through the new syscore virtual aliases. Alias
-read-through with explicit translation-cache handling is the next returning
-diagnostic; `prepare_resume` remains premature until it passes.
+The follow-up test wired a 16 KiB data canary and all table backing, mirrored
+the exact syscore subtree into the current pmap, matched the full canary through
+the target virtual address, observed all four hardware Accessed bits, and
+restored both roots. It deliberately did not test PID-1 execution, TLB
+shootdown, executable mappings, or wake-shellcode staging.
+
+**Remaining boundary:** Stage executable wake-shellcode pages without arming
+the resume hook, rest mode, or HV path, and verify the installation can be
+fully reversed.

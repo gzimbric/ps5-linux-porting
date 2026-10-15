@@ -24,6 +24,7 @@ REQUIRED_CHECKPOINTS = {
     "bounded_stage1_alias_install",
     "bounded_stage1_alias_verify",
     "bounded_stage1_rollback_verify",
+    "bounded_stage1b_alias_read_through",
     "syscore_alias_read_through",
     "prepare_resume_staging",
     "modified_handler_passthrough",
@@ -69,6 +70,7 @@ def validate(path: Path) -> list[str]:
 
         stage0 = bounded.get("stage0")
         stage1 = bounded.get("stage1")
+        stage1b = bounded.get("stage1b")
         if not isinstance(stage0, dict):
             errors.append(f"{path}: bounded stage0 is not an object")
         else:
@@ -101,9 +103,46 @@ def validate(path: Path) -> list[str]:
             if stage1.get("rollback_verified") is not True:
                 errors.append(f"{path}: bounded stage1 rollback is not verified")
             aliases_dereferenced = stage1.get("aliases_dereferenced")
-            if not isinstance(aliases_dereferenced, bool):
-                errors.append(f"{path}: aliases_dereferenced is not boolean")
-            elif checkpoints.get("syscore_alias_read_through") != aliases_dereferenced:
+            if aliases_dereferenced is not False:
+                errors.append(f"{path}: bounded stage1 must not dereference aliases")
+
+        if not isinstance(stage1b, dict):
+            errors.append(f"{path}: bounded stage1b is not an object")
+        else:
+            digest = stage1b.get("sha256", "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid bounded stage1b SHA-256")
+            source_commit = stage1b.get("source_commit", "")
+            if (not isinstance(source_commit, str) or
+                    not GIT_COMMIT.fullmatch(source_commit)):
+                errors.append(f"{path}: invalid bounded stage1b source commit")
+            if stage1b.get("result") != "pass-responsive-cold-reboot-required":
+                errors.append(
+                    f"{path}: bounded stage1b result must require cold reboot")
+            expected_counts = {
+                "data_bytes": 16384,
+                "leaf_ptes": 4,
+                "accessed_bits_observed": 4,
+                "locked_backing_bytes": 65536,
+            }
+            for name, expected in expected_counts.items():
+                if stage1b.get(name) != expected:
+                    errors.append(
+                        f"{path}: bounded stage1b requires {name}={expected}")
+            required_true = (
+                "rollback_verified",
+                "aliases_dereferenced",
+                "cold_reboot_required",
+            )
+            for name in required_true:
+                if stage1b.get(name) is not True:
+                    errors.append(f"{path}: bounded stage1b requires {name}=true")
+            required_false = ("pid1_context", "tlb_shootdown", "executable_leaves")
+            for name in required_false:
+                if stage1b.get(name) is not False:
+                    errors.append(f"{path}: bounded stage1b requires {name}=false")
+            if (checkpoints.get("syscore_alias_read_through") !=
+                    stage1b.get("aliases_dereferenced")):
                 errors.append(
                     f"{path}: syscore read-through disagrees with aliases_dereferenced")
 

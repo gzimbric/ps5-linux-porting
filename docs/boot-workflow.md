@@ -24,9 +24,9 @@ payload.
 5. Require every advertised checkpoint, verified rollback, and a responsive UI.
 6. Stop on any missing checkpoint, refusal, freeze, reboot, or rollback failure.
 
-Stage 0 and the reversible Stage 1 alias transaction passed on 2026-10-15. The
-next authorized design boundary is alias read-through with controlled
-translation-cache handling. Do not skip to `prepare_resume`, HV code, rest
+Stage 0, the reversible Stage 1A alias transaction, and the Stage 1B data-alias
+read-through canary passed on 2026-10-15. The next design boundary is bounded
+wake-shellcode staging without arming it. Do not skip to the HV path, rest
 mode, or the ordinary loader.
 
 The earlier pLinux-derived wake-coupled candidate is superseded and should not
@@ -40,7 +40,7 @@ order is:
 
 1. bounded loader-only USB and file validation (**passed**);
 2. reversible syscore alias construction (**passed**);
-3. alias read-through with translation-cache handling;
+3. data-only alias read-through through an exact mirrored subtree (**passed**);
 4. high-firmware wake-shellcode staging without arming;
 5. ktext cave and resume-redirect preflight;
 6. AP/VMCB strike integration;

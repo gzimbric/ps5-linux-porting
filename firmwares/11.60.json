@@ -30,7 +30,8 @@
     "bounded_stage1_alias_install": true,
     "bounded_stage1_alias_verify": true,
     "bounded_stage1_rollback_verify": true,
-    "syscore_alias_read_through": false,
+    "bounded_stage1b_alias_read_through": true,
+    "syscore_alias_read_through": true,
     "prepare_resume_staging": false,
     "modified_handler_passthrough": false,
     "identity_cr3": false,
@@ -55,6 +56,21 @@
       "temporary_table_pages": 22,
       "rollback_verified": true,
       "aliases_dereferenced": false
+    },
+    "stage1b": {
+      "result": "pass-responsive-cold-reboot-required",
+      "source_commit": "a3f8917e26fa3a1fca29e41c18077eb9510368d0",
+      "sha256": "57dc30301290702e935475816921f4a5ce0b5ab9a3097dafd75343988238d1e2",
+      "data_bytes": 16384,
+      "leaf_ptes": 4,
+      "accessed_bits_observed": 4,
+      "locked_backing_bytes": 65536,
+      "rollback_verified": true,
+      "aliases_dereferenced": true,
+      "pid1_context": false,
+      "tlb_shootdown": false,
+      "executable_leaves": false,
+      "cold_reboot_required": true
     }
   },
   "superseded_candidate_build": {
@@ -100,13 +116,14 @@
       "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
     }
   },
-  "last_observed_marker": "11.60 STAGE 1 PASS",
-  "current_boundary": "syscore alias read-through with translation-cache handling",
+  "last_observed_marker": "11.60 STAGE 1B PASS",
+  "current_boundary": "high-firmware wake-shellcode staging without arming",
   "notes": [
     "Linux has not booted.",
     "The last irreversible takeover attempt used the split post-wake userland flow and stopped responding.",
     "The pLinux-derived wake-coupled candidate is superseded.",
-    "The clean official-loader Stage 0 and reversible Stage 1 alias transaction both passed on hardware with a responsive UI.",
-    "The next bounded test is alias read-through; no resume hook, HV path, or rest-mode payload is authorized yet."
+    "The clean official-loader Stage 0 and reversible Stage 1A alias transaction both passed on hardware with a responsive UI.",
+    "Stage 1B passed a 16 KiB data read-through canary through the exact mirrored syscore subtree, entered its mandatory cold-reboot hold, and left the GameOS UI responsive.",
+    "The next bounded test is wake-shellcode staging without arming; no resume hook, HV path, or rest-mode payload is authorized yet."
   ]
 }

@@ -24,6 +24,12 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(bounded["stage0"]["result"], "pass-responsive")
         self.assertEqual(bounded["stage1"]["leaf_ptes"], 10136)
         self.assertTrue(bounded["stage1"]["rollback_verified"])
+        self.assertEqual(
+            bounded["stage1b"]["sha256"],
+            "57dc30301290702e935475816921f4a5ce0b5ab9a3097dafd75343988238d1e2",
+        )
+        self.assertTrue(bounded["stage1b"]["aliases_dereferenced"])
+        self.assertFalse(bounded["stage1b"]["tlb_shootdown"])
 
     def test_links(self):
         self.assertEqual(check_links(ROOT), [])
@@ -65,6 +71,21 @@ class ToolTests(unittest.TestCase):
         ])
         result = classify(text)
         self.assertEqual(result["last_checkpoint"], "official-stage0-pass")
+        self.assertFalse(result["linux_boot_observed"])
+
+    def test_classifier_official_stage1b(self):
+        text = "\n".join([
+            "11.60 stage 1B: regular-console data read-through diagnostic starting",
+            "11.60 stage 1B: preflight passed for one 16 KiB data canary",
+            "11.60 stage 1B: shared subtree linked into current pmap",
+            "11.60 stage 1B: full 16 KiB canary matched through target virtual address",
+            "11.60 stage 1B: hardware Accessed bits observed on all four leaf PTEs",
+            "11.60 stage 1B: both pmap roots restored and verified absent",
+            "11.60 STAGE 1B PASS; data alias read-through verified; page tables rolled back",
+            "11.60 stage 1B: PASS containment active; backing retained and cold reboot required",
+        ])
+        result = classify(text)
+        self.assertEqual(result["last_checkpoint"], "official-stage1b-hold")
         self.assertFalse(result["linux_boot_observed"])
 
     def test_public_tree_rejects_binary(self):
@@ -113,7 +134,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
-            data["checkpoints"]["syscore_alias_read_through"] = True
+            data["checkpoints"]["syscore_alias_read_through"] = False
             path.write_text(json.dumps(data))
             self.assertTrue(any("syscore read-through disagrees" in error
                                 for error in validate(path)))
