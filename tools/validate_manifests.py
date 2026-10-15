@@ -69,6 +69,28 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: invalid SHA-256 for {name}")
         if artifact.get("included") is not False:
             errors.append(f"{path}: research image {name} must not be included")
+
+    candidate = data.get("candidate_build")
+    if candidate is not None:
+        if not isinstance(candidate, dict):
+            errors.append(f"{path}: candidate_build is not an object")
+        else:
+            for name, digest in candidate.get("sha256", {}).items():
+                if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                    errors.append(
+                        f"{path}: invalid candidate SHA-256 for {name}")
+
+    comparison = data.get("architectural_comparison")
+    if comparison is not None:
+        if not isinstance(comparison, dict):
+            errors.append(f"{path}: architectural_comparison is not an object")
+        else:
+            digest = comparison.get("sha256", "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid architectural comparison SHA-256")
+            if comparison.get("included") is not False:
+                errors.append(
+                    f"{path}: architectural comparison binary must not be included")
     return errors
 
 

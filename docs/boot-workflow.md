@@ -14,19 +14,23 @@ payload.
    payload unless the specific experiment is designed to coexist with it.
 7. Start log capture before sending the first research payload.
 
-## Bypass stage
+## Wake-coupled candidate stage
 
-1. Run the reviewed 11.60 Byepervisor prepare payload.
-2. Confirm that the preparation marker and hook readback are valid.
-3. Enter rest mode manually.
-4. Wait until the rest transition completes, then wake once.
-5. Run the matching status payload.
-6. Require `err=0`, `self=1`, `tgt=16`, `wr=16`, and `ver=16`.
-7. Require confirmation that the resume hook was restored.
+1. Start from a clean boot and run the reviewed 11.60 wake-coupled candidate.
+2. Confirm that Linux inputs, retained copy lists, wrapper parameters, cave,
+   hook target, and hook readback all pass preflight.
+3. Let the candidate request rest after its five-second countdown.
+4. Wait until the orange light stops blinking, then wake once.
+5. Do not launch a second Linux payload after wake. The armed wrapper must
+   perform the exact bypass verification and Linux handoff in the wake context.
+6. On a returning failure path, require `err=0`, `self=1`, `tgt=16`, `wr=16`,
+   and `ver=16` before attributing the failure to the later Linux handoff.
+7. Require confirmation that the resume hook was restored on every returning
+   path.
 
 Do not continue if any count is different. Reboot before another attempt.
 
-## Linux diagnostic stage
+## Returning diagnostic stage
 
 Run one diagnostic per clean bypass state. The intended order is:
 
@@ -37,10 +41,11 @@ Run one diagnostic per clean bypass state. The intended order is:
 5. all-core no-op rendezvous;
 6. all-core stock VMMCALL;
 7. reversible HV-handler passthrough;
-8. final takeover only after all prior steps pass.
+8. wake-coupled final takeover only after all prior steps pass.
 
 Each returning diagnostic must report restoration of the gate, IST, cave, and
-any hypervisor bytes it changed.
+any hypervisor bytes it changed. The final candidate is different: success
+continues to Linux and therefore cannot produce a GameOS userland PASS message.
 
 ## After a failure
 

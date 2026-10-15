@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import json
 import unittest
 
 from tools.check_links import check as check_links
@@ -39,6 +40,15 @@ class ToolTests(unittest.TestCase):
             root = Path(temp)
             (root / "payload.elf").write_bytes(b"x")
             self.assertTrue(check_public_tree(root))
+
+    def test_manifest_rejects_invalid_candidate_digest(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            data["candidate_build"]["sha256"]["final_elf"] = "not-a-digest"
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("candidate SHA-256" in error
+                                for error in validate(path)))
 
 
 if __name__ == "__main__":

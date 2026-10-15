@@ -9,38 +9,56 @@ configure the platform, and enter the kernel at `startup_64`.
 The high-firmware problem is reaching that boot path with all CPUs outside the
 hypervisor and with a usable physical address space.
 
-## 11.60 two-stage design
+## 11.60 wake-coupled design
 
-The current 11.60 design separates the bypass from the Linux takeover.
+The earlier 11.60 design separated the bypass from Linux takeover and resumed
+GameOS userland between them. That produced useful diagnostics, but it differs
+from the original loader. The current candidate lets the payload request rest
+after preflight and keeps the operator-controlled wake, while coupling the
+machine-state transition inside the wake path.
 
-### Stage 1: establish and verify the bypass
+### Before rest mode
 
-1. Prepare a resume hook using the hardware-validated 11.60 Byepervisor path.
-2. Enter rest mode manually and wake normally.
-3. Discover the live GameOS VMCBs at runtime.
-4. Disable nested paging on exactly 16 target VMCBs.
-5. Verify all 16 writes and restore the kernel hook.
-6. Leave a small status record for the Linux payload.
-
-The accepted success shape is:
-
-```text
-error=0 self=1 targets=16 written=16 verified=16
-```
-
-### Stage 2: take over all CPUs
-
-1. Refuse to continue unless the Stage 1 status is exact.
-2. Load the bzImage and initrd from USB.
-3. Validate the executable kernel-text cave and VMMCALL handler identity.
-4. Build an identity page table and stage the Linux boot shellcode.
-5. Redirect only the VMMCALL-specific VMEXIT handler to a nearby transition
+1. Load and validate the bzImage and initrd from USB.
+2. Allocate the identity-map, Linux boot, wrapper, parameter, and retained-copy
+   regions needed after S3.
+3. Record page-granular physical copy lists so wake code does not depend on
+   ordinary user mappings or file I/O.
+4. Stage a position-independent wrapper in a validated executable kernel-text
    cave.
-6. Use the kernel SMP rendezvous path to issue a balanced VMMCALL on all CPUs.
-7. In the transition cave, load the identity CR3 and jump to the staged
-   hypervisor shellcode.
-8. Give each CPU a distinct stack, wait until all CPUs have arrived, park the
-   secondary CPUs, and let CPU 0 enter Linux.
+5. Hook the S3 hypervisor startup call, count down, and request rest mode.
+
+### In the wake kernel context
+
+1. Preserve the hook ABI and call the original hypervisor startup routine.
+2. Discover the live GameOS VMCBs at runtime.
+3. Disable nested paging on exactly 16 target VMCBs and verify every write.
+4. Require `error=0 self=1 targets=16 written=16 verified=16`.
+5. Restore the kernel resume gate and IST state.
+6. Rebuild the identity page table and clone the live hypervisor high PML4
+   entries required while the redirect executes.
+7. Refresh the staged Linux shellcode, bzImage, initrd, and parameter blocks
+   from the retained physical copies.
+8. Validate and patch only the VMMCALL-specific VMEXIT handler.
+9. Use the kernel SMP rendezvous path to issue the balanced VMMCALL on all CPUs.
+10. Assign each arrival a compact stack slot, wait for the full barrier,
+    atomically elect one bootstrap CPU, and park every other CPU.
+
+A successful path does not return to GameOS userland. Returning is a failure
+path and must leave a diagnosable status without pretending that Linux booted.
+
+## Why timing is part of the port
+
+The bypass is not merely a prerequisite bit that can always be consumed later.
+Resume code runs while CPU, hypervisor, page-table, and retained-memory state
+are in a narrow, known relationship. The original loader exploits that window
+by continuing directly from bypass completion into the Linux handoff. Delaying
+the takeover until a separate payload can change those assumptions even when
+the bypass counters still look valid.
+
+This ordering is visible both in the upstream source and in the supplied 13.60
+comparison ELF: the resume entry patches and stages the HV/Linux path, then
+invokes the all-core rendezvous from that same execution context.
 
 ## Why the VMMCALL-specific handler matters
 

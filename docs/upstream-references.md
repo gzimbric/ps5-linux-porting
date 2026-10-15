@@ -1,6 +1,6 @@
 # Upstream references
 
-The following revisions were checked on 2026-10-14.
+The following revisions were checked on 2026-10-15.
 
 | Project | Branch | Commit | Role |
 |---|---|---|---|
@@ -14,3 +14,14 @@ The following revisions were checked on 2026-10-14.
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
 as a working port while the final takeover is unvalidated.
+
+The upstream control-flow comparison uses these source files directly:
+
+- [`source/main.c`](https://github.com/ps5-linux/ps5-linux-loader/blob/main/source/main.c)
+  prepares the resume blob, arms the firmware-specific HV path, requests rest,
+  and does not launch a second post-wake payload;
+- [`shellcode_kernel/main.c`](https://github.com/ps5-linux/ps5-linux-loader/blob/main/shellcode_kernel/main.c)
+  prepares Linux and invokes the all-core VMMCALL rendezvous in the resume
+  context; and
+- [`shellcode_kernel/boot_linux.c`](https://github.com/ps5-linux/ps5-linux-loader/blob/main/shellcode_kernel/boot_linux.c)
+  installs the identity map and HV shellcode before staging the Linux inputs.

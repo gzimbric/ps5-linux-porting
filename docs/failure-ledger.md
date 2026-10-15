@@ -50,12 +50,35 @@ needed executable view. The dedicated ktext mapping is the validated path.
 
 ## Automatic rest and wake sequence
 
-**Idea:** Let the combined loader control the full rest transition.
+**Idea:** Let an earlier combined test automate both the rest request and the
+wake/testing sequence.
 
 **Observed behavior:** Repeated crashes and ambiguous state.
 
-**Replacement:** Split prepare, manual rest/wake, status, and Linux diagnostic
-into explicit operator-controlled stages.
+**Replacement:** Split preparation, rest, operator wake, status, and Linux
+diagnostics into explicit observable stages.
+
+This result rejected an opaque automated sequence; it did not prove that Linux
+takeover should be delayed until a second userland payload. The current
+candidate requests rest only after preflight, leaves wake to the operator, and
+couples bypass completion with Linux takeover inside the already-armed wrapper.
+
+## Split post-wake Linux takeover
+
+**Idea:** Complete and verify Byepervisor during wake, return to GameOS
+userland, then launch a separate Linux payload.
+
+**Observed behavior:** The split flow proved the exact 16-of-16 strike and many
+reversible diagnostics. The full attempt reached `Linux images staged
+successfully` and then became silent.
+
+**Current assessment:** Valuable as a diagnostic architecture, but not yet a
+valid final boot architecture. It diverges from the original loader's coupled
+wake-time handoff and may lose assumptions about CPU, hypervisor, page-table,
+or retained-memory state.
+
+**Replacement under test:** Arm all retained inputs before rest, then perform
+the verified strike and Linux takeover in one wake kernel execution path.
 
 ## HDMI Device Link
 

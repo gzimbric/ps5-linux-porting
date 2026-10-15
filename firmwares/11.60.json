@@ -31,6 +31,31 @@
     "all_cpu_linux_barrier": false,
     "startup_64": false
   },
+  "candidate_build": {
+    "strategy": "wake-coupled-bypass-and-linux-handoff",
+    "built": true,
+    "static_checks_passed": true,
+    "audit_passes": 2,
+    "audit_result": "qualified-go-for-supervised-capture-ready-hardware-test",
+    "hardware_tested": false,
+    "resume_wrapper_size": 2392,
+    "resume_wrapper_relocations": 0,
+    "resume_wrapper_patch_markers": 1,
+    "sha256": {
+      "final_elf": "5f8c3e19fcd9b6e8cb24bd3e165bd4372954de924207af035263541b5c5e9cf9",
+      "resume_wrapper": "e84932e6ae266a9abcba183edfea5011a2d436088e14f0e5df35923e9a499c9b",
+      "hypervisor_linux_shellcode": "2df2bf09d28db7fe08c8fc9681242b2ed83bf227b056126658d3962a49b5f09b",
+      "byepervisor_strike_shellcode": "918ac3d8ccc16ec31e40fc069cf5ba46b168afd493acb12461adc8f96c7ee997"
+    }
+  },
+  "architectural_comparison": {
+    "firmware": "13.60",
+    "source": "independently-supplied-elf",
+    "included": false,
+    "size": 237448,
+    "sha256": "e51a0298cb2c97b71be0ddad9f070b574c110c899d9fe513562355272fc81226",
+    "wake_coupled_hv_and_linux": true
+  },
   "known_values": {
     "vmmcall_handler_pa": "0x62847551",
     "balanced_vmmcall_ktext_offset": "0xC88100"
@@ -52,7 +77,8 @@
   "current_boundary": "modified VMMCALL handler redirect and identity-CR3 shellcode entry",
   "notes": [
     "Linux has not booted.",
-    "The active local build configuration selects the reversible HV handler passthrough diagnostic.",
-    "No PASS capture exists yet for that diagnostic."
+    "The last hardware attempt used the split post-wake userland takeover.",
+    "The current candidate couples bypass completion and Linux handoff in the S3 wake kernel context.",
+    "The candidate has passed build and static checks but has not been tested on hardware."
   ]
 }

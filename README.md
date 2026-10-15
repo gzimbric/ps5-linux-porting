@@ -30,8 +30,16 @@ the final hypervisor handoff:
 | Linux `startup_64` reached | Not observed |
 
 The last captured run reached `Linux images staged successfully` and then the
-console stopped responding. That makes the modified hypervisor handler and the
-first instructions after its redirect the current investigation boundary.
+console stopped responding. That run used the now-retired split sequence:
+establish the bypass, return to GameOS userland, and launch Linux separately.
+
+The current candidate instead arms one S3 resume path before rest mode. On
+wake, the kernel-resident wrapper completes the 16-of-16 bypass strike,
+refreshes the Linux staging areas from retained physical copies, and performs
+the all-core Linux takeover before GameOS userland resumes. This matches the
+ordering used by the original PS5 Linux loader and by an independently supplied
+13.60 comparison ELF. The candidate builds and has passed two static audit
+passes, but it has not been run on hardware and Linux has not booted.
 
 See [the full 11.60 status](docs/11.60-status.md) before attempting another
 hardware run.
@@ -41,8 +49,8 @@ hardware run.
 A working hypervisor bypass is necessary for high-firmware Linux, but it is
 not the whole Linux port. The loader must also:
 
-1. preserve a known-good bypass state across the operator-controlled rest and
-   wake cycle;
+1. preserve a known-good bypass state across the payload-requested rest and
+   operator wake cycle;
 2. load and stage the kernel, initrd, boot parameters, and identity map;
 3. move every CPU out of the hypervisor through a controlled VM exit;
 4. prevent one CPU from reaching the Linux barrier before its peers;

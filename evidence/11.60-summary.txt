@@ -1,6 +1,6 @@
 firmware=11.60
 model=regular
-date=2026-10-14
+date=2026-10-15
 overall=research-in-progress
 linux_booted=false
 
@@ -26,6 +26,27 @@ linux_startup_64=not-observed
 last_marker=Linux images staged successfully
 console_result=unresponsive-or-crash
 current_boundary=modified VMMCALL handler redirect through identity CR3 entry
+
+candidate.strategy=wake-coupled-bypass-and-linux-handoff
+candidate.built=true
+candidate.static_checks_passed=true
+candidate.hardware_tested=false
+candidate.resume_wrapper_size=2392
+candidate.resume_wrapper_relocations=0
+candidate.resume_wrapper_patch_markers=1
+candidate.final_elf_sha256=5f8c3e19fcd9b6e8cb24bd3e165bd4372954de924207af035263541b5c5e9cf9
+candidate.resume_wrapper_sha256=e84932e6ae266a9abcba183edfea5011a2d436088e14f0e5df35923e9a499c9b
+candidate.hv_shellcode_sha256=2df2bf09d28db7fe08c8fc9681242b2ed83bf227b056126658d3962a49b5f09b
+candidate.strike_shellcode_sha256=918ac3d8ccc16ec31e40fc069cf5ba46b168afd493acb12461adc8f96c7ee997
+candidate.first_audit_blockers_fixed=2
+candidate.audit_passes=2
+candidate.second_audit_pending=false
+candidate.second_audit_result=qualified-go-for-supervised-capture-ready-hardware-test
+
+comparison_1360.source=independently-supplied-elf
+comparison_1360.size=237448
+comparison_1360.sha256=e51a0298cb2c97b71be0ddad9f070b574c110c899d9fe513562355272fc81226
+comparison_1360.wake_coupled_hv_and_linux=true
 
 vmmcall_handler_pa=0x62847551
 balanced_vmmcall_ktext_offset=0xC88100
