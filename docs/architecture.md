@@ -39,7 +39,8 @@ Stage 2A then used the official `prepare_resume` contract to publish the exact
 240-byte inert wake blob RX at `0xffff800000000000` in PID 1. It verified the
 `0x98` argument block, the four contiguous leaf PTEs, and exact blob bytes, then
 held every backing page. It did not execute the mapping or link any hook, HV,
-rest-mode, or Linux-loading path.
+rest-mode, or Linux-loading path. GameOS remained responsive during the hold;
+the deliberately retained mappings still require a cold reboot for cleanup.
 
 ### Intended final component split
 

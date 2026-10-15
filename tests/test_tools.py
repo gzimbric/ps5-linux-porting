@@ -35,6 +35,7 @@ class ToolTests(unittest.TestCase):
             "38d913b5a484a89ae46f13c9fe1c078452e1c20adf6dd6b0091f45942ad15a8b",
         )
         self.assertTrue(bounded["stage2a"]["pid1_mapping"])
+        self.assertTrue(bounded["stage2a"]["ui_responsive"])
         self.assertFalse(bounded["stage2a"]["executed"])
 
     def test_links(self):

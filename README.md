@@ -31,7 +31,7 @@ unvalidated:
 | Official-loader Stage 0 bounded image read | Pass; exact release hash captured, UI responsive |
 | Sonic-style kernel page-alias transaction | Pass; 10,136 PTEs verified and fully rolled back, UI responsive |
 | Read through a mirrored syscore alias subtree | Pass; full 16 KiB canary matched, four Accessed bits observed, roots rolled back |
-| Official `prepare_resume` wake staging | Pass; exact 240-byte inert blob mapped RX at `0xffff800000000000` in PID 1 and held, no hook/HV/rest/Linux path linked |
+| Official `prepare_resume` wake staging | Pass; exact 240-byte inert blob mapped RX at `0xffff800000000000` in PID 1 and held, GameOS responsive, no hook/HV/rest/Linux path linked |
 | Live VMMCALL handler identity | Pass |
 | Modified handler to identity-CR3 shellcode entry | Not yet isolated |
 | Linux `startup_64` reached | Not observed |

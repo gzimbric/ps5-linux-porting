@@ -158,6 +158,9 @@ def validate(path: Path) -> list[str]:
             if (not isinstance(source_commit, str) or
                     not GIT_COMMIT.fullmatch(source_commit)):
                 errors.append(f"{path}: invalid bounded stage2a source commit")
+            if stage2a.get("result") != "pass-responsive-cold-reboot-required":
+                errors.append(
+                    f"{path}: bounded stage2a result must be responsive and require cold reboot")
             expected_counts = {
                 "wake_blob_bytes": 240,
                 "mapped_bytes": 16384,
@@ -167,7 +170,11 @@ def validate(path: Path) -> list[str]:
                 if stage2a.get(name) != expected:
                     errors.append(
                         f"{path}: bounded stage2a requires {name}={expected}")
-            required_true = ("pid1_mapping", "cold_reboot_required")
+            required_true = (
+                "pid1_mapping",
+                "ui_responsive",
+                "cold_reboot_required",
+            )
             for name in required_true:
                 if stage2a.get(name) is not True:
                     errors.append(f"{path}: bounded stage2a requires {name}=true")
