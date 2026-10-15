@@ -74,6 +74,43 @@ The installed HV transition disables the remaining SVM state, builds Linux
 boot parameters and the e820 map, copies the protected-mode kernel, and enters
 Linux. No part of this successful path returns to resumed GameOS userland.
 
+The embedded wake blob is `0x6910` bytes with SHA-256
+`c342595b2842d12fb165983482efc7266bc2f914c435368df44f929ba346e740`.
+
+### Source correspondence
+
+Static reconstruction shows that the blob is an extension of the public wake
+shellcode, not a replacement design:
+
+| Sonic blob offset | Public-source equivalent | Observed change |
+|---:|---|---|
+| `0x1000` | `shellcode_kernel/main.c::main` | Adds 13.xx acceptance, diagnostics, and the 13.xx display sequence |
+| `0x1690` | `patch_hv` | Retains the parameter-driven VM-exit redirect and identity-CR3 trampoline |
+| `0x1740` | `boot_linux` | Adds diagnostics, partial NULL guards, a delay, and 13.xx display operations |
+| `0x1f10` | `hv_defeat_0304` | Preserves the legacy 3.xx/4.xx IOMMU path; high firmware does not use it |
+| `0x2260` | `activate_uart` | Remains unsafe when `kernel_uart_override` is absent |
+| `0x23a0` | `init_global_pointers` | Copies the same `0x98`-byte argument ABI |
+
+The 13.xx display program contains 29 firmware-specific calls. It is not part
+of the initial 11.60 headless port and must not be translated by guessing
+offsets.
+
+### Firmware-specific inputs
+
+The outer ELF supplies the blob with 13.60-specific kernel and physical
+addresses. Examples include `printf` at `ktext+0x25d410`, SMP rendezvous at
+`ktext+0xb03ba0`, the no-barrier callback at `ktext+0x261e08`, the CFI handler
+at `ktext+0x44f8c0`, the VM-exit handler at physical `0x62847375`, and the HV
+cave at physical `0x62806f00`. These values are evidence about 13.60 only.
+
+For an exact-11.60 headless source candidate, the currently measured inputs
+are `printf=ktext+0x535a50`, `smp_rendezvous=ktext+0xb739d0`, the no-barrier CFI
+alias at `ktext+0x316318`, the CFI handler at `ktext+0x4ebeb0`, VM-exit handler
+PA `0x62847551`, and HV cave PA `0x6284ac20`. Their individual provenance and
+remaining proof obligations are recorded in the
+[11.60 status](11.60-status.md); listing them here does not promote them all to
+hardware-validated wake-context inputs.
+
 ## Implication for the 11.60 port
 
 The current pLinux5-NG-derived 11.60 path is not a direct port of this design.
@@ -91,6 +128,13 @@ Sonic's division of responsibilities:
 - restore the official image-page aliases and `prepare_resume` step;
 - port the high-firmware kernel wake shellcode deliberately; and
 - remove the custom resumed-userland takeover.
+
+The minimal source delta is correspondingly small: add an exact
+`fw_version == 0x1160` branch, preserve the existing `0x98` argument ABI,
+validate every required pointer and original instruction sequence before the
+first write, and make UART, VBIOS, transmitter, MP3, display, and legacy IOMMU
+helpers genuinely optional. The initial branch is headless. Sonic's 13.60
+display table and physical addresses are not transplanted.
 
 ## Public corroboration
 
