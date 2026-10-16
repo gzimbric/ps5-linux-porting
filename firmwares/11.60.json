@@ -33,6 +33,10 @@
     "bounded_stage1b_alias_read_through": true,
     "syscore_alias_read_through": true,
     "prepare_resume_staging": true,
+    "stage2b_carrier_preflight": true,
+    "stage2b_awake_db_roundtrip": true,
+    "stage2b_s3_resume_provenance": true,
+    "stage2b_direct_pid1_alias_fetch": false,
     "modified_handler_passthrough": false,
     "identity_cr3": false,
     "hv_shellcode_entry": false,
@@ -87,6 +91,27 @@
       "rest_mode_entered": false,
       "ui_responsive": true,
       "cold_reboot_required": true
+    },
+    "stage2b3": {
+      "result": "pass-responsive-cold-reboot-required",
+      "sha256": "15a34c53f8f4a5ffdb8d834952e9c5e5d3adffb9c98da7f03113ec05eb0f8977",
+      "resume_provenance_verified": true,
+      "alias_executed": false,
+      "stock_gate_restored": true,
+      "ist6_entries_restored": 16,
+      "cave_pages_restored": 4,
+      "alias_rollback_verified": true,
+      "ui_responsive": true
+    },
+    "stage2b4": {
+      "result": "fail-wake-pulsing-blue",
+      "sha256": "b997f822684c99f1156d45149be3401d76046812cd2270da7d9ac9ee30d099f1",
+      "resume_carrier_armed": true,
+      "direct_alias_target": "0xffff800000000000",
+      "pass_marker_observed": false,
+      "hypervisor_modified": false,
+      "linux_action": false,
+      "cold_reboot_required": true
     }
   },
   "superseded_candidate_build": {
@@ -132,8 +157,8 @@
       "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
     }
   },
-  "last_observed_marker": "11.60 Stage 2A PASS",
-  "current_boundary": "inert S3 resume entry with stock GameOS continuation",
+  "last_observed_marker": "11.60 Stage 2B armed: manually enter rest mode, then wake the console",
+  "current_boundary": "Sonic-style staged-alias to executable-ktext copy and transfer",
   "notes": [
     "Linux has not booted.",
     "The last irreversible takeover attempt used the split post-wake userland flow and stopped responding.",
@@ -142,6 +167,8 @@
     "Stage 1B passed a 16 KiB data read-through canary through the exact mirrored syscore subtree, entered its mandatory cold-reboot hold, and left the GameOS UI responsive.",
     "Stage 2A published the exact 240-byte inert wake blob RX at 0xffff800000000000 in the PID-1 pmap, verified the full source bytes and page permissions, and entered its mandatory backing hold without a hook, HV write, rest mode, or Linux action.",
     "GameOS remained responsive during the Stage 2A backing hold; cleanup requires a cold reboot.",
-    "The next bounded test is a separately audited inert S3 resume invocation that restores the stock wrapper; no HV path or Linux handoff is authorized yet."
+    "Stage 2B-3 passed the exact startup_mp S3 resume boundary and complete carrier restoration without executing the alias.",
+    "Stage 2B-4 isolated a wake-time hang to the new direct RET into the PID-1-only alias; the console remained continuously pulsing blue and emitted no PASS marker.",
+    "The failed direct-alias transfer must not be retried. The next bounded test copies only the inert validator into executable kernel text before transfer, matching the supplied Sonic carrier architecture; no HV path or Linux handoff is authorized yet."
   ]
 }

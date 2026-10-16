@@ -15,9 +15,11 @@ The active case study is a regular PS5 on firmware 11.60.
 
 Linux does not boot yet. The port has passed the reversible bypass diagnostics,
 bounded image loading, transactional alias construction, a one-page CPU
-read-through canary, and bounded RX staging of the inert official wake blob.
-The wake blob has not been executed; the later resume/HV boundaries remain
-unvalidated:
+read-through canary, bounded RX staging of the inert official wake blob, the
+awake #DB carrier round trip, and the exact S3 resume-provenance boundary. A
+direct resume-chain transfer into the PID-1-only alias failed on wake; the next
+bounded test must use Sonic's copy-to-kernel-text execution contract. The later
+HV/Linux boundaries remain unvalidated:
 
 | Boundary | 11.60 result |
 |---|---|
@@ -32,6 +34,10 @@ unvalidated:
 | Sonic-style kernel page-alias transaction | Pass; 10,136 PTEs verified and fully rolled back, UI responsive |
 | Read through a mirrored syscore alias subtree | Pass; full 16 KiB canary matched, four Accessed bits observed, roots rolled back |
 | Official `prepare_resume` wake staging | Pass; exact 240-byte inert blob mapped RX at `0xffff800000000000` in PID 1 and held, GameOS responsive, no hook/HV/rest/Linux path linked |
+| Awake #DB carrier round trip | Pass; selected CPU provenance and complete gate/DR7/IST/cave/alias cleanup verified |
+| Exact S3 resume provenance without alias execution | Pass after Rest Mode; expected `startup_mp` frame observed, all carrier state restored, GameOS responsive |
+| Direct execution from the PID-1-only alias | Fail; audited payload armed normally, then wake hung with a continuously pulsing blue light before PASS |
+| Sonic-style alias-to-ktext copy/execute boundary | Next bounded diagnostic; not yet built |
 | Live VMMCALL handler identity | Pass |
 | Modified handler to identity-CR3 shellcode entry | Not yet isolated |
 | Linux `startup_64` reached | Not observed |
@@ -49,11 +55,11 @@ kernel page aliases and separately installed kernel wake shellcode, while the
 
 The current direction is a clean reconstruction from the official loader,
 using Sonic's ELF as the primary architecture reference and importing only the
-hardware-validated 11.60 Byepervisor hook/VMCB discovery. The first two bounded
-stages now pass on hardware: image loading, a complete reversible alias
-transaction, a data-only read-through canary, and the official inert
-`prepare_resume` mapping. The next experiment must invoke that return-only
-entry through the real 11.60 S3 path and restore the stock wrapper, without
+hardware-validated 11.60 Byepervisor hook/VMCB discovery. The bounded sequence
+has now isolated the failure to the direct instruction fetch from the staged
+PID-1 alias: the same carrier and S3 resume path pass when that fetch is omitted.
+The next experiment must copy only the inert validator into executable kernel
+text and transfer control there, matching Sonic's carrier architecture without
 arming the HV or Linux path. See the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).

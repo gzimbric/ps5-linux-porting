@@ -134,3 +134,27 @@ shootdown, executable mappings, or wake-shellcode staging.
 **Remaining boundary:** Stage executable wake-shellcode pages without arming
 the resume hook, rest mode, or HV path, and verify the installation can be
 fully reversed.
+
+## Direct resume-chain execution from the PID-1 alias
+
+**Question:** Can the validated 11.60 #DB/S3 carrier return directly to the
+240-byte inert page mapped only at `0xffff800000000000` in PID 1?
+
+**Result:** Rejected on hardware.
+
+Stage 2B-3 used the exact `startup_mp` resume boundary without fetching the
+alias. It passed after one Rest Mode cycle, verified the expected resume RIP and
+absence of foreign CPU frames, restored the stock #DB gate, cleared DR7,
+restored all 16 IST6 entries and four carrier-cave pages, rolled back the alias,
+and returned to responsive GameOS.
+
+After a cold reboot and fresh exploit, audited Stage 2B-4
+(`b997f822684c99f1156d45149be3401d76046812cd2270da7d9ac9ee30d099f1`)
+added one direct `RET` target at the PID-1 alias. It armed normally and entered
+Rest Mode, but wake stopped with a continuously pulsing blue light and no PASS
+marker. No HV or Linux path was linked.
+
+**Conclusion:** The direct alias fetch is the isolated failed boundary. Do not
+retry it. The next diagnostic must match the supplied Sonic 13.60 carrier more
+closely: copy the staged entry into executable kernel text under the validated
+supervisor carrier, then transfer control to that copy.
