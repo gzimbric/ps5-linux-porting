@@ -158,3 +158,45 @@ marker. No HV or Linux path was linked.
 retry it. The next diagnostic must match the supplied Sonic 13.60 carrier more
 closely: copy the staged entry into executable kernel text under the validated
 supervisor carrier, then transfer control to that copy.
+
+That replacement architecture was subsequently integrated and reached
+authenticated Linux userspace. The failed direct-alias design remains retired.
+
+## Treating Linux DRM state as visible HDMI proof
+
+**Idea:** Consider `amdgpu` binding, a connected DRM connector, EDID readback,
+or a successful modeset return sufficient evidence that display output works.
+
+**Result:** Rejected on hardware.
+
+Runs 10 and 12 reached authenticated Linux userspace. Run 12 reported the
+connector connected and completed a direct 1080p60, 8-bpc, full-RGB modeset,
+yet the physical monitor reported no signal throughout. Linux boot and visible
+HDMI therefore remain separate pass criteria.
+
+## Enabling the complete Sonic display preamble at once
+
+**Idea:** Enable VBIOS copy, transmitter setup, MP3 initialization, MP3
+commands 21/22, and no table calls in one `PRE=5`, `OP=0` run.
+
+**Observed behavior:** Run 11 remained in a blue-pulsing state and never
+exposed SSH.
+
+**Replacement:** Retain the same Linux carrier and bisect the preamble while
+keeping `OP=0`. Run 12 established PRE2 as an authenticated pass.
+
+## PRE3 with wake-time MP3 buffer clearing
+
+**Idea:** Add both a 10,252-byte runtime clear of the retained MP3 work area
+and `mp3_initialize(0)` to the passing PRE2 boundary.
+
+**Observed behavior:** The exact Run 13 ELF failed twice. Both attempts reached
+a steady white light without HDMI and kept TCP port 22 down for more than three
+minutes.
+
+**Conclusion:** This rejects the combined PRE3 transition, not the initializer
+mapping by itself. The complete retained page was already zeroed before
+suspend, Sonic relies on pre-zeroed static storage, and Sonic performs no
+equivalent runtime clear. The next diagnostic must suppress only that clear and
+retain the direct initializer call. Do not skip MP3 initialization or promote
+Run 13 to a working boot.

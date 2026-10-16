@@ -44,7 +44,8 @@ def validate(path: Path) -> list[str]:
 
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
-                "bounded_loader_diagnostics", "artifacts",
+                "bounded_loader_diagnostics", "sonic_display_diagnostics",
+                "boot_media", "artifacts",
                 "last_observed_marker", "current_boundary"):
         if key not in data:
             errors.append(f"{path}: missing {key}")
@@ -190,6 +191,58 @@ def validate(path: Path) -> list[str]:
             if checkpoints.get("prepare_resume_staging") is not True:
                 errors.append(
                     f"{path}: stage2a pass requires prepare_resume_staging=true")
+
+    display = data.get("sonic_display_diagnostics")
+    if not isinstance(display, dict):
+        errors.append(f"{path}: sonic_display_diagnostics is not an object")
+    else:
+        source_commit = display.get("last_tested_source_commit", "")
+        if not isinstance(source_commit, str) or not GIT_COMMIT.fullmatch(source_commit):
+            errors.append(f"{path}: invalid display diagnostic source commit")
+        for run_name in ("run10", "run11", "run12", "run13"):
+            run = display.get(run_name)
+            if not isinstance(run, dict):
+                errors.append(f"{path}: display diagnostic {run_name} is not an object")
+                continue
+            run_commit = run.get("source_commit", "")
+            if not isinstance(run_commit, str) or not GIT_COMMIT.fullmatch(run_commit):
+                errors.append(f"{path}: invalid {run_name} source commit")
+            for name in ("elf_sha256", "wake_sha256"):
+                digest = run.get(name, "")
+                if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                    errors.append(f"{path}: invalid {run_name} {name}")
+            if run.get("elf_size") != 169840 or run.get("wake_size") != 11992:
+                errors.append(f"{path}: unexpected {run_name} artifact size")
+        run12 = display.get("run12", {})
+        if run12.get("last_authenticated_working_baseline") is not True:
+            errors.append(f"{path}: run12 must remain the authenticated baseline")
+        run13 = display.get("run13", {})
+        if run13.get("attempts") != 2:
+            errors.append(f"{path}: run13 must record two failed attempts")
+        if display.get("next_boundary_validated") is not False:
+            errors.append(f"{path}: next display boundary must remain unvalidated")
+
+    boot_media = data.get("boot_media")
+    if not isinstance(boot_media, dict):
+        errors.append(f"{path}: boot_media is not an object")
+    else:
+        if boot_media.get("physical_usb_boot_partition_verified") is not True:
+            errors.append(f"{path}: physical USB boot partition is not verified")
+        if boot_media.get("fat_verify_result") != "pass":
+            errors.append(f"{path}: physical USB FAT verification did not pass")
+        if boot_media.get("linux_root_partition_directly_inspected_on_macos") is not False:
+            errors.append(f"{path}: Linux root inspection scope is overstated")
+        for name in ("bzimage", "initrd", "cmdline", "vram", "kexec"):
+            artifact = boot_media.get(name)
+            if not isinstance(artifact, dict):
+                errors.append(f"{path}: boot media {name} is not an object")
+                continue
+            digest = artifact.get("sha256", "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid boot media {name} SHA-256")
+            size = artifact.get("size")
+            if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+                errors.append(f"{path}: invalid boot media {name} size")
 
     bypass = data.get("bypass", {})
     if bypass.get("validated") is True:

@@ -42,7 +42,7 @@ held every backing page. It did not execute the mapping or link any hook, HV,
 rest-mode, or Linux-loading path. GameOS remained responsive during the hold;
 the deliberately retained mappings still require a cold reboot for cleanup.
 
-### Intended final component split
+### Implemented component split
 
 1. Before rest, userland loads the Linux inputs and installs their kernel
    aliases using the now data-read-through-validated official-loader mapping
@@ -55,8 +55,17 @@ the deliberately retained mappings still require a cold reboot for cleanup.
 4. The S3/GP resume redirect preserves the original startup flow and enters the
    kernel wake shellcode; it is not a replacement staging wrapper.
 
-The final successful path will not return to GameOS userland. Until then, each
-diagnostic must be bounded, independently audited, and prove restoration.
+The successful path does not return to GameOS userland. Runs 10 and 12 reached
+authenticated Linux userspace through this coupled design. Those boots prove
+the carrier, HV transition, staging, rendezvous, and Linux entry as an
+integrated path; they do not prove visible HDMI or every statically matched
+display helper.
+
+Display bring-up is now layered on that working carrier. Run 12 validates the
+64-KiB VBIOS copy, transmitter call, and Sonic-matching timed wait as a
+containing stage. The repeated Run 13 failure applies only to its combined
+runtime MP3 buffer clear plus `mp3_initialize(0)` delta. It does not
+independently reject the initializer mapping.
 
 ## Why timing is part of the port
 
@@ -71,11 +80,11 @@ This ordering is visible both in the upstream source and in the supplied 13.60
 comparison ELF: the resume entry patches and stages the HV/Linux path, then
 invokes the all-core rendezvous from that same execution context.
 
-The ordering alone is not enough. The known-working binary also preserves the
+The ordering alone was not enough. The known-working binary also preserves the
 official loader's pre-suspend page aliases and `prepare_resume` shellcode, while
-the superseded 11.60 wrapper replaced both. The next port must reproduce that
-memory contract and division of responsibilities, not merely run all steps
-during the same rest/wake cycle.
+the superseded 11.60 wrapper replaced both. The working headless port now
+reproduces that memory contract and division of responsibilities instead of
+merely running all steps during the same rest/wake cycle.
 
 ## Why the VMMCALL-specific handler matters
 

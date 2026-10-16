@@ -2,8 +2,8 @@
   "schema_version": 1,
   "firmware": "11.60",
   "console_model": "regular",
-  "status": "research-in-progress",
-  "linux_booted": false,
+  "status": "headless-linux-booted-display-in-progress",
+  "linux_booted": true,
   "upstream_base": {
     "repository": "https://github.com/ps5-linux/ps5-linux-loader",
     "commit": "64637c177eaed277fb6ccce394cbb29dd047b893"
@@ -37,11 +37,17 @@
     "stage2b_awake_db_roundtrip": true,
     "stage2b_s3_resume_provenance": true,
     "stage2b_direct_pid1_alias_fetch": false,
-    "modified_handler_passthrough": false,
-    "identity_cr3": false,
-    "hv_shellcode_entry": false,
-    "all_cpu_linux_barrier": false,
-    "startup_64": false
+    "modified_handler_passthrough": true,
+    "identity_cr3": true,
+    "hv_shellcode_entry": true,
+    "all_cpu_linux_barrier": true,
+    "startup_64": true,
+    "authenticated_linux_userspace": true,
+    "physical_usb_boot_partition_verified": true,
+    "visible_hdmi": false,
+    "display_pre2": true,
+    "display_pre3_combined": false,
+    "display_operation_table": false
   },
   "bounded_loader_diagnostics": {
     "hardware_test_date": "2026-10-15",
@@ -114,6 +120,53 @@
       "cold_reboot_required": true
     }
   },
+  "sonic_display_diagnostics": {
+    "hardware_test_date": "2026-10-15",
+    "last_tested_source_commit": "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+    "observation_method": "authenticated-wired-ssh",
+    "run10": {
+      "configuration": "PRE0-OP0",
+      "result": "pass-authenticated-linux-no-hdmi",
+      "source_commit": "c0233e2eeac10ac32982d2a20107b37c9cbda159",
+      "elf_size": 169840,
+      "elf_sha256": "f6398e75f5ed1bd5478d96f258d4aa462c9fcc9d99aeaae90e0d3ce3beb8fc93",
+      "wake_size": 11992,
+      "wake_sha256": "c3d23f33ef410be122a9520d37b6de2bd0a0963665b8322951fb36e1e8895870"
+    },
+    "run11": {
+      "configuration": "PRE5-OP0",
+      "result": "fail-no-ssh-blue-pulsing-no-hdmi",
+      "source_commit": "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+      "elf_size": 169840,
+      "elf_sha256": "35f6324acba5cd55bf1fa9145b60f6b019efedb342426b350b8f6fadbad38423",
+      "wake_size": 11992,
+      "wake_sha256": "e9c7a7061d4b9cb84233049317c2b5ab080bb49bb1cf5efeaa6d6d6e273f25ce"
+    },
+    "run12": {
+      "configuration": "PRE2-OP0",
+      "result": "pass-authenticated-linux-no-hdmi",
+      "source_commit": "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+      "elf_size": 169840,
+      "elf_sha256": "6db1e6293890bb1ab7fca39c284c9c493d7d903feedbea66847f377de744286c",
+      "wake_size": 11992,
+      "wake_sha256": "5e31fdd2b64d3555c6dc80b8c6eaa99d6c0e05b8127898790851ec6ef5dd7d04",
+      "last_authenticated_working_baseline": true
+    },
+    "run13": {
+      "configuration": "PRE3-OP0-runtime-clear-enabled",
+      "result": "repeatable-fail-no-ssh-white-no-hdmi",
+      "source_commit": "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+      "elf_size": 169840,
+      "elf_sha256": "651462323382cf4c17f01786d6a57f8abe9e35afe6c4834a48ade582c115e3ce",
+      "wake_size": 11992,
+      "wake_sha256": "e4e5e771d270515376065ae6e2aeaf3929fa92396cbb9830d84eb7f088e236f9",
+      "attempts": 2,
+      "tcp22_failures": [79, 87],
+      "conclusion": "combined-pre3-failed-not-initializer-alone"
+    },
+    "next_boundary": "PRE3-OP0-mp3-initialize-without-runtime-clear",
+    "next_boundary_validated": false
+  },
   "superseded_candidate_build": {
     "strategy": "wake-coupled-bypass-and-linux-handoff",
     "superseded": true,
@@ -138,11 +191,44 @@
     "included": false,
     "size": 237448,
     "sha256": "e51a0298cb2c97b71be0ddad9f070b574c110c899d9fe513562355272fc81226",
+    "wake_blob_size": 26896,
+    "wake_blob_sha256": "c342595b2842d12fb165983482efc7266bc2f914c435368df44f929ba346e740",
     "wake_coupled_hv_and_linux": true
   },
   "known_values": {
     "vmmcall_handler_pa": "0x62847551",
-    "balanced_vmmcall_ktext_offset": "0xC88100"
+    "balanced_vmmcall_ktext_offset": "0xC88100",
+    "hv_code_cave_pa": "0x62806F00",
+    "g_vbios_ktext_offset": "0x3DB7A40",
+    "transmitter_control_ktext_offset": "0xC800C0",
+    "mp3_initialize_ktext_offset": "0xA88270",
+    "mp3_invoke_ktext_offset": "0xA86E70"
+  },
+  "boot_media": {
+    "physical_usb_boot_partition_verified": true,
+    "fat_verify_result": "pass",
+    "linux_root_partition_directly_inspected_on_macos": false,
+    "bzimage": {
+      "size": 12702720,
+      "sha256": "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"
+    },
+    "initrd": {
+      "size": 54376639,
+      "sha256": "c37b88569ef8f05b0b4ae432a8ec0fd323b7a3537a6441f8c45baaad45ff061f"
+    },
+    "cmdline": {
+      "size": 118,
+      "sha256": "aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8"
+    },
+    "vram": {
+      "size": 11,
+      "sha256": "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0",
+      "value": "0x20000000"
+    },
+    "kexec": {
+      "size": 136,
+      "sha256": "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"
+    }
   },
   "artifacts": {
     "ktext": {
@@ -155,13 +241,23 @@
       "physical_base": "0x62832000",
       "size": "0x30000",
       "sha256": "eb6e402abedcd57a64ddf6296a3c0305f782373479e214a3f79e9fd34bb37fa3"
+    },
+    "hypervisor_extended": {
+      "included": false,
+      "physical_base": "0x62800000",
+      "size": "0x62000",
+      "sha256": "ada1624ce72ef2fe4e9400e13d544116be4050f5187234a1fa19c6bd26988fee"
     }
   },
-  "last_observed_marker": "11.60 Stage 2B armed: manually enter rest mode, then wake the console",
-  "current_boundary": "Sonic-style staged-alias to executable-ktext copy and transfer",
+  "last_observed_marker": "Run 13 pre-rest preparation complete; no authenticated post-wake Linux result",
+  "current_boundary": "PRE3 MP3 initialization without redundant runtime alias clear",
   "notes": [
-    "Linux has not booted.",
-    "The last irreversible takeover attempt used the split post-wake userland flow and stopped responding.",
+    "Linux booted headlessly with authenticated SSH in Runs 10 and 12; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
+    "Run 12 PRE2/OP0 is the last authenticated working baseline.",
+    "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
+    "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes; the Linux root partition was not directly mounted on macOS.",
+    "Visible HDMI remains unverified even though AMDGPU, EDID, connector state, and a direct modeset succeeded in Linux.",
+    "The historical split post-wake userland flow stopped responding and remains retired.",
     "The pLinux-derived wake-coupled candidate is superseded.",
     "The clean official-loader Stage 0 and reversible Stage 1A alias transaction both passed on hardware with a responsive UI.",
     "Stage 1B passed a 16 KiB data read-through canary through the exact mirrored syscore subtree, entered its mandatory cold-reboot hold, and left the GameOS UI responsive.",
@@ -169,6 +265,8 @@
     "GameOS remained responsive during the Stage 2A backing hold; cleanup requires a cold reboot.",
     "Stage 2B-3 passed the exact startup_mp S3 resume boundary and complete carrier restoration without executing the alias.",
     "Stage 2B-4 isolated a wake-time hang to the new direct RET into the PID-1-only alias; the console remained continuously pulsing blue and emitted no PASS marker.",
-    "The failed direct-alias transfer must not be retried. The next bounded test copies only the inert validator into executable kernel text before transfer, matching the supplied Sonic carrier architecture; no HV path or Linux handoff is authorized yet."
+    "The later Sonic-style copy-to-kernel-text carrier reached authenticated Linux and supersedes the failed direct-alias transfer.",
+    "Run 13 confounded a 10,252-byte wake-time alias clear with mp3_initialize(0); the next bounded test suppresses only that redundant clear while retaining the direct initializer call.",
+    "All display-isolation runs used OP0, so the 29-call table remains statically reconstructed but not hardware validated."
   ]
 }

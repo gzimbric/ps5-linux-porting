@@ -13,54 +13,38 @@ Linux distribution, jailbreak bundle, or ready-to-run payload release.
 
 The active case study is a regular PS5 on firmware 11.60.
 
-Linux does not boot yet. The port has passed the reversible bypass diagnostics,
-bounded image loading, transactional alias construction, a one-page CPU
-read-through canary, bounded RX staging of the inert official wake blob, the
-awake #DB carrier round trip, and the exact S3 resume-provenance boundary. A
-direct resume-chain transfer into the PID-1-only alias failed on wake; the next
-bounded test must use Sonic's copy-to-kernel-text execution contract. The later
-HV/Linux boundaries remain unvalidated:
+Linux now boots headlessly through the official-loader/Sonic architecture on
+firmware 11.60. Authenticated SSH established two current-media Linux boots in
+Runs 10 and 12. HDMI remains unproven: AMDGPU, EDID, connector state, and a
+direct modeset all looked healthy in Linux, while the physical display still
+reported no signal.
 
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Kernel hook and cleanup | Pass |
-| Executable kernel-text cave | Pass |
-| All-core no-op rendezvous | Pass |
-| All-core stock VMMCALL | Pass |
-| Linux files found and loaded from USB | Pass in loader-only build |
-| Full pLinux-derived ELF after initrd read | Repeated stop/freeze |
-| Official-loader Stage 0 bounded image read | Pass; exact release hash captured, UI responsive |
-| Sonic-style kernel page-alias transaction | Pass; 10,136 PTEs verified and fully rolled back, UI responsive |
-| Read through a mirrored syscore alias subtree | Pass; full 16 KiB canary matched, four Accessed bits observed, roots rolled back |
-| Official `prepare_resume` wake staging | Pass; exact 240-byte inert blob mapped RX at `0xffff800000000000` in PID 1 and held, GameOS responsive, no hook/HV/rest/Linux path linked |
-| Awake #DB carrier round trip | Pass; selected CPU provenance and complete gate/DR7/IST/cave/alias cleanup verified |
-| Exact S3 resume provenance without alias execution | Pass after Rest Mode; expected `startup_mp` frame observed, all carrier state restored, GameOS responsive |
-| Direct execution from the PID-1-only alias | Fail; audited payload armed normally, then wake hung with a continuously pulsing blue light before PASS |
-| Sonic-style alias-to-ktext copy/execute boundary | Next bounded diagnostic; not yet built |
-| Live VMMCALL handler identity | Pass |
-| Modified handler to identity-CR3 shellcode entry | Not yet isolated |
-| Linux `startup_64` reached | Not observed |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10 and 12 |
+| Current kernel and 54,376,639-byte initrd | Pass; authenticated wired networking and SSH |
+| Attached physical USB boot partition | Pass; FAT verification succeeded and active files hash-match Run 12 |
+| Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
+| Visible HDMI | Fail to observe; monitor remained at no signal during direct modeset |
+| Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
+| PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
+| MP3 initialization without the redundant runtime clear | Next bounded diagnostic; not hardware validated |
+| MP3 commands 21/22 | Not yet isolated |
+| 29-call display-operation table | Statically reconstructed; no entry hardware tested because all isolation runs used `OP=0` |
 
-The last captured run reached `Linux images staged successfully` and then the
-console stopped responding. That run used the now-retired split sequence:
-establish the bypass, return to GameOS userland, and launch Linux separately.
+Run 12 (`PRE=2`, `OP=0`) is the last authenticated working baseline. Run 13
+(`PRE=3`, `OP=0`) is a repeated non-working artifact. PRE3 currently combines
+10,252 bytes of runtime writes to already-zero retained storage with
+`mp3_initialize(0)`, while Sonic relies on pre-zeroed static buffers. The next
+narrow test keeps the proven PRE2 path, omits that runtime clear, and adds only
+MP3 initialization. This is an inference-driven diagnostic, not a claimed fix.
 
-The later pLinux-derived wake-coupled candidate repeatedly stopped immediately
-after its initrd-read checkpoint and is now superseded. Binary-level analysis
-of Sonic's known-working 13.60 ELF showed that matching only the broad
-rest/wake ordering was insufficient: Sonic preserves the official loader's
-kernel page aliases and separately installed kernel wake shellcode, while the
-11.60 candidate replaced both with a custom MP-startup wrapper.
-
-The current direction is a clean reconstruction from the official loader,
-using Sonic's ELF as the primary architecture reference and importing only the
-hardware-validated 11.60 Byepervisor hook/VMCB discovery. The bounded sequence
-has now isolated the failure to the direct instruction fetch from the staged
-PID-1 alias: the same carrier and S3 resume path pass when that fetch is omitted.
-The next experiment must copy only the inert validator into executable kernel
-text and transfer control there, matching Sonic's carrier architecture without
-arming the HV or Linux path. See the
+The earlier page-alias, inert-wake, and carrier stages remain useful historical
+evidence: they established the exact S3 boundary and led to the now-working
+copy-to-kernel-text carrier. The superseded pLinux-derived wrapper and direct
+PID-1 alias transfer remain negative results, not current candidates. See the
+[current sanitized run matrix](evidence/11.60-sonic-display-runs.md), the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 
@@ -125,7 +109,8 @@ This repository does not contain:
 - Linux disk images;
 - raw console logs, private network addresses, or local paths;
 - built ELF or shellcode binaries;
-- the unvalidated 11.60 takeover patch.
+- the experimental 11.60 loader source or a crash-prone build presented as a
+  working display release.
 
 Hashes and small factual offsets are included only as provenance or validation
 metadata. See [publication policy](docs/publication-policy.md).

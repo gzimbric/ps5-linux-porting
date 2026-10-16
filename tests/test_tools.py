@@ -37,6 +37,24 @@ class ToolTests(unittest.TestCase):
         self.assertTrue(bounded["stage2a"]["pid1_mapping"])
         self.assertTrue(bounded["stage2a"]["ui_responsive"])
         self.assertFalse(bounded["stage2a"]["executed"])
+        self.assertTrue(data["linux_booted"])
+        self.assertTrue(data["checkpoints"]["authenticated_linux_userspace"])
+        display = data["sonic_display_diagnostics"]
+        self.assertEqual(
+            display["last_tested_source_commit"],
+            "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+        )
+        self.assertTrue(display["run12"]["last_authenticated_working_baseline"])
+        self.assertEqual(display["run13"]["attempts"], 2)
+        self.assertEqual(
+            display["run13"]["elf_sha256"],
+            "651462323382cf4c17f01786d6a57f8abe9e35afe6c4834a48ade582c115e3ce",
+        )
+        self.assertTrue(data["boot_media"]["physical_usb_boot_partition_verified"])
+        self.assertEqual(
+            data["boot_media"]["initrd"]["sha256"],
+            "c37b88569ef8f05b0b4ae432a8ec0fd323b7a3537a6441f8c45baaad45ff061f",
+        )
 
     def test_links(self):
         self.assertEqual(check_links(ROOT), [])

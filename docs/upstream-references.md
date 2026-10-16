@@ -22,6 +22,14 @@ passes were built from diagnostic source commit
 recorded in [the firmware status](11.60-status.md); the binaries and raw logs are
 not redistributed here.
 
+The later Sonic-style 11.60 source port remains based on that same official
+loader lineage. The latest hardware-tested display-isolation source identity is
+local commit `5f922ead8859e2229d92e3d074e24fddf3f7932e`. Runs 11 through 13 were
+built from that commit. Run 12 (`PRE=2`, `OP=0`) reached authenticated Linux;
+the exact Run 13 (`PRE=3`, `OP=0`) ELF failed twice. This repository records
+the commit and artifact hashes as provenance but does not vendor the
+experimental loader source or describe it as a working display release.
+
 The upstream control-flow comparison uses these source files directly:
 
 - [`source/main.c`](https://github.com/ps5-linux/ps5-linux-loader/blob/main/source/main.c)

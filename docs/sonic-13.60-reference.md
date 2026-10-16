@@ -91,9 +91,18 @@ shellcode, not a replacement design:
 | `0x2260` | `activate_uart` | Remains unsafe when `kernel_uart_override` is absent |
 | `0x23a0` | `init_global_pointers` | Copies the same `0x98`-byte argument ABI |
 
-The 13.xx display program contains 29 firmware-specific calls. It is not part
-of the initial 11.60 headless port and must not be translated by guessing
-offsets.
+The 13.xx display program contains 29 firmware-specific calls. Static
+reconstruction also establishes the preamble order: copy the 64-KiB VBIOS,
+issue the exact transmitter enable structure, wait through TSC delta
+349,999,999, call `mp3_initialize(0)`, invoke MP3 commands 21 and 22, stage
+Linux, and dispatch the ordered table. Sonic's MP3 request and response
+buffers are pre-zeroed static storage; the wake routine does not clear them at
+runtime.
+
+The 11.60 source now contains structurally matched targets and the exact
+29-record table, but the table has not been executed in a hardware-authenticated
+incremental run. Reconstructed offsets are static evidence until a bounded
+hardware test validates them.
 
 ### Firmware-specific inputs
 
@@ -103,24 +112,29 @@ addresses. Examples include `printf` at `ktext+0x25d410`, SMP rendezvous at
 at `ktext+0x44f8c0`, the VM-exit handler at physical `0x62847375`, and the HV
 cave at physical `0x62806f00`. These values are evidence about 13.60 only.
 
-For an exact-11.60 headless source candidate, the currently measured inputs
-are `printf=ktext+0x535a50`, `smp_rendezvous=ktext+0xb739d0`, the no-barrier CFI
+For the exact-11.60 source port, the measured inputs include
+`printf=ktext+0x535a50`, `smp_rendezvous=ktext+0xb739d0`, the no-barrier CFI
 alias at `ktext+0x316318`, the CFI handler at `ktext+0x4ebeb0`, VM-exit handler
-PA `0x62847551`, and HV cave PA `0x6284ac20`. Their individual provenance and
-remaining proof obligations are recorded in the
+PA `0x62847551`, and Sonic's identity-mapped HV padding at PA `0x62806f00`.
+The failed earlier `0x6284ac20` candidate is not the current cave. Display
+inputs are `G_VBIOS=ktext+0x3db7a40`, transmitter control at
+`ktext+0xc800c0`, MP3 initialization at `ktext+0xa88270`, and MP3 invocation at
+`ktext+0xa86e70`. Their individual provenance and remaining proof obligations
+are recorded in the
 [11.60 status](11.60-status.md); listing them here does not promote them all to
 hardware-validated wake-context inputs.
 
 ## Implication for the 11.60 port
 
-The current pLinux5-NG-derived 11.60 path is not a direct port of this design.
-It skips image-page installation and `prepare_resume`, redirects the MP-startup
-hook into a new wake wrapper, constructs retained copy lists and a cloned PML4,
-stages Linux from that hook context, and retains a userland post-resume path.
+The superseded pLinux5-NG-derived 11.60 path was not a direct port of this
+design. It skipped image-page installation and `prepare_resume`, redirected the
+MP-startup hook into a new wake wrapper, constructed retained copy lists and a
+cloned PML4, staged Linux from that hook context, and retained a userland
+post-resume path.
 
-Those changes may pursue the same final objective, but their execution context,
-memory contract, and ordering differ from the known-working reference. The
-11.60 reconstruction should therefore start from the official loader and keep
+Those changes pursued the same final objective, but their execution context,
+memory contract, and ordering differed from the known-working reference. The
+11.60 reconstruction therefore started from the official loader and kept
 Sonic's division of responsibilities:
 
 - use the hardware-validated 11.60 Byepervisor hook and VMCB discovery only for
@@ -129,12 +143,16 @@ Sonic's division of responsibilities:
 - port the high-firmware kernel wake shellcode deliberately; and
 - remove the custom resumed-userland takeover.
 
-The minimal source delta is correspondingly small: add an exact
-`fw_version == 0x1160` branch, preserve the existing `0x98` argument ABI,
-validate every required pointer and original instruction sequence before the
-first write, and make UART, VBIOS, transmitter, MP3, display, and legacy IOMMU
-helpers genuinely optional. The initial branch is headless. Sonic's 13.60
-display table and physical addresses are not transplanted.
+That reconstruction was subsequently implemented on the official loader
+lineage. Its Sonic-style carrier, HV transition, Linux staging, and final
+rendezvous reached authenticated Linux userspace on 11.60 in Runs 10 and 12.
+This validates the architecture, not the whole display path.
+
+The current display work uses 11.60-native homologs rather than transplanting
+13.60 addresses. Run 12 validates the containing VBIOS/transmitter/wait stage.
+The combined Run 13 PRE3 block failed twice, but that block added both a
+non-Sonic runtime buffer clear and MP3 initialization. The next diagnostic
+keeps the direct initializer call and removes only that confounding clear.
 
 ## Public corroboration
 
