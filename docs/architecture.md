@@ -55,17 +55,24 @@ the deliberately retained mappings still require a cold reboot for cleanup.
 4. The S3/GP resume redirect preserves the original startup flow and enters the
    kernel wake shellcode; it is not a replacement staging wrapper.
 
-The successful path does not return to GameOS userland. Runs 10 and 12 reached
-authenticated Linux userspace through this coupled design. Those boots prove
-the carrier, HV transition, staging, rendezvous, and Linux entry as an
-integrated path; they do not prove visible HDMI or every statically matched
-display helper.
+The successful path does not return to GameOS userland. Runs 10, 12, 14, and
+15 reached authenticated Linux userspace through this coupled design. Those
+boots prove the carrier, HV transition, staging, rendezvous, and Linux entry as
+an integrated path. Run 15 additionally produced directly observed physical
+display output with the complete Sonic-equivalent display sequence enabled.
 
 Display bring-up is now layered on that working carrier. Run 12 validates the
 64-KiB VBIOS copy, transmitter call, and Sonic-matching timed wait as a
-containing stage. The repeated Run 13 failure applies only to its combined
-runtime MP3 buffer clear plus `mp3_initialize(0)` delta. It does not
-independently reject the initializer mapping.
+containing stage. Run 13 failed twice with a combined runtime MP3 buffer clear
+plus `mp3_initialize(0)` delta. Run 14 disabled only the clear, retained the
+direct initializer call, and reached authenticated Linux. This validates the
+initializer in the wake context and isolates the Run 13 regression to the
+redundant alias writes. Exact-11.60 production must match Sonic by omitting the
+clear. Run 15 then adopted Sonic's response-first buffer geometry and
+outer-call/leaf-tail-jump dispatcher, enabled commands 21 and 22 plus all 29
+table records, and passed both physical HDMI and authenticated Linux. This
+validates the complete containing sequence, not the individual return value or
+necessity of every target.
 
 ## Why timing is part of the port
 
@@ -82,7 +89,7 @@ invokes the all-core rendezvous from that same execution context.
 
 The ordering alone was not enough. The known-working binary also preserves the
 official loader's pre-suspend page aliases and `prepare_resume` shellcode, while
-the superseded 11.60 wrapper replaced both. The working headless port now
+the superseded 11.60 wrapper replaced both. The working port now
 reproduces that memory contract and division of responsibilities instead of
 merely running all steps during the same rest/wake cycle.
 

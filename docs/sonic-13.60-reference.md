@@ -145,14 +145,21 @@ Sonic's division of responsibilities:
 
 That reconstruction was subsequently implemented on the official loader
 lineage. Its Sonic-style carrier, HV transition, Linux staging, and final
-rendezvous reached authenticated Linux userspace on 11.60 in Runs 10 and 12.
-This validates the architecture, not the whole display path.
+rendezvous reached authenticated Linux userspace on 11.60 in Runs 10, 12, 14,
+and 15. Run 15 also produced physical display output, validating the complete
+display path as well as the architecture.
 
 The current display work uses 11.60-native homologs rather than transplanting
 13.60 addresses. Run 12 validates the containing VBIOS/transmitter/wait stage.
-The combined Run 13 PRE3 block failed twice, but that block added both a
-non-Sonic runtime buffer clear and MP3 initialization. The next diagnostic
-keeps the direct initializer call and removes only that confounding clear.
+The combined Run 13 PRE3 block failed twice after adding both a non-Sonic
+runtime buffer clear and MP3 initialization. Run 14 removed only that clear,
+kept the direct 11.60 `mp3_initialize(0)` call, and reached authenticated Linux.
+This validates the initializer and shows why production must retain Sonic's
+pre-zeroed-buffer behavior without a wake-time clear. Run 15 then matched
+Sonic's response-first buffer layout and outer-call/leaf-tail-jump dispatcher,
+enabled commands 21 and 22 and all 29 table records, and produced physical
+HDMI plus authenticated Linux. No call, argument, or ordering step from Sonic's
+recovered sequence is omitted.
 
 ## Public corroboration
 

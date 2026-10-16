@@ -10,6 +10,7 @@ The following revisions were checked on 2026-10-15.
 | [PS5Dev/Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn) | `main` | `ea04f7132b837087f552c57261cb800481a3a910` | Upstream high-firmware bypass |
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `firmware-11.60-pr` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `e0b7a2e9ac1fe6ec8de8f1883ba9470ad7ee690d` | Hardware-verified 11.60 Linux and display loader source |
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
@@ -23,12 +24,43 @@ recorded in [the firmware status](11.60-status.md); the binaries and raw logs ar
 not redistributed here.
 
 The later Sonic-style 11.60 source port remains based on that same official
-loader lineage. The latest hardware-tested display-isolation source identity is
-local commit `5f922ead8859e2229d92e3d074e24fddf3f7932e`. Runs 11 through 13 were
-built from that commit. Run 12 (`PRE=2`, `OP=0`) reached authenticated Linux;
-the exact Run 13 (`PRE=3`, `OP=0`) ELF failed twice. This repository records
-the commit and artifact hashes as provenance but does not vendor the
-experimental loader source or describe it as a working display release.
+loader lineage. Runs 11 through 13 were built from local commit
+`5f922ead8859e2229d92e3d074e24fddf3f7932e`. Run 12 (`PRE=2`, `OP=0`)
+reached authenticated Linux; the exact Run 13 (`PRE=3`, `OP=0`) ELF failed
+twice. Run 14 was built from local commit
+`87718a6565703079b96aa0b23a4996ec83308a4c` and passed authenticated Linux
+with PRE3's runtime clear disabled while retaining `mp3_initialize(0)`. Run 15
+was built from local commit `815b1fdc5c76088762e42ad0ad80b0099a54e60d` and
+produced physical display output plus authenticated Linux with the full
+Sonic-equivalent sequence. This repository records the commits and artifact
+hashes as provenance but does not vendor the loader source or binaries.
+
+## Published 11.60 loader source
+
+The loader source is published, without binaries, on the
+[`firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
+branch of the `gzimbric/ps5-linux-loader` fork, on top of official commit
+`64637c177eaed277fb6ccce394cbb29dd047b893`.
+
+Before publication, the local commits were rewritten only to replace a
+machine-local author address with a GitHub no-reply address. Commit messages,
+dates, and file trees are unchanged, so each published commit has the same
+tree hash as the local commit recorded in the evidence. The run-relevant
+mappings are:
+
+| Use | Local evidence commit | Published commit | Tree |
+|---|---|---|---|
+| Stage 2A | `a3c1d304daf0e297511846cc9aaab3ced8397954` | `656a9a9776277cddb88ae2a21cf1d99ad2884341` | identical |
+| Run 10 | `c0233e2eeac10ac32982d2a20107b37c9cbda159` | `a776ba852a90df1d060c547d0b21a2737c333108` | identical |
+| Runs 11-13 | `5f922ead8859e2229d92e3d074e24fddf3f7932e` | `b8e8243b2384ea42e06bffb142bb3c00f8c2b0c5` | identical |
+| Run 14 | `87718a6565703079b96aa0b23a4996ec83308a4c` | `2c108c09a349ab95c015df93d268c1de04c826e6` | identical |
+| Run 15 and release | `815b1fdc5c76088762e42ad0ad80b0099a54e60d` | `e0b7a2e9ac1fe6ec8de8f1883ba9470ad7ee690d` | `97e96d7d6fbec038812e0a1f9919b1d7c91a9410` |
+
+To confirm the Run 15 source identity, check that
+`git rev-parse e0b7a2e^{tree}` prints `97e96d7d6fbec038812e0a1f9919b1d7c91a9410`.
+Building requires the PS5 payload SDK and authenticated 11.60 kernel-text and
+hypervisor dumps, which are not distributed. See `PORTING_1160.md` on that
+branch for build details.
 
 The upstream control-flow comparison uses these source files directly:
 

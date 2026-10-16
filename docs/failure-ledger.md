@@ -169,10 +169,15 @@ or a successful modeset return sufficient evidence that display output works.
 
 **Result:** Rejected on hardware.
 
-Runs 10 and 12 reached authenticated Linux userspace. Run 12 reported the
+Runs 10, 12, and 14 reached authenticated Linux userspace. Run 12 reported the
 connector connected and completed a direct 1080p60, 8-bpc, full-RGB modeset,
-yet the physical monitor reported no signal throughout. Linux boot and visible
-HDMI therefore remain separate pass criteria.
+yet the physical monitor reported no signal throughout; Run 14 again reported
+connected DRM state while the monitor remained at no signal. Linux boot and
+visible HDMI therefore remain separate pass criteria.
+
+**Resolution:** The missing precondition was Sonic's pre-Linux MP3 command and
+display-table sequence, not the Linux graphics stack. Run 15 enabled it and
+produced physical output with the same kernel, initrd, and command line.
 
 ## Enabling the complete Sonic display preamble at once
 
@@ -194,9 +199,14 @@ and `mp3_initialize(0)` to the passing PRE2 boundary.
 a steady white light without HDMI and kept TCP port 22 down for more than three
 minutes.
 
-**Conclusion:** This rejects the combined PRE3 transition, not the initializer
-mapping by itself. The complete retained page was already zeroed before
-suspend, Sonic relies on pre-zeroed static storage, and Sonic performs no
-equivalent runtime clear. The next diagnostic must suppress only that clear and
-retain the direct initializer call. Do not skip MP3 initialization or promote
-Run 13 to a working boot.
+**Follow-up:** Run 14 suppressed only that clear, retained the direct
+`mp3_initialize(0)` call, and reached authenticated Linux userspace. The
+console reached a white light while the monitor remained at no signal.
+
+**Conclusion:** The mapped 11.60 initializer works in the wake context. Within
+the controlled Run 12/13/14 sequence, the Run 13 regression is isolated to the
+redundant 10,252-byte clear and its retained-alias writes. The complete page was
+already zeroed before suspend, Sonic relies on pre-zeroed static storage, and
+Sonic performs no equivalent runtime clear. Exact-11.60 production must omit
+the clear. Do not skip MP3 initialization or promote Run 13 to a working boot;
+advance next to command 21 only.

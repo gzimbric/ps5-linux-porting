@@ -42,14 +42,33 @@ class ToolTests(unittest.TestCase):
         display = data["sonic_display_diagnostics"]
         self.assertEqual(
             display["last_tested_source_commit"],
-            "5f922ead8859e2229d92e3d074e24fddf3f7932e",
+            "815b1fdc5c76088762e42ad0ad80b0099a54e60d",
         )
-        self.assertTrue(display["run12"]["last_authenticated_working_baseline"])
+        self.assertTrue(display["run12"]["authenticated_working_baseline"])
         self.assertEqual(display["run13"]["attempts"], 2)
         self.assertEqual(
             display["run13"]["elf_sha256"],
             "651462323382cf4c17f01786d6a57f8abe9e35afe6c4834a48ade582c115e3ce",
         )
+        self.assertTrue(display["run14"]["initializer_only_control"])
+        self.assertTrue(display["run14"]["mp3_initialize_validated"])
+        self.assertFalse(display["run14"]["runtime_clear_executed"])
+        self.assertEqual(
+            display["run14"]["elf_sha256"],
+            "7da712a578fcf83798db46f6f5295224e7ccf345d0f7eb7fb7c3e73564d325d4",
+        )
+        self.assertFalse(display["production_runtime_clear_required"])
+        run15 = display["run15"]
+        self.assertTrue(run15["last_authenticated_working_baseline"])
+        self.assertTrue(run15["visible_display_observed"])
+        self.assertFalse(run15["runtime_clear_executed"])
+        self.assertEqual(run15["display_table_operations"], 29)
+        self.assertEqual(
+            run15["elf_sha256"],
+            "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
+        )
+        self.assertEqual(display["release"]["elf_sha256"], run15["elf_sha256"])
+        self.assertTrue(data["checkpoints"]["visible_hdmi"])
         self.assertTrue(data["boot_media"]["physical_usb_boot_partition_verified"])
         self.assertEqual(
             data["boot_media"]["initrd"]["sha256"],

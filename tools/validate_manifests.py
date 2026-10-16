@@ -199,7 +199,15 @@ def validate(path: Path) -> list[str]:
         source_commit = display.get("last_tested_source_commit", "")
         if not isinstance(source_commit, str) or not GIT_COMMIT.fullmatch(source_commit):
             errors.append(f"{path}: invalid display diagnostic source commit")
-        for run_name in ("run10", "run11", "run12", "run13"):
+        expected_sizes = {
+            "run10": (169840, 11992),
+            "run11": (169840, 11992),
+            "run12": (169840, 11992),
+            "run13": (169840, 11992),
+            "run14": (169872, 12024),
+            "run15": (169872, 12024),
+        }
+        for run_name, (elf_size, wake_size) in expected_sizes.items():
             run = display.get(run_name)
             if not isinstance(run, dict):
                 errors.append(f"{path}: display diagnostic {run_name} is not an object")
@@ -211,14 +219,81 @@ def validate(path: Path) -> list[str]:
                 digest = run.get(name, "")
                 if not isinstance(digest, str) or not SHA256.fullmatch(digest):
                     errors.append(f"{path}: invalid {run_name} {name}")
-            if run.get("elf_size") != 169840 or run.get("wake_size") != 11992:
+            if (run.get("elf_size") != elf_size or
+                    run.get("wake_size") != wake_size):
                 errors.append(f"{path}: unexpected {run_name} artifact size")
         run12 = display.get("run12", {})
-        if run12.get("last_authenticated_working_baseline") is not True:
-            errors.append(f"{path}: run12 must remain the authenticated baseline")
+        if run12.get("authenticated_working_baseline") is not True:
+            errors.append(f"{path}: run12 authenticated baseline is missing")
         run13 = display.get("run13", {})
         if run13.get("attempts") != 2:
             errors.append(f"{path}: run13 must record two failed attempts")
+        run14 = display.get("run14", {})
+        if run14.get("initializer_only_control") is not True:
+            errors.append(f"{path}: run14 must be recorded as the initializer-only control")
+        if run14.get("mp3_initialize_validated") is not True:
+            errors.append(f"{path}: run14 must validate MP3 initialization")
+        if run14.get("runtime_clear_executed") is not False:
+            errors.append(f"{path}: run14 must keep the runtime clear disabled")
+        for name in ("wake_elf_sha256", "clear_enabled_control_wake_sha256"):
+            digest = run14.get(name, "")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid run14 {name}")
+        if run14.get("wake_elf_size") != 18384:
+            errors.append(f"{path}: unexpected run14 wake ELF size")
+        run15 = display.get("run15", {})
+        if run15.get("last_authenticated_working_baseline") is not True:
+            errors.append(f"{path}: run15 must be the latest authenticated baseline")
+        if run15.get("visible_display_observed") is not True:
+            errors.append(f"{path}: run15 must record the observed physical display")
+        if run15.get("runtime_clear_executed") is not False:
+            errors.append(f"{path}: run15 must keep the runtime clear disabled")
+        if run15.get("display_table_operations") != 29:
+            errors.append(f"{path}: run15 must enable all 29 display operations")
+        if run15.get("mp3_commands") != [21, 22]:
+            errors.append(f"{path}: run15 must issue MP3 commands 21 and 22")
+        if run15.get("per_operation_return_values_observed") is not False:
+            errors.append(f"{path}: run15 per-operation telemetry scope is overstated")
+        digest = run15.get("wake_elf_sha256", "")
+        if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+            errors.append(f"{path}: invalid run15 wake_elf_sha256")
+        if run15.get("wake_elf_size") != 18448:
+            errors.append(f"{path}: unexpected run15 wake ELF size")
+        baselines = [name for name, run in display.items()
+                     if isinstance(run, dict) and
+                     run.get("last_authenticated_working_baseline") is True]
+        if baselines != ["run15"]:
+            errors.append(f"{path}: exactly one latest baseline (run15) expected, got {baselines}")
+        if checkpoints.get("visible_hdmi") is not run15.get("visible_display_observed"):
+            errors.append(f"{path}: visible_hdmi checkpoint disagrees with run15")
+        release = display.get("release")
+        if not isinstance(release, dict):
+            errors.append(f"{path}: display release is not an object")
+        else:
+            for name in ("elf_sha256", "source_zip_sha256"):
+                digest = release.get(name, "")
+                if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                    errors.append(f"{path}: invalid release {name}")
+            if release.get("elf_sha256") != run15.get("elf_sha256"):
+                errors.append(f"{path}: release ELF must be byte-identical to run15")
+            if release.get("source_commit") != run15.get("source_commit"):
+                errors.append(f"{path}: release source commit must match run15")
+            if release.get("included") is not False:
+                errors.append(f"{path}: release binary must not be included")
+            published = release.get("published_source")
+            if not isinstance(published, dict):
+                errors.append(f"{path}: release published_source is not an object")
+            else:
+                for name in ("commit", "tree"):
+                    value = published.get(name, "")
+                    if not isinstance(value, str) or not GIT_COMMIT.fullmatch(value):
+                        errors.append(f"{path}: invalid published source {name}")
+                if published.get("tree_identical_to_source_commit") is not True:
+                    errors.append(f"{path}: published source must match the tested tree")
+                if published.get("binaries_included") is not False:
+                    errors.append(f"{path}: published source must not include binaries")
+        if display.get("production_runtime_clear_required") is not False:
+            errors.append(f"{path}: 11.60 production must omit the runtime clear")
         if display.get("next_boundary_validated") is not False:
             errors.append(f"{path}: next display boundary must remain unvalidated")
 

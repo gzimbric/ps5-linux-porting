@@ -2,7 +2,7 @@
   "schema_version": 1,
   "firmware": "11.60",
   "console_model": "regular",
-  "status": "headless-linux-booted-display-in-progress",
+  "status": "linux-booted-physical-display-verified",
   "linux_booted": true,
   "upstream_base": {
     "repository": "https://github.com/ps5-linux/ps5-linux-loader",
@@ -44,10 +44,14 @@
     "startup_64": true,
     "authenticated_linux_userspace": true,
     "physical_usb_boot_partition_verified": true,
-    "visible_hdmi": false,
+    "visible_hdmi": true,
     "display_pre2": true,
     "display_pre3_combined": false,
-    "display_operation_table": false
+    "display_pre3_clear_disabled": true,
+    "mp3_initialize": true,
+    "mp3_command21": true,
+    "mp3_command22": true,
+    "display_operation_table": true
   },
   "bounded_loader_diagnostics": {
     "hardware_test_date": "2026-10-15",
@@ -121,9 +125,9 @@
     }
   },
   "sonic_display_diagnostics": {
-    "hardware_test_date": "2026-10-15",
-    "last_tested_source_commit": "5f922ead8859e2229d92e3d074e24fddf3f7932e",
-    "observation_method": "authenticated-wired-ssh",
+    "hardware_test_date": "2026-10-16",
+    "last_tested_source_commit": "815b1fdc5c76088762e42ad0ad80b0099a54e60d",
+    "observation_method": "authenticated-wired-ssh-plus-direct-operator-display-observation",
     "run10": {
       "configuration": "PRE0-OP0",
       "result": "pass-authenticated-linux-no-hdmi",
@@ -150,7 +154,7 @@
       "elf_sha256": "6db1e6293890bb1ab7fca39c284c9c493d7d903feedbea66847f377de744286c",
       "wake_size": 11992,
       "wake_sha256": "5e31fdd2b64d3555c6dc80b8c6eaa99d6c0e05b8127898790851ec6ef5dd7d04",
-      "last_authenticated_working_baseline": true
+      "authenticated_working_baseline": true
     },
     "run13": {
       "configuration": "PRE3-OP0-runtime-clear-enabled",
@@ -162,9 +166,68 @@
       "wake_sha256": "e4e5e771d270515376065ae6e2aeaf3929fa92396cbb9830d84eb7f088e236f9",
       "attempts": 2,
       "tcp22_failures": [79, 87],
-      "conclusion": "combined-pre3-failed-not-initializer-alone"
+      "conclusion": "redundant-runtime-clear-isolated-by-run14"
     },
-    "next_boundary": "PRE3-OP0-mp3-initialize-without-runtime-clear",
+    "run14": {
+      "configuration": "PRE3-OP0-runtime-clear-disabled",
+      "result": "pass-authenticated-linux-white-no-hdmi",
+      "source_commit": "87718a6565703079b96aa0b23a4996ec83308a4c",
+      "elf_size": 169872,
+      "elf_sha256": "7da712a578fcf83798db46f6f5295224e7ccf345d0f7eb7fb7c3e73564d325d4",
+      "wake_size": 12024,
+      "wake_sha256": "362d0e0409f66a03410e55afc56182d81e89688ebb5bd7c670c45a52a357ad16",
+      "wake_elf_size": 18384,
+      "wake_elf_sha256": "1a5e5347014aecd5aedeb9bcb2d1b8ecfb05e4012a7e7eb399bd9a88f712a238",
+      "clear_enabled_control_wake_sha256": "7b2548d7b1a24a69ab312bce7edac4ccd3fb3997c784fcb1c5a6e654606c9feb",
+      "authenticated_boot_id": "585b1bce-aa09-4310-8cbf-396b9523cc47",
+      "initializer_only_control": true,
+      "mp3_initialize_validated": true,
+      "runtime_clear_executed": false
+    },
+    "run15": {
+      "configuration": "PRE5-OP29-runtime-clear-disabled",
+      "result": "pass-physical-display-authenticated-linux-white",
+      "source_commit": "815b1fdc5c76088762e42ad0ad80b0099a54e60d",
+      "elf_size": 169872,
+      "elf_sha256": "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
+      "wake_size": 12024,
+      "wake_sha256": "83756ca9eddffbcf075cb3660ec80755263ce147793922a54414b57c15d11319",
+      "wake_elf_size": 18448,
+      "wake_elf_sha256": "19c9e7fc396520bad8e49f8f4c97ffe10830d494a2fe9346d6d944ff6f09ac3a",
+      "authenticated_boot_id": "546be1c9-68db-4b0b-b982-751c938616b8",
+      "visible_display_observed": true,
+      "display_observation_method": "direct-operator-observation",
+      "drm_connector": "card0-DP-1-connected-enabled-dpms-on",
+      "mp3_commands": [21, 22],
+      "display_table_operations": 29,
+      "dispatcher": "outer-call-leaf-tail-jmp",
+      "mp3_buffer_layout": "response-0x1000-request-0x2420-32-byte-aligned",
+      "runtime_clear_executed": false,
+      "per_operation_return_values_observed": false,
+      "hardware_cycles": 1,
+      "release_elf_byte_identical": true,
+      "last_authenticated_working_baseline": true
+    },
+    "production_runtime_clear_required": false,
+    "release": {
+      "elf_name": "ps5-linux-loader-1160.elf",
+      "elf_size": 169872,
+      "elf_sha256": "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
+      "source_zip_size": 621293,
+      "source_zip_sha256": "aa62a269e51041220fcdca85c6a91a54c317d1a106f5dd3bacff344e5f670c13",
+      "source_commit": "815b1fdc5c76088762e42ad0ad80b0099a54e60d",
+      "raw_firmware_gate": "0x11600005",
+      "included": false,
+      "published_source": {
+        "repository": "https://github.com/gzimbric/ps5-linux-loader",
+        "branch": "firmware-11.60-sonic-display",
+        "commit": "e0b7a2e9ac1fe6ec8de8f1883ba9470ad7ee690d",
+        "tree": "97e96d7d6fbec038812e0a1f9919b1d7c91a9410",
+        "tree_identical_to_source_commit": true,
+        "binaries_included": false
+      }
+    },
+    "next_boundary": "repeatability-and-minimal-display-subset",
     "next_boundary_validated": false
   },
   "superseded_candidate_build": {
@@ -249,14 +312,15 @@
       "sha256": "ada1624ce72ef2fe4e9400e13d544116be4050f5187234a1fa19c6bd26988fee"
     }
   },
-  "last_observed_marker": "Run 13 pre-rest preparation complete; no authenticated post-wake Linux result",
-  "current_boundary": "PRE3 MP3 initialization without redundant runtime alias clear",
+  "last_observed_marker": "Run 15 physical display output and authenticated Linux userspace",
+  "current_boundary": "Run 15 full-path baseline; repeatability and minimal display subset not yet characterized",
   "notes": [
-    "Linux booted headlessly with authenticated SSH in Runs 10 and 12; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
-    "Run 12 PRE2/OP0 is the last authenticated working baseline.",
+    "Linux booted with authenticated SSH in Runs 10, 12, 14, and 15; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
+    "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
+    "Run 14 PRE3/OP0 with the runtime clear disabled remains the initializer-only control.",
     "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
-    "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes; the Linux root partition was not directly mounted on macOS.",
-    "Visible HDMI remains unverified even though AMDGPU, EDID, connector state, and a direct modeset succeeded in Linux.",
+    "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes, which Runs 14 and 15 also used; the Linux root partition was not directly mounted on macOS.",
+    "Before Run 15, AMDGPU, EDID, connector state, and a direct modeset succeeded in Linux without physical output; Sonic's pre-Linux MP3 and display-table sequence was the missing precondition.",
     "The historical split post-wake userland flow stopped responding and remains retired.",
     "The pLinux-derived wake-coupled candidate is superseded.",
     "The clean official-loader Stage 0 and reversible Stage 1A alias transaction both passed on hardware with a responsive UI.",
@@ -266,7 +330,9 @@
     "Stage 2B-3 passed the exact startup_mp S3 resume boundary and complete carrier restoration without executing the alias.",
     "Stage 2B-4 isolated a wake-time hang to the new direct RET into the PID-1-only alias; the console remained continuously pulsing blue and emitted no PASS marker.",
     "The later Sonic-style copy-to-kernel-text carrier reached authenticated Linux and supersedes the failed direct-alias transfer.",
-    "Run 13 confounded a 10,252-byte wake-time alias clear with mp3_initialize(0); the next bounded test suppresses only that redundant clear while retaining the direct initializer call.",
-    "All display-isolation runs used OP0, so the 29-call table remains statically reconstructed but not hardware validated."
+    "Run 14 retained the direct 11.60 mp3_initialize(0) call, disabled only the redundant clear, and reached authenticated Linux; the initializer is validated in this wake context.",
+    "Within the controlled Run 12/13/14 sequence, the Run 13 regression is isolated to the redundant 10,252-byte alias clear; exact-11.60 production must omit it to match Sonic.",
+    "Run 15 added MP3 commands 21 and 22, all 29 display-table records, Sonic's response-first buffer layout, and the outer-call/leaf-tail-jump dispatcher; without UART, individual return values were not observed.",
+    "Run 15 is one successful full-path cycle; repeatability, monitor coverage, and the minimal necessary subset of the 29 operations are not yet characterized."
   ]
 }

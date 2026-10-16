@@ -53,19 +53,27 @@ changed. Gate, IST, cave, or hypervisor-byte restoration is required only for
 a stage that touches those objects. The final candidate is different: success
 continues to Linux and therefore cannot produce a GameOS userland PASS message.
 
-## Current no-UART display ladder
+## Current no-UART display workflow
 
-1. Preserve the Run 12 carrier, current boot-media hashes, and `OP=0`.
-2. Treat authenticated wired SSH as the Linux pass gate. Do not use LED color,
-   ping, DRM connector state, or modeset return as a substitute.
-3. Run 12 `PRE=2` is the rollback baseline. It includes VBIOS copy,
-   transmitter control, and the timed wait.
-4. The exact Run 13 `PRE=3` build is rejected after two no-SSH attempts; it
-   added both a wake-time buffer clear and `mp3_initialize(0)`.
-5. The next candidate suppresses only the redundant clear while retaining the
-   initializer call.
-6. After an authenticated pass, add MP3 command 21 and command 22 separately.
-7. Do not execute a 29-table entry until the complete preamble passes.
+1. Use the exact Run 15 build (`PRE=5`, `OP=29`, clear disabled) and the
+   current boot-media hashes. It is the hardware-verified Linux and physical
+   display baseline.
+2. Treat authenticated wired SSH as the Linux pass gate and direct observation
+   of physical output as the display pass gate. Do not use LED color, ping,
+   DRM connector state, or modeset return as a substitute for either.
+3. Boot GameOS, run the exploit, send the hash-locked ELF, let the console
+   enter Rest Mode automatically, wait for a steady orange light, then wake it
+   once. A successful run turns the light white, shows video, and exposes SSH
+   within about a minute.
+4. Keep the runtime MP3 buffer clear disabled. The exact Run 13 build that
+   enabled it is rejected after two no-SSH attempts; Run 14 isolated the
+   failure to that clear.
+5. Preserve Sonic's response-first MP3 buffer layout and the outer-call /
+   leaf-tail-jump display dispatcher; Run 15 adopted both.
+6. Run 14 (`PRE=3`, `OP=0`, clear disabled) remains the headless rollback
+   control if a later change regresses Linux boot.
+7. Split MP3 commands 21/22 or the 29-table into separate gates only to
+   isolate a later regression or to find the minimal necessary subset.
 
 Physical UART is not available. A USB serial adapter in a PS5 host port does
 not expose the pre-Linux MMIO UART. Use retained memory breadcrumbs for a

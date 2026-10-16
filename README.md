@@ -13,32 +13,39 @@ Linux distribution, jailbreak bundle, or ready-to-run payload release.
 
 The active case study is a regular PS5 on firmware 11.60.
 
-Linux now boots headlessly through the official-loader/Sonic architecture on
-firmware 11.60. Authenticated SSH established two current-media Linux boots in
-Runs 10 and 12. HDMI remains unproven: AMDGPU, EDID, connector state, and a
-direct modeset all looked healthy in Linux, while the physical display still
-reported no signal.
+Linux and physical HDMI output now work through the official-loader/Sonic
+architecture on firmware 11.60. Run 15 executed the complete Sonic-equivalent
+display path and produced visible output while the same boot reached
+authenticated Linux userspace over wired SSH.
+
+The loader source for Run 15 is published at
+[gzimbric/ps5-linux-loader `firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
+(commit `e0b7a2e`). It is source only; build it yourself. See
+[upstream references](docs/upstream-references.md#published-11.60-loader-source)
+for how its commits map to the source hashes recorded in the evidence.
 
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10 and 12 |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, and 15 |
 | Current kernel and 54,376,639-byte initrd | Pass; authenticated wired networking and SSH |
-| Attached physical USB boot partition | Pass; FAT verification succeeded and active files hash-match Run 12 |
+| Attached physical USB boot partition | Pass; FAT verification succeeded and active files hash-match the successful run inputs |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
-| Visible HDMI | Fail to observe; monitor remained at no signal during direct modeset |
+| Visible HDMI | **Pass in Run 15**; physical output was directly observed and corroborated by active DRM state |
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
 | PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
-| MP3 initialization without the redundant runtime clear | Next bounded diagnostic; not hardware validated |
-| MP3 commands 21/22 | Not yet isolated |
-| 29-call display-operation table | Statically reconstructed; no entry hardware tested because all isolation runs used `OP=0` |
+| MP3 initialization without the redundant runtime clear | Pass in Run 14; authenticated SSH, white light, no HDMI |
+| MP3 commands 21 and 22 | Pass as part of the full Run 15 sequence; not separately instrumented |
+| 29-call display-operation table | Pass as a complete containing stage in Run 15; individual target return values were not instrumented |
 
-Run 12 (`PRE=2`, `OP=0`) is the last authenticated working baseline. Run 13
-(`PRE=3`, `OP=0`) is a repeated non-working artifact. PRE3 currently combines
-10,252 bytes of runtime writes to already-zero retained storage with
-`mp3_initialize(0)`, while Sonic relies on pre-zeroed static buffers. The next
-narrow test keeps the proven PRE2 path, omits that runtime clear, and adds only
-MP3 initialization. This is an inference-driven diagnostic, not a claimed fix.
+Run 15 (`PRE=5`, `OP=29`, clear disabled) is the current hardware-verified
+baseline. It is pinned to source commit
+`815b1fdc5c76088762e42ad0ad80b0099a54e60d` and combines the three fidelity
+corrections established from Sonic's artifact: omit the redundant runtime
+clear, store the response buffer before the request buffer with Sonic's exact
+gap and alignment, and preserve the outer-call/leaf-tail-jump dispatcher.
+Run 14 remains the initializer-only control; Run 13 remains a repeatable
+non-working clear-enabled artifact.
 
 The earlier page-alias, inert-wake, and carrier stages remain useful historical
 evidence: they established the exact S3 boundary and led to the now-working
@@ -119,6 +126,7 @@ metadata. See [publication policy](docs/publication-policy.md).
 
 - [pLinux5-NG](https://github.com/pLabs5/pLinux5-NG)
 - [ps5-linux-loader](https://github.com/ps5-linux/ps5-linux-loader)
+- [11.60 loader source fork](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
 - [ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image)
 - [Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn)
 - [PS5 Hypervisor Bypass Porting](https://github.com/gzimbric/ps5-hv-bypass-porting)

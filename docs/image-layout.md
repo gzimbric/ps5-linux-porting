@@ -28,8 +28,9 @@ prove that later boot parameters or drivers are correct for firmware 11.60.
 
 ## Current authenticated boot media
 
-Runs 10 and 12 used the following active inputs. Both reached authenticated
-Linux userspace over wired Ethernet:
+Runs 10, 12, 14, and 15 used the following active inputs. All four reached
+authenticated Linux userspace over wired Ethernet, and Run 15 also produced
+physical display output:
 
 | File | Size | SHA-256 |
 |---|---:|---|
