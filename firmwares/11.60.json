@@ -224,6 +224,8 @@
         "commit": "e0b7a2e9ac1fe6ec8de8f1883ba9470ad7ee690d",
         "tree": "97e96d7d6fbec038812e0a1f9919b1d7c91a9410",
         "tree_identical_to_source_commit": true,
+        "release_check_commit": "69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf",
+        "release_check_reproduces_run15_artifacts": true,
         "binaries_included": false
       }
     },

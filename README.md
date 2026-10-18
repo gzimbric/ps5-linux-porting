@@ -20,7 +20,8 @@ authenticated Linux userspace over wired SSH.
 
 The loader source for Run 15 is published at
 [gzimbric/ps5-linux-loader `firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
-(commit `e0b7a2e`). It is source only; build it yourself. See
+(tested source commit `e0b7a2e`; reproducible release-check commit `69657e6`).
+It is source only; build it yourself. See
 [upstream references](docs/upstream-references.md#published-11.60-loader-source)
 for how its commits map to the source hashes recorded in the evidence.
 

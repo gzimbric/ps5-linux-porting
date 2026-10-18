@@ -69,6 +69,15 @@ class ToolTests(unittest.TestCase):
             "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
         )
         self.assertEqual(display["release"]["elf_sha256"], run15["elf_sha256"])
+        self.assertEqual(
+            display["release"]["published_source"]["release_check_commit"],
+            "69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf",
+        )
+        self.assertTrue(
+            display["release"]["published_source"][
+                "release_check_reproduces_run15_artifacts"
+            ]
+        )
         self.assertTrue(data["checkpoints"]["visible_hdmi"])
         self.assertTrue(
             data["checkpoints"]["mp3_commands_21_22_present_in_successful_path"]

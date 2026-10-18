@@ -10,7 +10,7 @@ The following revisions were checked on 2026-10-15.
 | [PS5Dev/Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn) | `main` | `ea04f7132b837087f552c57261cb800481a3a910` | Upstream high-firmware bypass |
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `firmware-11.60-pr` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
-| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `e0b7a2e9ac1fe6ec8de8f1883ba9470ad7ee690d` | Hardware-verified 11.60 Linux and display loader source |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Hardware-verified 11.60 loader source with a hash-pinned Run 15 release check |
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
@@ -58,9 +58,13 @@ mappings are:
 
 To confirm the Run 15 source identity, check that
 `git rev-parse e0b7a2e^{tree}` prints `97e96d7d6fbec038812e0a1f9919b1d7c91a9410`.
-Building requires the PS5 payload SDK and authenticated 11.60 kernel-text and
-hypervisor dumps, which are not distributed. See `PORTING_1160.md` on that
-branch for build details.
+Commit `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` adds the Run 15 diagnostic
+gates as build defaults, invalidates stale objects when those gates change,
+and makes `linux-1160-check` require the authenticated dumps and all three Run
+15 artifact hashes. A clean build at that commit reproduced the tested outer
+ELF, wake blob, and wake ELF byte for byte. Building requires the PS5 payload
+SDK and authenticated 11.60 kernel-text and hypervisor dumps, which are not
+distributed. See `PORTING_1160.md` on that branch for build details.
 
 The upstream control-flow comparison uses these source files directly:
 

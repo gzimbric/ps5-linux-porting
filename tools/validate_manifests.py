@@ -294,12 +294,14 @@ def validate(path: Path) -> list[str]:
             if not isinstance(published, dict):
                 errors.append(f"{path}: release published_source is not an object")
             else:
-                for name in ("commit", "tree"):
+                for name in ("commit", "tree", "release_check_commit"):
                     value = published.get(name, "")
                     if not isinstance(value, str) or not GIT_COMMIT.fullmatch(value):
                         errors.append(f"{path}: invalid published source {name}")
                 if published.get("tree_identical_to_source_commit") is not True:
                     errors.append(f"{path}: published source must match the tested tree")
+                if published.get("release_check_reproduces_run15_artifacts") is not True:
+                    errors.append(f"{path}: release check must reproduce Run 15 artifacts")
                 if published.get("binaries_included") is not False:
                     errors.append(f"{path}: published source must not include binaries")
         if display.get("production_runtime_clear_required") is not False:
