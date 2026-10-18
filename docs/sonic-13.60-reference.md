@@ -158,8 +158,9 @@ This validates the initializer and shows why production must retain Sonic's
 pre-zeroed-buffer behavior without a wake-time clear. Run 15 then matched
 Sonic's response-first buffer layout and outer-call/leaf-tail-jump dispatcher,
 enabled commands 21 and 22 and all 29 table records, and produced physical
-HDMI plus authenticated Linux. No call, argument, or ordering step from Sonic's
-recovered sequence is omitted.
+HDMI plus authenticated Linux. No known step from the statically recovered
+sequence is omitted; this does not claim an instruction trace of Sonic's
+runtime.
 
 ## Public corroboration
 

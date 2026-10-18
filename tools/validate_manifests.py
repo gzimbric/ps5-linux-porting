@@ -32,6 +32,9 @@ REQUIRED_CHECKPOINTS = {
     "hv_shellcode_entry",
     "all_cpu_linux_barrier",
     "startup_64",
+    "mp3_commands_21_22_present_in_successful_path",
+    "display_operation_table_present_in_successful_path",
+    "individual_mp3_and_table_returns_observed",
 }
 
 
@@ -60,6 +63,13 @@ def validate(path: Path) -> list[str]:
 
     if data.get("linux_booted") is True and checkpoints.get("startup_64") is not True:
         errors.append(f"{path}: linux_booted requires startup_64")
+
+    if checkpoints.get("mp3_commands_21_22_present_in_successful_path") is not True:
+        errors.append(f"{path}: Run 15 must record MP3 commands in the containing path")
+    if checkpoints.get("display_operation_table_present_in_successful_path") is not True:
+        errors.append(f"{path}: Run 15 must record the display table in the containing path")
+    if checkpoints.get("individual_mp3_and_table_returns_observed") is not False:
+        errors.append(f"{path}: individual MP3/table return scope is overstated")
 
     bounded = data.get("bounded_loader_diagnostics")
     if not isinstance(bounded, dict):

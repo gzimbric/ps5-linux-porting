@@ -56,5 +56,10 @@ root=LABEL=cachyos rw rootwait console=ttyTitania0 console=tty0 consoleblank=0 m
 
 The active VRAM reservation remains `0x20000000`.
 
+The working initramfs is a rebuild of the original 54,367,236-byte 7.1.7
+image. See the [tested 11.60 initramfs recipe](initrd-recipe.md) for the exact
+firmware and module-option changes. The 9,403-byte size difference is expected
+for the recorded build.
+
 For current image sources and supported distributions, use the upstream
 [ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image) project.

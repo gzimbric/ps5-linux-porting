@@ -35,8 +35,8 @@ for how its commits map to the source hashes recorded in the evidence.
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
 | PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
 | MP3 initialization without the redundant runtime clear | Pass in Run 14; authenticated SSH, white light, no HDMI |
-| MP3 commands 21 and 22 | Pass as part of the full Run 15 sequence; not separately instrumented |
-| 29-call display-operation table | Pass as a complete containing stage in Run 15; individual target return values were not instrumented |
+| MP3 commands 21 and 22 | Present in the successful Run 15 containing sequence; individual returns were not instrumented |
+| 29-call display-operation table | Present in the successful Run 15 containing sequence; individual target returns were not instrumented |
 
 Run 15 (`PRE=5`, `OP=29`, clear disabled) is the current hardware-verified
 baseline. It is pinned to source commit
@@ -85,6 +85,9 @@ as if it were only an offset substitution.
 | `firmwares/` | Machine-readable firmware status manifests |
 | `templates/` | Consistent run reports for console testing |
 | `tools/` | Publication checks, manifest validation, link checks, and log classification |
+
+The exact GPU-firmware and module-option changes used to rebuild the working
+7.1.7 initramfs are in the [tested 11.60 initramfs recipe](docs/initrd-recipe.md).
 
 ## Quick checks
 

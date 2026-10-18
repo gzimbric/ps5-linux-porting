@@ -175,9 +175,11 @@ yet the physical monitor reported no signal throughout; Run 14 again reported
 connected DRM state while the monitor remained at no signal. Linux boot and
 visible HDMI therefore remain separate pass criteria.
 
-**Resolution:** The missing precondition was Sonic's pre-Linux MP3 command and
-display-table sequence, not the Linux graphics stack. Run 15 enabled it and
-produced physical output with the same kernel, initrd, and command line.
+**Resolution:** Run 15 added Sonic's complete pre-Linux MP3 command and
+display-table sequence and produced physical output with the same kernel,
+initrd, and command line. This establishes that the full added configuration
+was sufficient in that cycle; it does not isolate one necessary command or
+exclude a Linux-side contribution.
 
 ## Enabling the complete Sonic display preamble at once
 

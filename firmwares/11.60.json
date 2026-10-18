@@ -49,9 +49,9 @@
     "display_pre3_combined": false,
     "display_pre3_clear_disabled": true,
     "mp3_initialize": true,
-    "mp3_command21": true,
-    "mp3_command22": true,
-    "display_operation_table": true
+    "mp3_commands_21_22_present_in_successful_path": true,
+    "display_operation_table_present_in_successful_path": true,
+    "individual_mp3_and_table_returns_observed": false
   },
   "bounded_loader_diagnostics": {
     "hardware_test_date": "2026-10-15",
@@ -320,7 +320,7 @@
     "Run 14 PRE3/OP0 with the runtime clear disabled remains the initializer-only control.",
     "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
     "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes, which Runs 14 and 15 also used; the Linux root partition was not directly mounted on macOS.",
-    "Before Run 15, AMDGPU, EDID, connector state, and a direct modeset succeeded in Linux without physical output; Sonic's pre-Linux MP3 and display-table sequence was the missing precondition.",
+    "Before Run 15, AMDGPU, EDID, connector state, and a direct modeset succeeded in Linux without physical output. Run 15 shows that the complete added pre-Linux sequence and configuration were sufficient in the successful cycle; it does not isolate the necessary component.",
     "The historical split post-wake userland flow stopped responding and remains retired.",
     "The pLinux-derived wake-coupled candidate is superseded.",
     "The clean official-loader Stage 0 and reversible Stage 1A alias transaction both passed on hardware with a responsive UI.",

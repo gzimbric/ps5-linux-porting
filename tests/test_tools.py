@@ -1,7 +1,8 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
+import hashlib
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from tools.check_links import check as check_links
 from tools.check_public_tree import check as check_public_tree
@@ -69,6 +70,15 @@ class ToolTests(unittest.TestCase):
         )
         self.assertEqual(display["release"]["elf_sha256"], run15["elf_sha256"])
         self.assertTrue(data["checkpoints"]["visible_hdmi"])
+        self.assertTrue(
+            data["checkpoints"]["mp3_commands_21_22_present_in_successful_path"]
+        )
+        self.assertTrue(
+            data["checkpoints"]["display_operation_table_present_in_successful_path"]
+        )
+        self.assertFalse(
+            data["checkpoints"]["individual_mp3_and_table_returns_observed"]
+        )
         self.assertTrue(data["boot_media"]["physical_usb_boot_partition_verified"])
         self.assertEqual(
             data["boot_media"]["initrd"]["sha256"],
@@ -80,6 +90,14 @@ class ToolTests(unittest.TestCase):
 
     def test_public_tree(self):
         self.assertEqual(check_public_tree(ROOT), [])
+
+    def test_run15_amdgpu_config(self):
+        path = ROOT / "config" / "ps5-amdgpu.conf"
+        self.assertEqual(
+            hashlib.sha256(path.read_bytes()).hexdigest(),
+            "51dbae6f372fa1f5bceee2fd95403042bb6954d29b3f9db2a11c769dd41fc677",
+        )
+        self.assertEqual(path.stat().st_size, 195)
 
     def test_classifier(self):
         text = "\n".join([
@@ -142,6 +160,50 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(result["last_checkpoint"], "official-stage2a-hold")
         self.assertFalse(result["linux_boot_observed"])
 
+    def test_classifier_run15_sender_capture(self):
+        text = "\n".join([
+            "11.60 checkpoint: main: fetch_linux call",
+            "11.60 loader checkpoint: bzImage read complete (12702720 bytes)",
+            "11.60 loader checkpoint: initrd read complete (54376639 bytes)",
+            "11.60 alias staging: building checked source plan",
+            "11.60 alias staging: source preflight passed (4096 logical 16-KiB pages)",
+            "11.60 alias staging: target range preflight passed",
+            "11.60 alias staging: installing checked aliases",
+            "11.60 alias staging: all aliases installed",
+            "11.60 alias staging: verifying alias PTEs",
+            "11.60 alias staging: all 16384 leaf PTEs verified",
+            "11.60 alias staging: PASS; source, info, and page-table backing retained",
+            "11.60 checkpoint: main: fetch_linux returned 0",
+            "11.60 checkpoint: main: prepare_resume call",
+            "11.60 checkpoint: prepare_resume: argument preflight passed",
+            "11.60 checkpoint: prepare_resume: argument readback passed",
+            "11.60 checkpoint: prepare_resume: wake user mapping populated",
+            "11.60 checkpoint: prepare_resume: wake alias install complete",
+            "11.60 checkpoint: prepare_resume: remove_xotext complete",
+            "11.60 checkpoint: prepare_resume: pmap invalidation complete",
+            "11.60 checkpoint: main: prepare_resume returned 0",
+            "11.60 checkpoint: main: hv_defeat_1160 call",
+            "11.60 checkpoint: hv_defeat: offsets/raw firmware gate passed",
+            "11.60 checkpoint: hv_defeat: regular-model gate passed",
+            "11.60 checkpoint: hv_defeat: page-table-only wake-cave validation passed",
+            "11.60 checkpoint: hv_defeat: runtime preflight passed",
+            "11.60 checkpoint: hv_defeat: startup carrier arm complete",
+            "11.60 checkpoint: hv_defeat: final IST7/IDT/FACS mutations complete",
+            "11.60 Sonic-style Linux wake chain armed",
+            "11.60 checkpoint: main: hv_defeat_1160 returned 0",
+        ])
+        result = classify(text)
+        self.assertEqual(result["last_checkpoint"], "hv-defeat-return")
+        self.assertFalse(result["linux_boot_observed"])
+        self.assertFalse(result["refusal_observed"])
+        self.assertFalse(result["cold_reboot_required"])
+
+    def test_classifier_refusal(self):
+        result = classify("11.60 loader REFUSED initrd size\nCold reboot required")
+        self.assertEqual(result["last_checkpoint"], "cold-reboot-required")
+        self.assertTrue(result["refusal_observed"])
+        self.assertTrue(result["cold_reboot_required"])
+
     def test_public_tree_rejects_binary(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
@@ -200,6 +262,15 @@ class ToolTests(unittest.TestCase):
             data["bounded_loader_diagnostics"]["stage2a"]["executed"] = True
             path.write_text(json.dumps(data))
             self.assertTrue(any("stage2a requires executed=false" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_overstated_display_telemetry(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            data["checkpoints"]["individual_mp3_and_table_returns_observed"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("return scope is overstated" in error
                                 for error in validate(path)))
 
 
