@@ -47,29 +47,7 @@ The Ubuntu EFI initrd is a 50,803,483-byte Ubuntu initramfs followed by
 gate, but the content and hash differ from the CachyOS initrd. Do not use Run
 16 as confirmation of the exact Issue #1 recipe.
 
-## Next controlled test: fan detection
-
-Run 16 logged:
-
-```text
-FanServo: B-Eiger/Denali Unknown Vendor/Revision 0x6/0xb0
-FanServo: Not update
-```
-
-The pinned 7.1.7 patch set predates
-[`7f695e4`](https://github.com/ps5-linux/ps5-linux-patches/commit/7f695e4b99509667bdf1059c2e1df8e059eaf2a5),
-which masks the decoded GDDR6 revision to its low nibble. For this hardware,
-that should turn revision `0xb0` into revision `0` and select the existing
-B-Eiger/Denali Hynix servo table.
-
-Backport only the fan-detection hunk for the first test. Keep the maximum-fan
-service enabled as a fallback until a clean boot identifies the vendor and
-revision, omits `FanServo: Not update`, and exposes a working
-`/sys/bus/platform/devices/ps5-fan/target_temp` read/write path. The current
-service proves that the maximum-setting ioctl returned successfully; there is
-no fan RPM readback, so it does not prove the physical curve response.
-
-## Second controlled test: MTS Ethernet
+## Next controlled test: MTS Ethernet
 
 The image builder pins `ps5-linux-patches` commit
 `56922cf9af91142cdcf7d54cbcfb3d46bdfb397a`. The later MTS fix in
@@ -126,12 +104,6 @@ created no WLAN interface. Continue wireless investigation in the `mwifiex`
 and IW620 path; do not add an MT7921 driver to this image as a test for this
 console.
 
-The 11.60 loader also lacks the Wi-Fi firmware offset and size. The available
-11.60 kernel-text capture ends at `0xD30000`, before the range containing the
-known firmware blobs on supported versions. Capture at least `0x1800000` bytes,
-preferably `0x2000000`, from a fresh authenticated GameOS session before
-attempting to identify the 11.60 blob. Do not guess or reuse the 13.60 offset.
-
 ### Salina xHCI event handling
 
 The PS5 event loop marks the Salina controller `DYING` after the 33rd valid
@@ -187,17 +159,6 @@ keep a tested local recovery path before closing the current SSH session.
 
 ## Deferred
 
-- The HDMI link-training fix in `fe852d3` is already an ancestor of the pinned
-  7.1.7 patch set, and Run 16 produced visible output. The later VCN work is
-  media acceleration on a newer kernel base, not a display-output fix.
-- Do not wholesale backport `0d2ed27`: it disables the Salina initialization
-  path that currently enumerates the internal Marvell device. The separate AMD
-  xHCI path already boots the USB root drive.
-- Upstream loader commit `8cda4c1` patches the 13.60 e820 map so only 1 MiB
-  through 16 MiB remains usable below 1 GiB, while 16 MiB through 1 GiB is
-  reserved. A matching 11.60
-  A/B should remain a separate loader-only experiment: it costs about 1008 MiB
-  of usable RAM and is not needed for display.
 - The 11.60 loader does not reserve TMR ranges in e820, but the reference
   artifact behaves the same way and no corruption has been observed. Capture
   the live e820 and TMR state before changing the map.
