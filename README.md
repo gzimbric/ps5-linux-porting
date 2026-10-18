@@ -57,7 +57,8 @@ PID-1 alias transfer remain negative results, not current candidates. See the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 
 See [the full 11.60 status](docs/11.60-status.md) before attempting another
-hardware run.
+hardware run. Follow-up kernel work and its evidence limits are tracked in the
+[11.60 maintenance backlog](docs/maintenance-backlog.md).
 
 ## Why this repository exists
 
