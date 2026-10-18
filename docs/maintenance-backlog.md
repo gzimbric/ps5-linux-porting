@@ -1,10 +1,11 @@
 # 11.60 maintenance backlog
 
-This page tracks follow-up work after the first successful Run 15 HDMI boot.
-Keep the working boot chain unchanged while testing kernel fixes. A source-level
-defect is not evidence that it caused an earlier failed boot.
+This page tracks follow-up work after the first successful Run 15 HDMI boot and
+the Run 16 Ubuntu control. Keep the working boot chain unchanged while testing
+kernel fixes. A source-level defect is not evidence that it caused an earlier
+failed boot.
 
-## Known-good baseline
+## Run 15 CachyOS loader baseline
 
 | File | Size | SHA-256 |
 |---|---:|---|
@@ -27,7 +28,48 @@ The matching initramfs can be rebuilt with the
 [tested 11.60 recipe](initrd-recipe.md). Issue #1 remains open until someone
 else confirms the result on hardware.
 
-## Next controlled test: MTS Ethernet
+## Run 16 Ubuntu control
+
+Run 16 kept the exact Run 15 loader and kernel but booted Ubuntu 24.04.5 from a
+separate image. It reached authenticated wired SSH and a directly observed
+GDM/GNOME Wayland desktop. This establishes a second working distribution on
+the same console without changing the loader.
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| Loader ELF | 169,872 | `422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336` |
+| `bzImage` | 12,702,720 | `11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde` |
+| Ubuntu EFI `initrd.img` | 54,376,639 | `2eef0352879e091083450b799c75514a450f4110cbc747f640962fdde2dc06c8` |
+| Ubuntu `cmdline.txt` | 121 | `6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d` |
+
+The Ubuntu EFI initrd is a 50,803,483-byte Ubuntu initramfs followed by
+3,573,156 zero bytes. Matching the Run 15 size satisfies the current loader
+gate, but the content and hash differ from the CachyOS initrd. Do not use Run
+16 as confirmation of the exact Issue #1 recipe.
+
+## Next controlled test: fan detection
+
+Run 16 logged:
+
+```text
+FanServo: B-Eiger/Denali Unknown Vendor/Revision 0x6/0xb0
+FanServo: Not update
+```
+
+The pinned 7.1.7 patch set predates
+[`7f695e4`](https://github.com/ps5-linux/ps5-linux-patches/commit/7f695e4b99509667bdf1059c2e1df8e059eaf2a5),
+which masks the decoded GDDR6 revision to its low nibble. For this hardware,
+that should turn revision `0xb0` into revision `0` and select the existing
+B-Eiger/Denali Hynix servo table.
+
+Backport only the fan-detection hunk for the first test. Keep the maximum-fan
+service enabled as a fallback until a clean boot identifies the vendor and
+revision, omits `FanServo: Not update`, and exposes a working
+`/sys/bus/platform/devices/ps5-fan/target_temp` read/write path. The current
+service proves that the maximum-setting ioctl returned successfully; there is
+no fan RPM readback, so it does not prove the physical curve response.
+
+## Second controlled test: MTS Ethernet
 
 The image builder pins `ps5-linux-patches` commit
 `56922cf9af91142cdcf7d54cbcfb3d46bdfb397a`. The later MTS fix in
@@ -69,6 +111,26 @@ boot.
 
 These findings are confirmed in the source but have not been reproduced on the
 11.60 console.
+
+### Wireless hardware and driver target
+
+Run 16 identified PCI wireless function `1b4b:2b56` and USB Bluetooth/WLAN
+companion `1286:2059`. This is Marvell hardware, not MediaTek MT7921 hardware.
+The pairing is consistent with the
+[PS5 IW620 mwifiex path](https://github.com/ps5-linux/ps5-linux-mwifiex).
+The linked mt76/MT7921 driver does not contain these IDs and cannot bind this
+hardware.
+
+The current 7.1.7 installation exposed no module alias for the PCI function and
+created no WLAN interface. Continue wireless investigation in the `mwifiex`
+and IW620 path; do not add an MT7921 driver to this image as a test for this
+console.
+
+The 11.60 loader also lacks the Wi-Fi firmware offset and size. The available
+11.60 kernel-text capture ends at `0xD30000`, before the range containing the
+known firmware blobs on supported versions. Capture at least `0x1800000` bytes,
+preferably `0x2000000`, from a fresh authenticated GameOS session before
+attempting to identify the 11.60 blob. Do not guess or reuse the 13.60 offset.
 
 ### Salina xHCI event handling
 
@@ -125,6 +187,17 @@ keep a tested local recovery path before closing the current SSH session.
 
 ## Deferred
 
+- The HDMI link-training fix in `fe852d3` is already an ancestor of the pinned
+  7.1.7 patch set, and Run 16 produced visible output. The later VCN work is
+  media acceleration on a newer kernel base, not a display-output fix.
+- Do not wholesale backport `0d2ed27`: it disables the Salina initialization
+  path that currently enumerates the internal Marvell device. The separate AMD
+  xHCI path already boots the USB root drive.
+- Upstream loader commit `8cda4c1` patches the 13.60 e820 map so only 1 MiB
+  through 16 MiB remains usable below 1 GiB, while 16 MiB through 1 GiB is
+  reserved. A matching 11.60
+  A/B should remain a separate loader-only experiment: it costs about 1008 MiB
+  of usable RAM and is not needed for display.
 - The 11.60 loader does not reserve TMR ranges in e820, but the reference
   artifact behaves the same way and no corruption has been observed. Capture
   the live e820 and TMR state before changing the map.

@@ -48,7 +48,9 @@ def validate(path: Path) -> list[str]:
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
+                "ubuntu_control",
                 "boot_media", "artifacts",
+                "latest_authenticated_working_run", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
         if key not in data:
             errors.append(f"{path}: missing {key}")
@@ -252,8 +254,8 @@ def validate(path: Path) -> list[str]:
         if run14.get("wake_elf_size") != 18384:
             errors.append(f"{path}: unexpected run14 wake ELF size")
         run15 = display.get("run15", {})
-        if run15.get("last_authenticated_working_baseline") is not True:
-            errors.append(f"{path}: run15 must be the latest authenticated baseline")
+        if run15.get("release_loader_baseline") is not True:
+            errors.append(f"{path}: run15 must be the release loader baseline")
         if run15.get("visible_display_observed") is not True:
             errors.append(f"{path}: run15 must record the observed physical display")
         if run15.get("runtime_clear_executed") is not False:
@@ -271,9 +273,9 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: unexpected run15 wake ELF size")
         baselines = [name for name, run in display.items()
                      if isinstance(run, dict) and
-                     run.get("last_authenticated_working_baseline") is True]
+                     run.get("release_loader_baseline") is True]
         if baselines != ["run15"]:
-            errors.append(f"{path}: exactly one latest baseline (run15) expected, got {baselines}")
+            errors.append(f"{path}: exactly one release loader baseline (run15) expected, got {baselines}")
         if checkpoints.get("visible_hdmi") is not run15.get("visible_display_observed"):
             errors.append(f"{path}: visible_hdmi checkpoint disagrees with run15")
         release = display.get("release")
@@ -308,6 +310,49 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: 11.60 production must omit the runtime clear")
         if display.get("next_boundary_validated") is not False:
             errors.append(f"{path}: next display boundary must remain unvalidated")
+
+    ubuntu = data.get("ubuntu_control")
+    if not isinstance(ubuntu, dict):
+        errors.append(f"{path}: ubuntu_control is not an object")
+    else:
+        if ubuntu.get("run") != 16:
+            errors.append(f"{path}: Ubuntu control must be Run 16")
+        if ubuntu.get("result") != "pass-physical-display-authenticated-wired-ssh":
+            errors.append(f"{path}: unexpected Ubuntu control result")
+        if ubuntu.get("same_console_as_run15") is not True:
+            errors.append(f"{path}: Ubuntu control must record same-console scope")
+        if ubuntu.get("independent_hardware_reproduction") is not False:
+            errors.append(f"{path}: Ubuntu control must not claim independent reproduction")
+        expected_artifacts = {
+            "loader": (169872, "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336"),
+            "kernel": (12702720, "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"),
+            "initramfs_unpadded": (50803483, "996bc02a64404bc84d06c8df0c4143b66932d8af8549f39c82c71677fdec58c9"),
+            "initrd": (54376639, "2eef0352879e091083450b799c75514a450f4110cbc747f640962fdde2dc06c8"),
+            "cmdline": (121, "6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d"),
+            "vram": (11, "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"),
+        }
+        for name, (size, digest) in expected_artifacts.items():
+            artifact = ubuntu.get(name)
+            if not isinstance(artifact, dict):
+                errors.append(f"{path}: Ubuntu control {name} is not an object")
+                continue
+            if artifact.get("size") != size:
+                errors.append(f"{path}: unexpected Ubuntu control {name} size")
+            if artifact.get("sha256") != digest:
+                errors.append(f"{path}: unexpected Ubuntu control {name} SHA-256")
+        initrd = ubuntu.get("initrd", {})
+        if initrd.get("zero_padding_bytes") != 3573156:
+            errors.append(f"{path}: unexpected Ubuntu initrd padding")
+        if initrd.get("byte_identical_to_run15") is not False:
+            errors.append(f"{path}: Ubuntu initrd must differ from Run 15")
+        loader = ubuntu.get("loader", {})
+        if loader.get("byte_identical_to_run15") is not True:
+            errors.append(f"{path}: Ubuntu control must reuse the Run 15 loader")
+        wireless = ubuntu.get("wireless", {})
+        if wireless.get("mt7921_applicable") is not False:
+            errors.append(f"{path}: Ubuntu control must reject MT7921 for this hardware")
+        if data.get("latest_authenticated_working_run") != 16:
+            errors.append(f"{path}: latest authenticated working run must be 16")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

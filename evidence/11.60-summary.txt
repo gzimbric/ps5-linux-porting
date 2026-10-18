@@ -1,13 +1,13 @@
 firmware=11.60
 model=regular
-date=2026-10-16
+date=2026-10-18
 overall=linux-booted-physical-display-verified
 linux_booted=true
-linux_boot_evidence=authenticated-wired-ssh-runs-10-12-14-and-15
+linux_boot_evidence=authenticated-wired-ssh-runs-10-12-14-15-and-16
 visible_hdmi=true
-visible_hdmi_evidence=direct-operator-observation-run-15
-last_authenticated_working_run=15
-last_tested_run=15-pass-display
+visible_hdmi_evidence=direct-operator-observation-runs-15-and-16
+last_authenticated_working_run=16
+last_tested_run=16-pass-ubuntu-display
 
 bypass.error=0
 bypass.self=1
@@ -46,10 +46,10 @@ identity_cr3_transition=inferred-pass-from-authenticated-userspace
 shellcode_hv_entry=inferred-pass-from-authenticated-userspace
 linux_startup_64=inferred-pass-from-authenticated-userspace
 
-last_marker=Run-15-physical-display-and-authenticated-linux-userspace
-latest_diagnostic_console_result=run-15-pass-physical-display-authenticated-ssh-white
+last_marker=Run-16-ubuntu-physical-display-and-authenticated-linux-userspace
+latest_diagnostic_console_result=run-16-pass-ubuntu-physical-display-authenticated-ssh-white
 historical_takeover_console_result=unresponsive-or-crash
-current_boundary=run-15-baseline-repeatability-and-minimal-display-subset-uncharacterized
+current_boundary=run-15-loader-baseline-plus-run-16-ubuntu-control-repeatability-uncharacterized
 
 sonic_display.run11_to_run13_source_commit=5f922ead8859e2229d92e3d074e24fddf3f7932e
 sonic_display.last_tested_source_commit=815b1fdc5c76088762e42ad0ad80b0099a54e60d
@@ -91,6 +91,34 @@ release.elf_byte_identical_to_run15=true
 release.source_zip_sha256=aa62a269e51041220fcdca85c6a91a54c317d1a106f5dd3bacff344e5f670c13
 release.reproducible_check_commit=69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf
 release.reproducible_check_result=all-run15-artifact-hashes-match
+
+ubuntu_control.run=16
+ubuntu_control.result=pass-physical-display-authenticated-wired-ssh
+ubuntu_control.distribution=ubuntu-24.04.5-lts
+ubuntu_control.same_console_as_run15=true
+ubuntu_control.loader_byte_identical_to_run15=true
+ubuntu_control.loader_size=169872
+ubuntu_control.loader_sha256=422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336
+ubuntu_control.bzimage_size=12702720
+ubuntu_control.bzimage_sha256=11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde
+ubuntu_control.initramfs_unpadded_size=50803483
+ubuntu_control.initramfs_unpadded_sha256=996bc02a64404bc84d06c8df0c4143b66932d8af8549f39c82c71677fdec58c9
+ubuntu_control.initrd_size=54376639
+ubuntu_control.initrd_sha256=2eef0352879e091083450b799c75514a450f4110cbc747f640962fdde2dc06c8
+ubuntu_control.initrd_zero_padding_bytes=3573156
+ubuntu_control.initrd_byte_identical_to_run15=false
+ubuntu_control.cmdline_size=121
+ubuntu_control.cmdline_sha256=6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d
+ubuntu_control.vram_size=11
+ubuntu_control.vram_sha256=bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0
+ubuntu_control.visible_display=true
+ubuntu_control.logical_cpus=16
+ubuntu_control.approximate_ram_gib=15
+ubuntu_control.system_failed_units=0
+ubuntu_control.wireless_pci_id=1b4b:2b56
+ubuntu_control.wireless_usb_id=1286:2059
+ubuntu_control.mt7921_applicable=false
+ubuntu_control.independent_hardware_reproduction=false
 
 physical_usb.boot_partition_verified=true
 physical_usb.fat_verify=pass

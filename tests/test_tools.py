@@ -60,7 +60,7 @@ class ToolTests(unittest.TestCase):
         )
         self.assertFalse(display["production_runtime_clear_required"])
         run15 = display["run15"]
-        self.assertTrue(run15["last_authenticated_working_baseline"])
+        self.assertTrue(run15["release_loader_baseline"])
         self.assertTrue(run15["visible_display_observed"])
         self.assertFalse(run15["runtime_clear_executed"])
         self.assertEqual(run15["display_table_operations"], 29)
@@ -78,6 +78,13 @@ class ToolTests(unittest.TestCase):
                 "release_check_reproduces_run15_artifacts"
             ]
         )
+        ubuntu = data["ubuntu_control"]
+        self.assertEqual(data["latest_authenticated_working_run"], 16)
+        self.assertEqual(ubuntu["run"], 16)
+        self.assertTrue(ubuntu["loader"]["byte_identical_to_run15"])
+        self.assertFalse(ubuntu["initrd"]["byte_identical_to_run15"])
+        self.assertEqual(ubuntu["initrd"]["zero_padding_bytes"], 3573156)
+        self.assertFalse(ubuntu["wireless"]["mt7921_applicable"])
         self.assertTrue(data["checkpoints"]["visible_hdmi"])
         self.assertTrue(
             data["checkpoints"]["mp3_commands_21_22_present_in_successful_path"]
@@ -280,6 +287,34 @@ class ToolTests(unittest.TestCase):
             data["checkpoints"]["individual_mp3_and_table_returns_observed"] = True
             path.write_text(json.dumps(data))
             self.assertTrue(any("return scope is overstated" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_invalid_published_source_commit(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            release = data["sonic_display_diagnostics"]["release"]
+            release["published_source"]["commit"] = "bad"
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("invalid published source commit" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_ubuntu_initrd_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            data["ubuntu_control"]["initrd"]["sha256"] = "0" * 64
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Ubuntu control initrd SHA-256" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_latest_run_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = json.loads((ROOT / "firmwares" / "11.60.json").read_text())
+            data["latest_authenticated_working_run"] = 15
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("latest authenticated working run" in error
                                 for error in validate(path)))
 
 

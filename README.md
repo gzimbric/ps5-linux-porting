@@ -18,6 +18,11 @@ architecture on firmware 11.60. Run 15 executed the complete Sonic-equivalent
 display path and produced visible output while the same boot reached
 authenticated Linux userspace over wired SSH.
 
+Run 16 reused the exact Run 15 loader with an Ubuntu 24.04 image and again
+reached authenticated wired userspace with visible physical output. This is a
+cross-distribution control on the same console; Run 15 remains the loader
+baseline and the Ubuntu initrd is not the exact CachyOS initrd from Run 15.
+
 The loader source for Run 15 is published at
 [gzimbric/ps5-linux-loader `firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
 (tested source commit `e0b7a2e`; reproducible release-check commit `69657e6`).
@@ -28,11 +33,12 @@ for how its commits map to the source hashes recorded in the evidence.
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, and 15 |
-| Current kernel and 54,376,639-byte initrd | Pass; authenticated wired networking and SSH |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, and 16 |
+| Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
+| Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
 | Attached physical USB boot partition | Pass; FAT verification succeeded and active files hash-match the successful run inputs |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
-| Visible HDMI | **Pass in Run 15**; physical output was directly observed and corroborated by active DRM state |
+| Visible HDMI | **Pass in Runs 15 and 16**; physical output was directly observed and corroborated by active DRM state |
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
 | PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
 | MP3 initialization without the redundant runtime clear | Pass in Run 14; authenticated SSH, white light, no HDMI |
@@ -53,6 +59,7 @@ evidence: they established the exact S3 boundary and led to the now-working
 copy-to-kernel-text carrier. The superseded pLinux-derived wrapper and direct
 PID-1 alias transfer remain negative results, not current candidates. See the
 [current sanitized run matrix](evidence/11.60-sonic-display-runs.md), the
+[Ubuntu control boot](evidence/11.60-ubuntu-run-16.md), the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 

@@ -12,3 +12,6 @@ instruction executed.
 - `11.60-sonic-display-runs.md` records the Run 10 through Run 15
   display bring-up matrix, source and artifact identities, physical USB
   verification scope, and observation limits.
+- `11.60-ubuntu-run-16.md` records the same-loader Ubuntu 24.04 control boot,
+  visible display and authenticated userspace result, input identities, and
+  the console's non-MT7921 wireless hardware.
