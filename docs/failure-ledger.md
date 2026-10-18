@@ -77,10 +77,12 @@ valid final boot architecture. It diverges from the original loader's coupled
 wake-time handoff and may lose assumptions about CPU, hypervisor, page-table,
 or retained-memory state.
 
-**Replacement under test:** Reconstruct the official/Sonic component split:
-preinstall the Linux aliases, keep the AP payload limited to VMCB/NPT work, and
-perform Linux staging and handoff in a separate kernel wake shellcode. The
-reversible alias-construction stage has now passed on 11.60.
+**Replacement result:** The official/Sonic component split is now the working
+11.60 architecture: preinstall the Linux aliases, keep the AP payload limited
+to VMCB/NPT work, and perform Linux staging and handoff in a separate kernel
+wake shellcode. The reversible alias-construction stage passed, and Runs 10,
+12, 14, 15, and 16 reached authenticated Linux through this split; Runs 15 and
+16 also produced visible HDMI output.
 
 ## HDMI Device Link
 

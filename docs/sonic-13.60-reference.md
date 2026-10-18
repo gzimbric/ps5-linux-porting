@@ -99,10 +99,12 @@ Linux, and dispatch the ordered table. Sonic's MP3 request and response
 buffers are pre-zeroed static storage; the wake routine does not clear them at
 runtime.
 
-The 11.60 source now contains structurally matched targets and the exact
-29-record table, but the table has not been executed in a hardware-authenticated
-incremental run. Reconstructed offsets are static evidence until a bounded
-hardware test validates them.
+The 11.60 source contains structurally matched targets and the exact 29-record
+table. Run 15 executed all 29 entries as one containing stage and then produced
+visible output and authenticated Linux. That run validates the complete
+sequence as a working baseline, but it did not instrument individual return
+values or isolate any one table entry; the per-entry offset correspondence
+therefore remains static evidence.
 
 ### Firmware-specific inputs
 

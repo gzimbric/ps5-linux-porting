@@ -323,6 +323,105 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: Ubuntu control must record same-console scope")
         if ubuntu.get("independent_hardware_reproduction") is not False:
             errors.append(f"{path}: Ubuntu control must not claim independent reproduction")
+        image_builder = ubuntu.get("image_builder")
+        if not isinstance(image_builder, dict):
+            errors.append(f"{path}: Ubuntu image_builder is not an object")
+        else:
+            expected_builder = {
+                "upstream_repository": "https://github.com/ps5-linux/ps5-linux-image",
+                "upstream_base_commit": "52db0a42302e4a6b5420a11fa00a84841ea5db56",
+                "published_repository": "https://github.com/gzimbric/ps5-linux-image",
+                "published_branch": "ubuntu2404-1160-tested",
+            }
+            for name, expected in expected_builder.items():
+                if image_builder.get(name) != expected:
+                    errors.append(
+                        f"{path}: unexpected Ubuntu image builder {name}")
+            if image_builder.get("customized_from_upstream") is not True:
+                errors.append(f"{path}: Ubuntu image must be marked as customized")
+            if image_builder.get("kernel_input_source") != (
+                "separate-deterministic-run15-baseline-build"
+            ):
+                errors.append(f"{path}: unexpected Ubuntu kernel input source")
+            if image_builder.get("fixed_kbuild_user_and_host") is not True:
+                errors.append(f"{path}: Ubuntu kernel KBUILD boundary is missing")
+            if image_builder.get("date_shim_used") is not True:
+                errors.append(f"{path}: Ubuntu kernel date-shim boundary is missing")
+            if image_builder.get("deterministic_kernel_recipe_integrated") is not True:
+                errors.append(
+                    f"{path}: Ubuntu deterministic kernel recipe is not integrated")
+            if image_builder.get("kernel_package_reused") is not True:
+                errors.append(
+                    f"{path}: Ubuntu image assembly must record kernel package reuse")
+            for field in (
+                "clean_kernel_build_validated",
+                "full_clean_image_build_validated",
+                "one_command_reproduction_validated",
+            ):
+                if not isinstance(image_builder.get(field), bool):
+                    errors.append(
+                        f"{path}: Ubuntu image builder {field} is not boolean")
+            if (image_builder.get("full_clean_image_build_validated") is True and
+                    image_builder.get("clean_kernel_build_validated") is not True):
+                errors.append(
+                    f"{path}: Ubuntu clean full-image validation requires clean kernel validation")
+            if (image_builder.get("one_command_reproduction_validated") is True and
+                    (image_builder.get("clean_kernel_build_validated") is not True or
+                     image_builder.get("full_clean_image_build_validated") is not True)):
+                errors.append(
+                    f"{path}: Ubuntu one-command validation requires both clean build gates")
+            if image_builder.get("binaries_included") is not False:
+                errors.append(f"{path}: Ubuntu image source must not include binaries")
+            pin_complete = image_builder.get("pin_complete")
+            published_commit = image_builder.get("published_commit", "")
+            published_tree = image_builder.get("published_tree", "")
+            if pin_complete is not True:
+                errors.append(f"{path}: Ubuntu tested source pin must be complete")
+            if (not isinstance(published_commit, str) or
+                    not GIT_COMMIT.fullmatch(published_commit)):
+                errors.append(f"{path}: invalid published Ubuntu source commit")
+            if (not isinstance(published_tree, str) or
+                    not GIT_COMMIT.fullmatch(published_tree)):
+                errors.append(f"{path}: invalid published Ubuntu source tree")
+
+        disk_image = ubuntu.get("disk_image")
+        if not isinstance(disk_image, dict):
+            errors.append(f"{path}: Ubuntu disk_image is not an object")
+        else:
+            if disk_image.get("size") != 16777216000:
+                errors.append(f"{path}: unexpected Ubuntu disk image size")
+            if disk_image.get("sha256") != (
+                "bf4bca3ab6583c74eb06b17e8c3e4243972690a38fa40bd9a652c6d71a7ee347"
+            ):
+                errors.append(f"{path}: unexpected Ubuntu disk image SHA-256")
+            if disk_image.get("included") is not False:
+                errors.append(f"{path}: Ubuntu disk image must not be included")
+            if disk_image.get("byte_identity_required_by_loader") is not False:
+                errors.append(f"{path}: Ubuntu whole-image identity is not a loader gate")
+
+        expected_partitions = {
+            "logical_sector_size": 512,
+            "partition_numbers_follow_physical_order": False,
+            "root": {
+                "number": 1,
+                "filesystem": "ext4",
+                "label": "ubuntu2404",
+                "start_sector": 1024000,
+                "end_sector": 32765951,
+                "size_sectors": 31741952,
+            },
+            "efi": {
+                "number": 2,
+                "filesystem": "fat32",
+                "label": "boot",
+                "start_sector": 2048,
+                "end_sector": 1023999,
+                "size_sectors": 1021952,
+            },
+        }
+        if ubuntu.get("partitions") != expected_partitions:
+            errors.append(f"{path}: unexpected Ubuntu partition layout")
+
         expected_artifacts = {
             "loader": (169872, "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336"),
             "kernel": (12702720, "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"),
@@ -330,6 +429,7 @@ def validate(path: Path) -> list[str]:
             "initrd": (54376639, "2eef0352879e091083450b799c75514a450f4110cbc747f640962fdde2dc06c8"),
             "cmdline": (121, "6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d"),
             "vram": (11, "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"),
+            "kexec": (136, "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"),
         }
         for name, (size, digest) in expected_artifacts.items():
             artifact = ubuntu.get(name)
@@ -343,6 +443,15 @@ def validate(path: Path) -> list[str]:
         initrd = ubuntu.get("initrd", {})
         if initrd.get("zero_padding_bytes") != 3573156:
             errors.append(f"{path}: unexpected Ubuntu initrd padding")
+        unpadded = ubuntu.get("initramfs_unpadded", {})
+        unpadded_size = unpadded.get("size") if isinstance(unpadded, dict) else None
+        padding_size = initrd.get("zero_padding_bytes") if isinstance(initrd, dict) else None
+        efi_size = initrd.get("size") if isinstance(initrd, dict) else None
+        sizes = (unpadded_size, padding_size, efi_size)
+        if (not all(isinstance(value, int) and not isinstance(value, bool)
+                    for value in sizes) or
+                unpadded_size + padding_size != efi_size):
+            errors.append(f"{path}: inconsistent Ubuntu initrd padding arithmetic")
         if initrd.get("byte_identical_to_run15") is not False:
             errors.append(f"{path}: Ubuntu initrd must differ from Run 15")
         loader = ubuntu.get("loader", {})
@@ -358,6 +467,10 @@ def validate(path: Path) -> list[str]:
     if not isinstance(boot_media, dict):
         errors.append(f"{path}: boot_media is not an object")
     else:
+        if boot_media.get("run") != 15:
+            errors.append(f"{path}: boot_media must identify Run 15")
+        if boot_media.get("distribution") != "CachyOS":
+            errors.append(f"{path}: boot_media must identify CachyOS")
         if boot_media.get("physical_usb_boot_partition_verified") is not True:
             errors.append(f"{path}: physical USB boot partition is not verified")
         if boot_media.get("fat_verify_result") != "pass":

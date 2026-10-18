@@ -22,12 +22,20 @@ Run 16 reused the exact Run 15 loader with an Ubuntu 24.04 image and again
 reached authenticated wired userspace with visible physical output. This is a
 cross-distribution control on the same console; Run 15 remains the loader
 baseline and the Ubuntu initrd is not the exact CachyOS initrd from Run 15.
+The Ubuntu USB was a custom build based on `ps5-linux-image` commit `52db0a4`,
+not the stock image produced by that upstream revision. See the
+[Run 16 Ubuntu USB guide](docs/ubuntu2404-run16-usb.md) for the source revision,
+layout, exact boot-file identities, and read-only verification steps.
+
+The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
+that password immediately after first login, before exposing SSH beyond a
+trusted local network.
 
 The loader source for Run 15 is published at
 [gzimbric/ps5-linux-loader `firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
 (tested source commit `e0b7a2e`; reproducible release-check commit `69657e6`).
 It is source only; build it yourself. See
-[upstream references](docs/upstream-references.md#published-11.60-loader-source)
+[upstream references](docs/upstream-references.md#published-1160-loader-source)
 for how its commits map to the source hashes recorded in the evidence.
 
 | Boundary | 11.60 result |
@@ -36,7 +44,7 @@ for how its commits map to the source hashes recorded in the evidence.
 | Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, and 16 |
 | Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
 | Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
-| Attached physical USB boot partition | Pass; FAT verification succeeded and active files hash-match the successful run inputs |
+| Run 15 CachyOS physical USB boot partition | Pass; FAT verification succeeded and the active files matched the working boot-media identities |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
 | Visible HDMI | **Pass in Runs 15 and 16**; physical output was directly observed and corroborated by active DRM state |
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
@@ -60,6 +68,7 @@ copy-to-kernel-text carrier. The superseded pLinux-derived wrapper and direct
 PID-1 alias transfer remain negative results, not current candidates. See the
 [current sanitized run matrix](evidence/11.60-sonic-display-runs.md), the
 [Ubuntu control boot](evidence/11.60-ubuntu-run-16.md), the
+[Ubuntu USB build and verification guide](docs/ubuntu2404-run16-usb.md), the
 [Sonic 13.60 binary reference](docs/sonic-13.60-reference.md) and the
 [11.60 reconstruction plan](docs/11.60-reconstruction-plan.md).
 
@@ -95,8 +104,10 @@ as if it were only an offset substitution.
 | `templates/` | Consistent run reports for console testing |
 | `tools/` | Publication checks, manifest validation, link checks, and log classification |
 
-The exact GPU-firmware and module-option changes used to rebuild the working
-7.1.7 initramfs are in the [tested 11.60 initramfs recipe](docs/initrd-recipe.md).
+The exact Arch/CachyOS `mkinitcpio` changes used for Run 15 are in the
+[tested Run 15 initramfs recipe](docs/initrd-recipe.md). Run 16 used a separate
+Ubuntu `initramfs-tools` build documented in the
+[Ubuntu USB guide](docs/ubuntu2404-run16-usb.md).
 
 ## Quick checks
 
@@ -111,6 +122,13 @@ python3 tools/classify_1160_log.py /path/to/capture.log
 ```
 
 The classifier reports the last known checkpoint and does not modify the log.
+
+To compare a mounted FAT/EFI partition with the successful Ubuntu Run 16 boot
+files without modifying it:
+
+```sh
+python3 tools/check_ubuntu2404_usb.py /path/to/mounted-efi
+```
 
 ## Safe testing rule
 

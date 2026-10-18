@@ -179,7 +179,7 @@
       "wake_elf_size": 18384,
       "wake_elf_sha256": "1a5e5347014aecd5aedeb9bcb2d1b8ecfb05e4012a7e7eb399bd9a88f712a238",
       "clear_enabled_control_wake_sha256": "7b2548d7b1a24a69ab312bce7edac4ccd3fb3997c784fcb1c5a6e654606c9feb",
-      "authenticated_boot_id": "585b1bce-aa09-4310-8cbf-396b9523cc47",
+      "authenticated_boot_observed": true,
       "initializer_only_control": true,
       "mp3_initialize_validated": true,
       "runtime_clear_executed": false
@@ -194,7 +194,7 @@
       "wake_sha256": "83756ca9eddffbcf075cb3660ec80755263ce147793922a54414b57c15d11319",
       "wake_elf_size": 18448,
       "wake_elf_sha256": "19c9e7fc396520bad8e49f8f4c97ffe10830d494a2fe9346d6d944ff6f09ac3a",
-      "authenticated_boot_id": "546be1c9-68db-4b0b-b982-751c938616b8",
+      "authenticated_boot_observed": true,
       "visible_display_observed": true,
       "display_observation_method": "direct-operator-observation",
       "drm_connector": "card0-DP-1-connected-enabled-dpms-on",
@@ -239,6 +239,51 @@
     "result": "pass-physical-display-authenticated-wired-ssh",
     "same_console_as_run15": true,
     "independent_hardware_reproduction": false,
+    "image_builder": {
+      "upstream_repository": "https://github.com/ps5-linux/ps5-linux-image",
+      "upstream_base_commit": "52db0a42302e4a6b5420a11fa00a84841ea5db56",
+      "published_repository": "https://github.com/gzimbric/ps5-linux-image",
+      "published_branch": "ubuntu2404-1160-tested",
+      "published_commit": "376d8da75e40930f5f687857172eedc60b3da9ba",
+      "published_tree": "47268dfca7b903d2fd6c4ee89cae8db67d0f24c0",
+      "pin_complete": true,
+      "customized_from_upstream": true,
+      "kernel_input_source": "separate-deterministic-run15-baseline-build",
+      "fixed_kbuild_user_and_host": true,
+      "date_shim_used": true,
+      "deterministic_kernel_recipe_integrated": true,
+      "kernel_package_reused": true,
+      "clean_kernel_build_validated": true,
+      "full_clean_image_build_validated": true,
+      "one_command_reproduction_validated": false,
+      "binaries_included": false
+    },
+    "disk_image": {
+      "size": 16777216000,
+      "sha256": "bf4bca3ab6583c74eb06b17e8c3e4243972690a38fa40bd9a652c6d71a7ee347",
+      "included": false,
+      "byte_identity_required_by_loader": false
+    },
+    "partitions": {
+      "logical_sector_size": 512,
+      "partition_numbers_follow_physical_order": false,
+      "root": {
+        "number": 1,
+        "filesystem": "ext4",
+        "label": "ubuntu2404",
+        "start_sector": 1024000,
+        "end_sector": 32765951,
+        "size_sectors": 31741952
+      },
+      "efi": {
+        "number": 2,
+        "filesystem": "fat32",
+        "label": "boot",
+        "start_sector": 2048,
+        "end_sector": 1023999,
+        "size_sectors": 1021952
+      }
+    },
     "loader": {
       "size": 169872,
       "sha256": "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
@@ -267,6 +312,10 @@
     "vram": {
       "size": 11,
       "sha256": "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"
+    },
+    "kexec": {
+      "size": 136,
+      "sha256": "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"
     },
     "display": {
       "direct_operator_observation": true,
@@ -331,6 +380,8 @@
     "mp3_invoke_ktext_offset": "0xA86E70"
   },
   "boot_media": {
+    "run": 15,
+    "distribution": "CachyOS",
     "physical_usb_boot_partition_verified": true,
     "fat_verify_result": "pass",
     "linux_root_partition_directly_inspected_on_macos": false,

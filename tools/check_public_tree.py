@@ -22,7 +22,18 @@ PRIVATE_TEXT = (
     "/Users/",
     "C:\\Users\\",
 )
+UNFINISHED_SOURCE_PIN = "PENDING-TESTED-SOURCE-"
 IPV4 = re.compile(r"(?<![0-9.])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![0-9.])")
+MAC_ADDRESS = re.compile(r"(?i)(?<![0-9a-f])(?:[0-9a-f]{2}:){5}[0-9a-f]{2}(?![0-9a-f])")
+MACHINE_UUID = re.compile(
+    r"(?i)(?<![0-9a-f])[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-"
+    r"[0-9a-f]{4}-[0-9a-f]{12}(?![0-9a-f])"
+)
+FORBIDDEN_NAMES = ("cl" + "aude", "r" + "mux", "r" + "muxnet")
+FORBIDDEN_ATTRIBUTION = re.compile(
+    r"\b(?:" + "|".join(re.escape(name) for name in FORBIDDEN_NAMES) + r")\b",
+    re.I,
+)
 MAX_FILE = 1_000_000
 
 
@@ -59,9 +70,17 @@ def check(root: Path) -> list[str]:
         for marker in PRIVATE_TEXT:
             if marker in content:
                 errors.append(f"private path or key marker {marker!r}: {rel}")
+        if UNFINISHED_SOURCE_PIN in content:
+            errors.append(f"unfinished tested-source pin: {rel}")
         for candidate in IPV4.findall(content):
             if is_private_ipv4(candidate):
                 errors.append(f"private IPv4 address {candidate}: {rel}")
+        for candidate in MAC_ADDRESS.findall(content):
+            errors.append(f"machine MAC address {candidate}: {rel}")
+        for candidate in MACHINE_UUID.findall(content):
+            errors.append(f"machine UUID {candidate}: {rel}")
+        if FORBIDDEN_ATTRIBUTION.search(content):
+            errors.append(f"forbidden attribution marker: {rel}")
     return errors
 
 

@@ -25,8 +25,8 @@ display table were present in the working path, but their individual returns
 were not recorded.
 
 The matching initramfs can be rebuilt with the
-[tested 11.60 recipe](initrd-recipe.md). Issue #1 remains open until someone
-else confirms the result on hardware.
+[tested Run 15 CachyOS recipe](initrd-recipe.md). Issue #1 remains open until
+someone else confirms the result on hardware.
 
 ## Run 16 Ubuntu control
 
@@ -46,6 +46,10 @@ The Ubuntu EFI initrd is a 50,803,483-byte Ubuntu initramfs followed by
 3,573,156 zero bytes. Matching the Run 15 size satisfies the current loader
 gate, but the content and hash differ from the CachyOS initrd. Do not use Run
 16 as confirmation of the exact Issue #1 recipe.
+
+This was a custom Ubuntu 24.04 build rather than the stock upstream image. The
+[Run 16 Ubuntu USB guide](ubuntu2404-run16-usb.md) records its source revision,
+partition layout, exact boot files, and read-only comparison procedure.
 
 ## Next controlled test: MTS Ethernet
 

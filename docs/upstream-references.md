@@ -1,12 +1,12 @@
 # Upstream references
 
-The following revisions were checked on 2026-10-15.
+The following revisions were checked through 2026-10-18.
 
 | Project | Branch | Commit | Role |
 |---|---|---|---|
 | [pLabs5/pLinux5-NG](https://github.com/pLabs5/pLinux5-NG) | `master` | `3a7ea6f6c874773641b21d20f95f5df6f648ac40` | High-firmware Linux integration |
 | [ps5-linux/ps5-linux-loader](https://github.com/ps5-linux/ps5-linux-loader) | `main` | `64637c177eaed277fb6ccce394cbb29dd047b893` | Established Linux boot path |
-| [ps5-linux/ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image) | `main` | `52db0a42302e4a6b5420a11fa00a84841ea5db56` | Image builder and boot files |
+| [ps5-linux/ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image) | `main` | `52db0a42302e4a6b5420a11fa00a84841ea5db56` | Upstream base for the custom Run 16 Ubuntu image |
 | [PS5Dev/Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn) | `main` | `ea04f7132b837087f552c57261cb800481a3a910` | Upstream high-firmware bypass |
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `firmware-11.60-pr` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
@@ -65,6 +65,30 @@ and makes `linux-1160-check` require the authenticated dumps and all three Run
 ELF, wake blob, and wake ELF byte for byte. Building requires the PS5 payload
 SDK and authenticated 11.60 kernel-text and hypervisor dumps, which are not
 distributed. See `PORTING_1160.md` on that branch for build details.
+
+## Published Run 16 image source
+
+Run 16 did not use the stock Ubuntu image from the upstream image builder. Its
+custom Ubuntu 24.04 source is published on the
+[`ubuntu2404-1160-tested`](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-tested)
+branch of the `gzimbric/ps5-linux-image` fork, based on upstream commit
+`52db0a42302e4a6b5420a11fa00a84841ea5db56`.
+
+The verified immutable source pin is:
+
+```text
+commit: 376d8da75e40930f5f687857172eedc60b3da9ba
+tree:   47268dfca7b903d2fd6c4ee89cae8db67d0f24c0
+```
+
+The source branch contains no disk image or boot binaries. See the
+[Run 16 Ubuntu USB guide](ubuntu2404-run16-usb.md) for the exact media
+identities and the distinction between byte identity and loader compatibility.
+The exact Run 16 bzImage came from a separate deterministic Run 15 kernel build
+with fixed KBUILD user and host plus controlled date behavior. The image branch
+now integrates that recipe. The Ubuntu USB guide records the separate kernel
+and image-assembly validation results; it does not claim a one-command build
+from empty caches.
 
 The upstream control-flow comparison uses these source files directly:
 

@@ -14,4 +14,6 @@ instruction executed.
   verification scope, and observation limits.
 - `11.60-ubuntu-run-16.md` records the same-loader Ubuntu 24.04 control boot,
   visible display and authenticated userspace result, input identities, and
-  the console's non-MT7921 wireless hardware.
+  the console's non-MT7921 wireless hardware. Reproduction and comparison
+  instructions are kept separately in the
+  [Run 16 Ubuntu USB guide](../docs/ubuntu2404-run16-usb.md).

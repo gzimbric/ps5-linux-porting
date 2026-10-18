@@ -1,4 +1,10 @@
-# Tested 11.60 initramfs recipe
+# Tested Run 15 CachyOS initramfs recipe
+
+This recipe is specific to the Arch/CachyOS `mkinitcpio` image used in Run 15.
+It does not produce the Ubuntu `initramfs-tools` image from Run 16. For that
+custom image, its distinct initramfs, and the loader-size padding applied only
+to the EFI copy, use the
+[Run 16 Ubuntu USB guide](ubuntu2404-run16-usb.md).
 
 Run 15 did not use the untouched 7.1.7 initramfs. The original root-filesystem
 copy was 54,367,236 bytes. The working copy was rebuilt after adding the raw
@@ -110,8 +116,8 @@ The tested command line did not contain a forced `video=DP-1:...` mode:
 root=LABEL=cachyos rw rootwait console=ttyTitania0 console=tty0 consoleblank=0 mitigations=off idle=halt preempt=full
 ```
 
-The exact successful boot-media identities are recorded in
-[Linux image layout](image-layout.md#current-authenticated-boot-media).
+The exact successful boot-media identities are recorded in the
+[Run 15 CachyOS image layout](image-layout.md#run-15-cachyos-authenticated-boot-media).
 
 ## Scope
 
