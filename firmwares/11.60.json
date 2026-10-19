@@ -428,6 +428,162 @@
     "soak_tested": false,
     "driver_reload_tested": false
   },
+  "dma_e820_build": {
+    "hardware_test_date": "2026-10-19",
+    "run": 18,
+    "distribution": "CachyOS",
+    "result": "pass-authenticated-wired-ssh-reserved-map-usb-io-check",
+    "same_console_as_run15": true,
+    "same_usb_as_run16": true,
+    "usb_reflashed": true,
+    "independent_hardware_reproduction": false,
+    "release_loader_baseline": false,
+    "loader": {
+      "name": "ps5-linux-loader-1160-dma-e820.elf",
+      "size": 169872,
+      "sha256": "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0",
+      "byte_identical_to_run15": false,
+      "differs_from_run15_in": [
+        "inner-hv-e820-operands",
+        "wake-blob-carrying-inner-hv",
+        "outer-build-id"
+      ],
+      "same_gates_as_run15": true,
+      "sends_recorded": 1,
+      "output_bytes": 2832,
+      "output_byte_identical_to_run16": true,
+      "output_byte_identical_to_run17": true,
+      "upstream_reservation_commit": "8cda4c1",
+      "upstream_reservation_firmware": "13.60",
+      "low_ram": {
+        "start": "0x00100000",
+        "end_exclusive": "0x01000000"
+      },
+      "reserved": {
+        "start": "0x01000000",
+        "end_exclusive": "0x40000000"
+      },
+      "run15_low_ram": {
+        "start": "0x00100000",
+        "end_exclusive": "0x3fffc000"
+      },
+      "run15_reserved": {
+        "start": "0x3fffc000",
+        "end_exclusive": "0x40000000"
+      },
+      "repository": "https://github.com/gzimbric/ps5-linux-loader",
+      "source_branch": "firmware-11.60-dma-e820",
+      "release_tag": "firmware-11.60-dma-e820-run18",
+      "build_target": "linux-1160-dma-e820",
+      "build_toolchain": {
+        "llvm": "23.1.0",
+        "x86_64_elf_gcc": "16.2.0",
+        "binutils": "2.47"
+      },
+      "included": false
+    },
+    "boot_files": {
+      "matches_run15_boot_media": true,
+      "bzimage": {
+        "size": 12702720,
+        "sha256": "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"
+      },
+      "initrd": {
+        "size": 54376639,
+        "sha256": "c37b88569ef8f05b0b4ae432a8ec0fd323b7a3537a6441f8c45baaad45ff061f"
+      },
+      "cmdline": {
+        "size": 118,
+        "sha256": "aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8"
+      },
+      "vram": {
+        "size": 11,
+        "sha256": "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"
+      }
+    },
+    "disk_image": {
+      "source": "official-ps5-linux-image-cachyos-release",
+      "source_sha256": "fc226bc62cdaddd49296139e59500b172496664abbb74e644eeb87485685b984",
+      "size": 12582912000,
+      "sha256": "055e1718657b2499a0dd8b844ffaf3baaca25e79e2283869d0613a90f0eb6d4c",
+      "root_label": "cachyos",
+      "run15_boot_files_restored": true,
+      "initrd_rebuilt": false,
+      "included": false
+    },
+    "kernel": {
+      "version": "7.1.7",
+      "cmdline": "root=LABEL=cachyos rw rootwait console=ttyTitania0 console=tty0 consoleblank=0 mitigations=off idle=halt preempt=full"
+    },
+    "observed_e820": {
+      "low_ram": {
+        "start": "0x0000000000100000",
+        "end_inclusive": "0x0000000000ffffff",
+        "type": "System RAM"
+      },
+      "reserved": {
+        "start": "0x0000000001000000",
+        "end_inclusive": "0x000000003fffffff",
+        "type": "device reserved"
+      },
+      "ram_above_reserved": {
+        "start": "0x0000000040000000",
+        "end_inclusive": "0x000000005fffffff",
+        "type": "System RAM"
+      }
+    },
+    "mem_total_kib": 14783608,
+    "hardware_corrupted_kib": 0,
+    "io_check": {
+      "media": "usb-root",
+      "filesystem": "ext4",
+      "files": 3,
+      "file_size_bytes": 4294967296,
+      "bytes_written": 12884901888,
+      "write_seconds": [28, 25, 22],
+      "read_seconds": [15, 15, 16],
+      "caches_dropped": true,
+      "drop_caches_value": 3,
+      "sha256_matched": true,
+      "new_kernel_error_or_warning_lines_excluding_kauditd": 0,
+      "other_new_kernel_lines": "kauditd-rate-limit-notices",
+      "result": "pass"
+    },
+    "kernel_log_scan": {
+      "uptime_minutes": 22,
+      "storage_errors": 0,
+      "usb_resets": 0,
+      "xhci_errors": 0,
+      "iommu_faults": 0,
+      "machine_checks": 0,
+      "bug_or_oops": 0,
+      "iommu_default_domain": "passthrough",
+      "ext4_state_clean": true
+    },
+    "network": {
+      "wired_authenticated_ssh": true
+    },
+    "services_active": ["sshd", "NetworkManager", "ps5fan", "ps5-amdgpu-reprobe"],
+    "wifi": {
+      "run17_modules_loaded": true,
+      "interface": "wlp64s0f7",
+      "dhcp_address": true,
+      "autoload_configured": true,
+      "autoload_observed_across_reboot": false,
+      "benign_ioctl_failure": "sub_id 0x200046 status 0x3"
+    },
+    "display": {
+      "drm_connector": "card0-DP-1-connected-enabled-dpms-on",
+      "mode": "1920x1080",
+      "session": "kde-plasma",
+      "direct_operator_observation": false
+    },
+    "ab_control_run": false,
+    "tester_errors_reproduced": false,
+    "soak_tested": false,
+    "physical_display_observed": false,
+    "ubuntu_ci_image_tested": false
+  },
   "superseded_candidate_build": {
     "strategy": "wake-coupled-bypass-and-linux-handoff",
     "superseded": true,
@@ -512,18 +668,23 @@
       "sha256": "ada1624ce72ef2fe4e9400e13d544116be4050f5187234a1fa19c6bd26988fee"
     }
   },
-  "latest_authenticated_working_run": 17,
-  "latest_tested_run": "run17-ubuntu-wifi-pass",
-  "last_observed_marker": "Run 17 onboard IW620 Wi-Fi association and HTTPS download over Wi-Fi",
-  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control and Run 17 Wi-Fi; Wi-Fi autoload across reboot, soak, loader firmware dump, repeatability, and minimal display subset not yet characterized",
+  "latest_authenticated_working_run": 18,
+  "latest_tested_run": "run18-cachyos-dma-e820-pass",
+  "last_observed_marker": "Run 18 DMA E820 build reservation in the Linux e820 map and a 12 GiB USB root write/read check over authenticated SSH",
+  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, and Run 18 DMA E820 build on CachyOS; tester read/write errors, an A/B I/O control, the CI Ubuntu image with the DMA build, Wi-Fi autoload across reboot, soak, loader firmware dump, repeatability, and minimal display subset not yet characterized",
   "notes": [
-    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, and 16; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
+    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, and 18; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
     "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
     "Run 16 reused the exact Run 15 loader and kernel with a distinct Ubuntu 24.04 initramfs, then produced directly observed physical output and authenticated wired SSH on the same console.",
     "Run 16 is a cross-distribution control, not an independent hardware reproduction and not a reproduction of the exact Run 15 CachyOS initrd recipe.",
     "Run 16 identified Marvell PCI 1b4b:2b56 and USB 1286:2059 wireless functions; the linked MT7921 driver cannot bind this hardware.",
     "Run 17 loaded NXP mlan/moal built for the exact Run 16 kernel without the 7.2 compatibility patch and with objtool enabled; the driver downloaded the 11.60 p47 firmware, scanned both bands, joined a 5 GHz network, and carried an HTTPS download over Wi-Fi.",
     "Run 17 needed a second wake attempt; after the first, the console stayed pulsing blue with no network, and the cause was not isolated.",
+    "Run 18 booted CachyOS with an opt-in 11.60 loader build that carries upstream's 13.60 low-memory reservation (upstream 8cda4c1). It differs from the Run 15 ELF only in the three E820 operands in the inner HV, the wake blob that carries it, and the outer build id.",
+    "In Run 18 the e820 map passed to Linux showed 0x100000-0xffffff as System RAM and 0x1000000-0x3fffffff as device reserved, as intended; MemTotal was 14,783,608 kB.",
+    "Run 18 wrote three 4 GiB files to the USB root, dropped caches, and re-read them with matching SHA-256 and no new kernel errors. The Run 15 loader was not put through the same check and the read/write errors reported by testers were never reproduced on this console, so Run 18 does not show that the reservation fixes them.",
+    "Run 18 DRM state reported card0-DP-1 connected at 1920x1080 and a KDE Plasma session started, but the picture was not recorded as directly observed.",
+    "Run 15 remains the release loader baseline; the DMA E820 build is a separate opt-in build.",
     "Run 14 PRE3/OP0 with the runtime clear disabled remains the initializer-only control.",
     "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
     "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes, which Runs 14 and 15 also used; the Linux root partition was not directly mounted on macOS.",

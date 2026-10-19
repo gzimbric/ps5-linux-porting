@@ -35,6 +35,21 @@ the modules nor the firmware; Run 17 added them to the installed root
 filesystem. See the [Wi-Fi guide](docs/ubuntu2404-wifi.md) and the
 [Run 17 evidence](evidence/11.60-ubuntu-run-17-wifi.md).
 
+Run 18 booted CachyOS with an opt-in loader build that carries upstream's
+13.60 low-memory DMA reservation. Linux saw `[0x01000000, 0x40000000)` as
+reserved, reached authenticated wired SSH, and passed a short write and
+read-back check on the USB root. Run 18 is counted as the hardware validation
+of that build. The build was made because testers reported read/write errors
+on the 11.60 port. Those errors have not been reproduced on this console, and
+Run 18 does not show that the reservation fixes them. The DMA build is for
+testers who want to try it; Run 15 remains the release baseline. The built ELF
+is published with the
+[`firmware-11.60-dma-e820-run18` loader release](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-run18).
+See the [Run 18 evidence](evidence/11.60-cachyos-run-18-dma-e820.md) and the
+[tester guide](docs/ubuntu2404-tester-guide.md), which covers this ELF with
+the [Ubuntu 24.04 image built by CI](https://github.com/gzimbric/ps5-linux-image/releases/tag/ubuntu2404-1160-build-3).
+That pairing has not been booted yet.
+
 The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
 that password immediately after first login, before exposing SSH beyond a
 trusted local network.
@@ -49,10 +64,11 @@ for how its commits map to the source hashes recorded in the evidence.
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, and 16 |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, 16, 17, and 18 |
 | Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
 | Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
 | Onboard Wi-Fi (IW620) | Pass in Run 17 with separately built modules and the 11.60 firmware; scan, 5 GHz association, and an HTTPS download over Wi-Fi |
+| Opt-in DMA E820 loader build | Pass in Run 18 with CachyOS; intended e820 reservation, authenticated SSH, and a 12 GiB USB write and read-back check; display not recorded as observed |
 | Run 15 CachyOS physical USB boot partition | Pass; FAT verification succeeded and the active files matched the working boot-media identities |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
 | Visible HDMI | **Pass in Runs 15 and 16**; physical output was directly observed and corroborated by active DRM state |
@@ -138,6 +154,10 @@ files without modifying it:
 ```sh
 python3 tools/check_ubuntu2404_usb.py /path/to/mounted-efi
 ```
+
+Ubuntu images built by the `ps5-linux-image` CI workflow have a different
+initrd, so this strict comparison fails on them. The
+[tester guide](docs/ubuntu2404-tester-guide.md) covers those images.
 
 ## Safe testing rule
 

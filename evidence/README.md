@@ -21,3 +21,8 @@ instruction executed.
   the same loader and USB: driver and firmware identities, the load and
   association result, the stalled first wake attempt, and evidence limits.
   Build and setup steps are in the [Wi-Fi guide](../docs/ubuntu2404-wifi.md).
+- `11.60-cachyos-run-18-dma-e820.md` records the CachyOS boot with the opt-in
+  DMA E820 loader build: the build's map change, input identities, the e820
+  lines Linux received, the USB write and read-back check, and evidence
+  limits. Steps for testing that build with the CI-built Ubuntu image are in
+  the [tester guide](../docs/ubuntu2404-tester-guide.md).

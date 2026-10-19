@@ -48,7 +48,7 @@ def validate(path: Path) -> list[str]:
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
-                "ubuntu_control", "ubuntu_wifi",
+                "ubuntu_control", "ubuntu_wifi", "dma_e820_build",
                 "boot_media", "artifacts",
                 "latest_authenticated_working_run", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
@@ -543,8 +543,125 @@ def validate(path: Path) -> list[str]:
                 errors.append(f"{path}: Ubuntu Wi-Fi {field} is overstated")
         if wifi.get("taint_added_by_load") != 4096:
             errors.append(f"{path}: Ubuntu Wi-Fi load must add only the out-of-tree taint")
-        if data.get("latest_authenticated_working_run") != 17:
-            errors.append(f"{path}: latest authenticated working run must be 17")
+
+    dma = data.get("dma_e820_build")
+    if not isinstance(dma, dict):
+        errors.append(f"{path}: dma_e820_build is not an object")
+    else:
+        if dma.get("run") != 18:
+            errors.append(f"{path}: DMA E820 build test must be Run 18")
+        if dma.get("result") != "pass-authenticated-wired-ssh-reserved-map-usb-io-check":
+            errors.append(f"{path}: unexpected Run 18 result")
+        if dma.get("distribution") != "CachyOS":
+            errors.append(f"{path}: Run 18 must identify CachyOS")
+        if dma.get("same_console_as_run15") is not True:
+            errors.append(f"{path}: Run 18 must record same-console scope")
+        if dma.get("release_loader_baseline") is not False:
+            errors.append(f"{path}: Run 18 DMA build must not replace the Run 15 release baseline")
+        loader = dma.get("loader", {})
+        if not isinstance(loader, dict):
+            loader = {}
+            errors.append(f"{path}: Run 18 DMA loader is not an object")
+        if loader.get("size") != 169872:
+            errors.append(f"{path}: unexpected Run 18 DMA loader size")
+        if loader.get("sha256") != (
+            "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0"
+        ):
+            errors.append(f"{path}: unexpected Run 18 DMA loader SHA-256")
+        if loader.get("byte_identical_to_run15") is not False:
+            errors.append(f"{path}: Run 18 DMA loader must differ from Run 15")
+        if loader.get("output_byte_identical_to_run16") is not True:
+            errors.append(f"{path}: Run 18 DMA loader output must match Run 16")
+        if loader.get("upstream_reservation_commit") != "8cda4c1":
+            errors.append(f"{path}: unexpected Run 18 upstream reservation commit")
+        if loader.get("included") is not False:
+            errors.append(f"{path}: Run 18 DMA loader binary must not be included")
+        expected_map = {
+            "low_ram": {"start": "0x00100000", "end_exclusive": "0x01000000"},
+            "reserved": {"start": "0x01000000", "end_exclusive": "0x40000000"},
+        }
+        for name, expected in expected_map.items():
+            if loader.get(name) != expected:
+                errors.append(f"{path}: unexpected Run 18 DMA loader {name} range")
+        release = display.get("release") if isinstance(display, dict) else None
+        if (isinstance(release, dict) and
+                release.get("elf_sha256") == loader.get("sha256")):
+            errors.append(f"{path}: Run 15 must remain the release loader ELF")
+        expected_boot_files = {
+            "bzimage": (12702720, "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"),
+            "initrd": (54376639, "c37b88569ef8f05b0b4ae432a8ec0fd323b7a3537a6441f8c45baaad45ff061f"),
+            "cmdline": (118, "aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8"),
+            "vram": (11, "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"),
+        }
+        boot_files = dma.get("boot_files", {})
+        for name, (size, digest) in expected_boot_files.items():
+            artifact = boot_files.get(name) if isinstance(boot_files, dict) else None
+            if not isinstance(artifact, dict):
+                errors.append(f"{path}: Run 18 boot file {name} is not an object")
+                continue
+            if artifact.get("size") != size:
+                errors.append(f"{path}: unexpected Run 18 boot file {name} size")
+            if artifact.get("sha256") != digest:
+                errors.append(f"{path}: unexpected Run 18 boot file {name} SHA-256")
+        disk_image = dma.get("disk_image", {})
+        if not isinstance(disk_image, dict) or disk_image.get("included") is not False:
+            errors.append(f"{path}: Run 18 disk image must not be included")
+        observed = dma.get("observed_e820", {})
+        reserved = observed.get("reserved") if isinstance(observed, dict) else None
+        expected_reserved = {
+            "start": "0x0000000001000000",
+            "end_inclusive": "0x000000003fffffff",
+            "type": "device reserved",
+        }
+        if reserved != expected_reserved:
+            errors.append(f"{path}: unexpected Run 18 observed e820 reserved range")
+        else:
+            try:
+                matches = (
+                    int(reserved["start"], 16) ==
+                    int(loader.get("reserved", {}).get("start", ""), 16) and
+                    int(reserved["end_inclusive"], 16) + 1 ==
+                    int(loader.get("reserved", {}).get("end_exclusive", ""), 16)
+                )
+            except (AttributeError, TypeError, ValueError):
+                matches = False
+            if not matches:
+                errors.append(
+                    f"{path}: Run 18 observed e820 reservation disagrees with the loader map")
+        if dma.get("mem_total_kib") != 14783608:
+            errors.append(f"{path}: unexpected Run 18 mem_total_kib")
+        io_check = dma.get("io_check", {})
+        if not isinstance(io_check, dict):
+            io_check = {}
+            errors.append(f"{path}: Run 18 io_check is not an object")
+        if io_check.get("result") != "pass":
+            errors.append(f"{path}: unexpected Run 18 I/O check result")
+        files = io_check.get("files")
+        file_size = io_check.get("file_size_bytes")
+        written = io_check.get("bytes_written")
+        if (not all(isinstance(value, int) and not isinstance(value, bool)
+                    for value in (files, file_size, written)) or
+                files != 3 or files * file_size != written):
+            errors.append(f"{path}: inconsistent Run 18 I/O check size")
+        if io_check.get("caches_dropped") is not True:
+            errors.append(f"{path}: Run 18 I/O check must drop caches before re-reading")
+        if io_check.get("sha256_matched") is not True:
+            errors.append(f"{path}: Run 18 I/O check hashes must match")
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested",
+                      "physical_display_observed", "ubuntu_ci_image_tested"):
+            if dma.get(field) is not False:
+                errors.append(f"{path}: Run 18 {field} is overstated")
+        display_state = dma.get("display", {})
+        if (not isinstance(display_state, dict) or
+                display_state.get("direct_operator_observation") is not False):
+            errors.append(f"{path}: Run 18 display observation is overstated")
+        dma_wifi = dma.get("wifi", {})
+        if (not isinstance(dma_wifi, dict) or
+                dma_wifi.get("autoload_observed_across_reboot") is not False):
+            errors.append(f"{path}: Run 18 Wi-Fi autoload across reboot is overstated")
+        if data.get("latest_authenticated_working_run") != 18:
+            errors.append(f"{path}: latest authenticated working run must be 18")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

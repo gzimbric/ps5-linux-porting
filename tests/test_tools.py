@@ -109,7 +109,7 @@ class ToolTests(unittest.TestCase):
             ]
         )
         ubuntu = data["ubuntu_control"]
-        self.assertEqual(data["latest_authenticated_working_run"], 17)
+        self.assertEqual(data["latest_authenticated_working_run"], 18)
         self.assertEqual(ubuntu["run"], 16)
         self.assertTrue(ubuntu["loader"]["byte_identical_to_run15"])
         self.assertFalse(ubuntu["initrd"]["byte_identical_to_run15"])
@@ -576,7 +576,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = load_pinned_manifest()
-            data["latest_authenticated_working_run"] = 16
+            data["latest_authenticated_working_run"] = 17
             path.write_text(json.dumps(data))
             self.assertTrue(any("latest authenticated working run" in error
                                 for error in validate(path)))
@@ -655,6 +655,93 @@ class ToolTests(unittest.TestCase):
             data["ubuntu_wifi"]["firmware"]["loader_dump_hardware_tested"] = True
             path.write_text(json.dumps(data))
             self.assertTrue(any("loader firmware dump has not run on hardware" in error
+                                for error in validate(path)))
+
+    def test_manifest_records_run18_dma_e820(self):
+        data = load_pinned_manifest()
+        dma = data["dma_e820_build"]
+        self.assertEqual(dma["run"], 18)
+        self.assertEqual(
+            dma["loader"]["sha256"],
+            "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0",
+        )
+        self.assertFalse(dma["loader"]["byte_identical_to_run15"])
+        self.assertTrue(dma["loader"]["output_byte_identical_to_run16"])
+        self.assertEqual(dma["observed_e820"]["reserved"]["start"],
+                         "0x0000000001000000")
+        self.assertEqual(dma["observed_e820"]["reserved"]["end_inclusive"],
+                         "0x000000003fffffff")
+        self.assertEqual(dma["io_check"]["bytes_written"], 12 * 2**30)
+        self.assertFalse(dma["release_loader_baseline"])
+        self.assertTrue(
+            data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
+        self.assertEqual(data["boot_media"]["run"], 15)
+
+    def test_manifest_rejects_dma_loader_hash_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["dma_e820_build"]["loader"]["sha256"] = (
+                "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336"
+            )
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("Run 18 DMA loader SHA-256" in error
+                                for error in errors))
+            self.assertTrue(any("Run 15 must remain the release loader ELF" in error
+                                for error in errors))
+
+    def test_manifest_rejects_dma_build_as_release_baseline(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["dma_e820_build"]["release_loader_baseline"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("must not replace the Run 15 release baseline" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_overstated_dma_scope(self):
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested",
+                      "physical_display_observed", "ubuntu_ci_image_tested"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["dma_e820_build"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(f"Run 18 {field} is overstated" in error
+                                    for error in validate(path)))
+
+    def test_manifest_rejects_wrong_dma_reserved_range(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["dma_e820_build"]["observed_e820"]["reserved"]["start"] = (
+                "0x000000003fffc000"
+            )
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 18 observed e820 reserved range" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_dma_loader_map_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["dma_e820_build"]["loader"]["reserved"]["start"] = "0x3fffc000"
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("Run 18 DMA loader reserved range" in error
+                                for error in errors))
+            self.assertTrue(any("disagrees with the loader map" in error
+                                for error in errors))
+
+    def test_manifest_rejects_inconsistent_dma_io_check(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["dma_e820_build"]["io_check"]["bytes_written"] = 2**30
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("inconsistent Run 18 I/O check size" in error
                                 for error in validate(path)))
 
 
