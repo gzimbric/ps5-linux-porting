@@ -175,7 +175,9 @@ diskutil eject /dev/diskN
 `xz` is not always installed on macOS. If it is missing, use balenaEtcher.
 
 Test the image as released. Do not edit `cmdline.txt`, `vram.txt`, or other
-files on the boot partition, and do not add Wi-Fi before reporting.
+files on the boot partition, and do not add Wi-Fi before reporting. The
+official `ps5-linux-image` releases do not work with the 11.60 loader: their
+`initrd.img` is not the size it requires.
 
 ## Boot
 
@@ -186,8 +188,8 @@ files on the boot partition, and do not add Wi-Fi before reporting.
 3. Cold boot: turn the PS5 off completely (Turn Off PS5, not Rest Mode), then
    turn it on.
 4. Run only the kernel exploit, so that the ELF loader is listening on port
-   9021. Do not load etaHEN, kstuff, a payload manager, FTP, or any other
-   payload first.
+   9021. Do not load etaHEN, kstuff, Byepervisor, a payload manager, FTP, or
+   any other payload first. The loader does its own hypervisor step.
 5. Send the ELF once from your computer. Replace `PS5_IP` with the console's
    address, shown in PS5 OS under Settings > Network > Connection Status >
    View Connection Status:
@@ -402,6 +404,8 @@ the setting in PS5 OS, and repeat the [Boot](#boot) steps from a cold boot.
 | Symptom | Likely cause | What to do |
 |---|---|---|
 | `Something went wrong while initiating` right after `Welcome` | A payload manager ran the ELF through its own loader, which lacks the SDK ELF loader's kernel read/write | Cold boot, run only the kernel exploit, and send to port 9021 with `socat`, `nc`, or a sender that targets 9021 |
+| `Something went wrong while installing linux files` right after `File 'bzImage' found` and `File 'initrd.img' found` | The USB does not have the 11.60 image. The loader only accepts an `initrd.img` of exactly 54,376,639 bytes and refuses anything else; a payload menu does not show the refusal line. The official `ps5-linux-image` releases have the same kernel but a different initrd, so they fail here | Flash the image from this guide's release and do not edit the boot partition. On a computer, `initrd.img` on the `boot` partition must be exactly 54,376,639 bytes |
+| `File bzImage not found at default paths` | The loader did not find a USB drive with the boot files | Use a rear Type-A or the front Type-C port, replug the drive, and cold boot |
 | The console freezes instead of entering Rest Mode | etaHEN or kstuff is running | Hold the power button until the console is off, then cold boot without them |
 | It boots back to PS5 OS after the PS button | The button was pressed before the orange light was solid, or Supply Power to USB Ports is not set to Always | Check the setting, cold boot, and repeat. Wait for solid orange |
 | Pulsing blue light after wake and no network | Seen once in Run 17 on a first wake; the cause was not isolated | Hold the power button until the console is off, then repeat from a cold boot. Mention it in your report |
