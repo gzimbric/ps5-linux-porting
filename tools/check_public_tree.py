@@ -11,7 +11,7 @@ from pathlib import Path
 DENIED_SUFFIXES = {
     ".bin", ".elf", ".o", ".a", ".so", ".sprx", ".img", ".xz",
     ".dump", ".dmp", ".core", ".zip", ".tar", ".tgz", ".gz", ".7z",
-    ".log",
+    ".log", ".ko",
 }
 DENIED_NAMES = re.compile(
     r"(private[_-]?key|console[_-]?key|root[_-]?key|secret)", re.I

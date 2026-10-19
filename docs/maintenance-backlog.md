@@ -1,9 +1,9 @@
 # 11.60 maintenance backlog
 
-This page tracks follow-up work after the first successful Run 15 HDMI boot and
-the Run 16 Ubuntu control. Keep the working boot chain unchanged while testing
-kernel fixes. A source-level defect is not evidence that it caused an earlier
-failed boot.
+This page tracks follow-up work after the first successful Run 15 HDMI boot,
+the Run 16 Ubuntu control, and the Run 17 Wi-Fi bring-up. Keep the working boot
+chain unchanged while testing kernel fixes. A source-level defect is not
+evidence that it caused an earlier failed boot.
 
 ## Run 15 CachyOS loader baseline
 
@@ -51,6 +51,36 @@ This was a custom Ubuntu 24.04 build rather than the stock upstream image. The
 [Run 16 Ubuntu USB guide](ubuntu2404-run16-usb.md) records its source revision,
 partition layout, exact boot files, and read-only comparison procedure.
 
+## Run 17 Wi-Fi
+
+Run 17 brought up the IW620 (`1b4b:2b56`) with NXP `mlan`/`moal` built for the
+exact Run 16 kernel and the console's 11.60 firmware. It scanned, joined a 5
+GHz network, and carried an HTTPS download. The steps are in the
+[Wi-Fi guide](ubuntu2404-wifi.md) and the result in the
+[Run 17 evidence](../evidence/11.60-ubuntu-run-17-wifi.md).
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| `mlan.ko` | 1,491,280 | `e6f8e649974767f26d9bd8c60b3b49e1203d5282700493864b7e6fd7be482b23` |
+| `moal.ko` | 2,112,848 | `3e00f26af4d71d6f459a56a1b99c435dcacb09d3ead28e0e722898a68a6347ed` |
+| `pcieuartiw620_combo_v1.bin` | 498,108 | `eafef24af118f96f84a652e17aeed555ec4ac719b9fac11ff98a2de7e2b4b369` |
+
+Next tests, one at a time:
+
+1. Cold boot with autoload enabled and confirm that the driver loads and the
+   saved network reconnects without SSH steps.
+2. Run a soak of at least 30 minutes with mixed traffic, then unload and
+   reload the driver once. The reload should report the firmware as already
+   running.
+3. Boot the loader build that adds only the 11.60 firmware offset
+   (`0x1585D90`, `0x799BC`) to the Run 15 source. It differs from the Run 15
+   ELF only in the build ID and those two fields. Check that the blob written
+   to `lib/nxp/` on the FAT partition has the hash above. Until then, the
+   firmware has to come from a kernel-data dump.
+4. Build the modules in the Ubuntu image branch and stage the firmware from the
+   FAT partition, so a new image has working Wi-Fi without manual steps. This
+   changes the hash-gated kernel package, so it needs a full rebuild and boot.
+
 ## Next controlled test: MTS Ethernet
 
 The image builder pins `ps5-linux-patches` commit
@@ -94,19 +124,19 @@ boot.
 These findings are confirmed in the source but have not been reproduced on the
 11.60 console.
 
-### Wireless hardware and driver target
+### IW620 driver patches
 
-Run 16 identified PCI wireless function `1b4b:2b56` and USB Bluetooth/WLAN
-companion `1286:2059`. This is Marvell hardware, not MediaTek MT7921 hardware.
-The pairing is consistent with the
-[PS5 IW620 mwifiex path](https://github.com/ps5-linux/ps5-linux-mwifiex).
-The linked mt76/MT7921 driver does not contain these IDs and cannot bind this
-hardware.
+Two upstream `ps5-linux-mwifiex` problems were found while building the Run 17
+modules:
 
-The current 7.1.7 installation exposed no module alias for the PCI function and
-created no WLAN interface. Continue wireless investigation in the `mwifiex`
-and IW620 path; do not add an MT7921 driver to this image as a test for this
-console.
+- `install.sh` applies `ps5-iw620-kernel72-compat.patch` to every 7.x kernel.
+  On 7.1.7 the patched `remain_on_channel` has the wrong signature and the
+  build fails.
+- `ps5-iw620-kernel71-compat.patch` computes the TDLS discovery-response length
+  without the category byte, so the frame is one byte short: the capability's
+  high byte is lost and the IEs after it shift by one. There is no memory
+  corruption. The frame is only sent when a TDLS peer asks for it, which Run
+  17 did not exercise.
 
 ### Salina xHCI event handling
 

@@ -109,7 +109,7 @@ class ToolTests(unittest.TestCase):
             ]
         )
         ubuntu = data["ubuntu_control"]
-        self.assertEqual(data["latest_authenticated_working_run"], 16)
+        self.assertEqual(data["latest_authenticated_working_run"], 17)
         self.assertEqual(ubuntu["run"], 16)
         self.assertTrue(ubuntu["loader"]["byte_identical_to_run15"])
         self.assertFalse(ubuntu["initrd"]["byte_identical_to_run15"])
@@ -576,9 +576,85 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = load_pinned_manifest()
-            data["latest_authenticated_working_run"] = 15
+            data["latest_authenticated_working_run"] = 16
             path.write_text(json.dumps(data))
             self.assertTrue(any("latest authenticated working run" in error
+                                for error in validate(path)))
+
+    def test_manifest_records_run17_wifi(self):
+        data = load_pinned_manifest()
+        wifi = data["ubuntu_wifi"]
+        self.assertEqual(wifi["run"], 17)
+        self.assertEqual(wifi["firmware"]["size"], 0x799BC)
+        self.assertNotIn("ps5-iw620-kernel72-compat.patch",
+                         wifi["driver"]["patches"])
+        self.assertFalse(wifi["autoload_observed_across_reboot"])
+
+    def test_manifest_rejects_kernel72_patch_on_717(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["driver"]["kernel72_compat_applied"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("7.2 compatibility patch" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_wifi_built_without_objtool(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["driver"]["objtool_disabled"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("built with objtool" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_wifi_module_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["modules"]["moal"]["sha256"] = "0" * 64
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Wi-Fi module moal SHA-256" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_included_wifi_firmware(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["firmware"]["included"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("firmware must not be included" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_wifi_firmware_size_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["firmware"]["size_hex"] = "not-hex"
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("firmware size_hex" in error for error in errors))
+            self.assertTrue(any("inconsistent Ubuntu Wi-Fi firmware size" in error
+                                for error in errors))
+
+    def test_manifest_rejects_overstated_wifi_scope(self):
+        for field in ("autoload_observed_across_reboot", "soak_tested",
+                      "driver_reload_tested"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ubuntu_wifi"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(f"{field} is overstated" in error
+                                    for error in validate(path)))
+
+    def test_manifest_rejects_untested_loader_dump_claim(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_wifi"]["firmware"]["loader_dump_hardware_tested"] = True
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("loader firmware dump has not run on hardware" in error
                                 for error in validate(path)))
 
 

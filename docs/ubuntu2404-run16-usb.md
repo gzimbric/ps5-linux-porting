@@ -64,11 +64,12 @@ Boot reports and related log bundles can contain local IP and MAC addresses,
 hostnames, journal identifiers, and other machine-specific details. Review and
 redact them before sharing.
 
-Ethernet is the expected network path for this profile. The console tested in
-Run 16 has onboard Marvell IW620-family hardware, but the required firmware is
-not available in this image. The public profile therefore blacklists the
-onboard wireless driver and does not attempt to load it; it does not provide
-working onboard Wi-Fi.
+Ethernet is the expected network path for this profile as published. The
+image contains neither the IW620 driver nor its firmware, and it blacklists
+the driver. Run 17 later enabled the onboard Wi-Fi on an installed copy of
+this image by adding separately built modules and the console's firmware; see
+the [Wi-Fi guide](ubuntu2404-wifi.md). That changes only the root filesystem
+of the installed USB, not the published image or the boot files below.
 
 During boot, the fan service automatically requests the tested ICC servo
 pattern `3`. Run 16 established that the service completed and that the request

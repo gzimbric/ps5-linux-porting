@@ -11,6 +11,8 @@ The following revisions were checked through 2026-10-18.
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `firmware-11.60-pr` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Hardware-verified 11.60 loader source with a hash-pinned Run 15 release check |
+| [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
+| [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published

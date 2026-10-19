@@ -17,3 +17,7 @@ instruction executed.
   the console's non-MT7921 wireless hardware. Reproduction and comparison
   instructions are kept separately in the
   [Run 16 Ubuntu USB guide](../docs/ubuntu2404-run16-usb.md).
+- `11.60-ubuntu-run-17-wifi.md` records the onboard IW620 Wi-Fi bring-up on
+  the same loader and USB: driver and firmware identities, the load and
+  association result, the stalled first wake attempt, and evidence limits.
+  Build and setup steps are in the [Wi-Fi guide](../docs/ubuntu2404-wifi.md).

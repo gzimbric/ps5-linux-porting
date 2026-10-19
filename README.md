@@ -27,6 +27,14 @@ not the stock image produced by that upstream revision. See the
 [Run 16 Ubuntu USB guide](docs/ubuntu2404-run16-usb.md) for the source revision,
 layout, exact boot-file identities, and read-only verification steps.
 
+Run 17 used the same loader and Ubuntu USB and brought up the onboard Wi-Fi.
+An out-of-tree NXP IW620 driver built for the exact Run 16 kernel downloaded
+the 11.60 firmware, joined a 5 GHz network, and carried an HTTPS download over
+Wi-Fi. The published image still blacklists the driver and contains neither
+the modules nor the firmware; Run 17 added them to the installed root
+filesystem. See the [Wi-Fi guide](docs/ubuntu2404-wifi.md) and the
+[Run 17 evidence](evidence/11.60-ubuntu-run-17-wifi.md).
+
 The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
 that password immediately after first login, before exposing SSH beyond a
 trusted local network.
@@ -44,6 +52,7 @@ for how its commits map to the source hashes recorded in the evidence.
 | Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, and 16 |
 | Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
 | Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
+| Onboard Wi-Fi (IW620) | Pass in Run 17 with separately built modules and the 11.60 firmware; scan, 5 GHz association, and an HTTPS download over Wi-Fi |
 | Run 15 CachyOS physical USB boot partition | Pass; FAT verification succeeded and the active files matched the working boot-media identities |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
 | Visible HDMI | **Pass in Runs 15 and 16**; physical output was directly observed and corroborated by active DRM state |
@@ -102,7 +111,7 @@ as if it were only an offset substitution.
 | `evidence/` | Sanitized hardware evidence without raw console data |
 | `firmwares/` | Machine-readable firmware status manifests |
 | `templates/` | Consistent run reports for console testing |
-| `tools/` | Publication checks, manifest validation, link checks, and log classification |
+| `tools/` | Publication checks, manifest validation, link checks, log classification, and the Wi-Fi load scripts |
 
 The exact Arch/CachyOS `mkinitcpio` changes used for Run 15 are in the
 [tested Run 15 initramfs recipe](docs/initrd-recipe.md). Run 16 used a separate
@@ -143,6 +152,7 @@ This repository does not contain:
 
 - kernel or hypervisor images;
 - decrypted firmware or console keys;
+- the IW620 Wi-Fi firmware or built driver modules;
 - Linux disk images;
 - raw console logs, private network addresses, or local paths;
 - built ELF or shellcode binaries;
@@ -158,6 +168,7 @@ metadata. See [publication policy](docs/publication-policy.md).
 - [ps5-linux-loader](https://github.com/ps5-linux/ps5-linux-loader)
 - [11.60 loader source fork](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
 - [ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image)
+- [ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex)
 - [Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn)
 - [PS5 Hypervisor Bypass Porting](https://github.com/gzimbric/ps5-hv-bypass-porting)
 

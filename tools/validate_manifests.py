@@ -48,7 +48,7 @@ def validate(path: Path) -> list[str]:
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
-                "ubuntu_control",
+                "ubuntu_control", "ubuntu_wifi",
                 "boot_media", "artifacts",
                 "latest_authenticated_working_run", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
@@ -460,8 +460,91 @@ def validate(path: Path) -> list[str]:
         wireless = ubuntu.get("wireless", {})
         if wireless.get("mt7921_applicable") is not False:
             errors.append(f"{path}: Ubuntu control must reject MT7921 for this hardware")
-        if data.get("latest_authenticated_working_run") != 16:
-            errors.append(f"{path}: latest authenticated working run must be 16")
+
+    wifi = data.get("ubuntu_wifi")
+    if not isinstance(wifi, dict):
+        errors.append(f"{path}: ubuntu_wifi is not an object")
+    else:
+        if wifi.get("run") != 17:
+            errors.append(f"{path}: Ubuntu Wi-Fi bring-up must be Run 17")
+        if wifi.get("result") != "pass-scan-associate-download":
+            errors.append(f"{path}: unexpected Ubuntu Wi-Fi result")
+        if wifi.get("independent_hardware_reproduction") is not False:
+            errors.append(f"{path}: Ubuntu Wi-Fi must not claim independent reproduction")
+        loader = wifi.get("loader", {})
+        if (loader.get("sha256") !=
+                "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336" or
+                loader.get("byte_identical_to_run15") is not True):
+            errors.append(f"{path}: Ubuntu Wi-Fi must reuse the Run 15 loader")
+        if wifi.get("first_wake_cause_isolated") is not False:
+            errors.append(f"{path}: Ubuntu Wi-Fi wake-stall cause is overstated")
+        driver = wifi.get("driver", {})
+        expected_driver = {
+            "repository": "https://github.com/ps5-linux/ps5-linux-mwifiex",
+            "commit": "4aff9085530a3cdf7d5fbb124c006cc299ac3605",
+            "nxp_repository": "https://github.com/nxp-imx/mwifiex",
+            "nxp_branch": "lf-6.18.2_1.0.0",
+            "nxp_commit": "a5fe4e194bf99315e349d81d77d6dfacec70757a",
+            "patches": [
+                "ps5-iw620.patch",
+                "ps5-iw620-cmd-timeout-recover.patch",
+                "ps5-iw620-kernel71-compat.patch",
+                "ps5-iw620-rtnl-bounded-wait.patch",
+            ],
+        }
+        for name, expected in expected_driver.items():
+            if driver.get(name) != expected:
+                errors.append(f"{path}: unexpected Ubuntu Wi-Fi driver {name}")
+        if driver.get("kernel72_compat_applied") is not False:
+            errors.append(f"{path}: the 7.2 compatibility patch does not build on 7.1.7")
+        if driver.get("objtool_disabled") is not False:
+            errors.append(f"{path}: Wi-Fi modules must be built with objtool")
+        if driver.get("binaries_included") is not False:
+            errors.append(f"{path}: Wi-Fi driver modules must not be included")
+        expected_modules = {
+            "mlan": (1491280, "e6f8e649974767f26d9bd8c60b3b49e1203d5282700493864b7e6fd7be482b23"),
+            "moal": (2112848, "3e00f26af4d71d6f459a56a1b99c435dcacb09d3ead28e0e722898a68a6347ed"),
+        }
+        modules = wifi.get("modules", {})
+        for name, (size, digest) in expected_modules.items():
+            module = modules.get(name) if isinstance(modules, dict) else None
+            if not isinstance(module, dict):
+                errors.append(f"{path}: Ubuntu Wi-Fi module {name} is not an object")
+                continue
+            if module.get("size") != size:
+                errors.append(f"{path}: unexpected Ubuntu Wi-Fi module {name} size")
+            if module.get("sha256") != digest:
+                errors.append(f"{path}: unexpected Ubuntu Wi-Fi module {name} SHA-256")
+        firmware = wifi.get("firmware", {})
+        expected_firmware = {
+            "name": "nxp/pcieuartiw620_combo_v1.bin",
+            "size": 498108,
+            "sha256": "eafef24af118f96f84a652e17aeed555ec4ac719b9fac11ff98a2de7e2b4b369",
+            "version": "17.130.3.p47",
+            "ktext_offset": "0x1585D90",
+            "size_hex": "0x799BC",
+        }
+        for name, expected in expected_firmware.items():
+            if firmware.get(name) != expected:
+                errors.append(f"{path}: unexpected Ubuntu Wi-Fi firmware {name}")
+        try:
+            size_matches = int(firmware.get("size_hex", ""), 16) == firmware.get("size")
+        except (TypeError, ValueError):
+            size_matches = False
+        if not size_matches:
+            errors.append(f"{path}: inconsistent Ubuntu Wi-Fi firmware size")
+        if firmware.get("included") is not False:
+            errors.append(f"{path}: Wi-Fi firmware must not be included")
+        if firmware.get("loader_dump_hardware_tested") is not False:
+            errors.append(f"{path}: the 11.60 loader firmware dump has not run on hardware")
+        for field in ("autoload_observed_across_reboot", "soak_tested",
+                      "driver_reload_tested"):
+            if wifi.get(field) is not False:
+                errors.append(f"{path}: Ubuntu Wi-Fi {field} is overstated")
+        if wifi.get("taint_added_by_load") != 4096:
+            errors.append(f"{path}: Ubuntu Wi-Fi load must add only the out-of-tree taint")
+        if data.get("latest_authenticated_working_run") != 17:
+            errors.append(f"{path}: latest authenticated working run must be 17")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

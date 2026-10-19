@@ -12,3 +12,4 @@ __pycache__/
 *.tgz
 *.gz
 .DS_Store
+*.ko
