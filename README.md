@@ -48,7 +48,15 @@ is published with the
 See the [Run 18 evidence](evidence/11.60-cachyos-run-18-dma-e820.md) and the
 [tester guide](docs/ubuntu2404-tester-guide.md), which covers this ELF with
 the [Ubuntu 24.04 image built by CI](https://github.com/gzimbric/ps5-linux-image/releases/tag/ubuntu2404-1160-build-3).
-That pairing has not been booted yet.
+
+Run 19 booted CI Ubuntu build 3 with the DMA ELF on the same console. The
+HDMI picture was directly observed, authenticated SSH worked over wired
+Ethernet, Linux received the same e820 map as in Run 18, and the tester
+guide's checks passed, including its optional 12 GiB I/O check. This is the
+first recorded hardware boot of a CI-built Ubuntu image. It was one boot on a
+CFI-1115B; other models have not been tested, and there was still no A/B
+control with the Run 15 ELF. See the
+[Run 19 evidence](evidence/11.60-ubuntu-ci-run-19.md).
 
 The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
 that password immediately after first login, before exposing SSH beyond a
@@ -64,14 +72,15 @@ for how its commits map to the source hashes recorded in the evidence.
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, 16, 17, and 18 |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, 16, 17, 18, and 19 |
 | Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
 | Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
 | Onboard Wi-Fi (IW620) | Pass in Run 17 with separately built modules and the 11.60 firmware; scan, 5 GHz association, and an HTTPS download over Wi-Fi |
 | Opt-in DMA E820 loader build | Pass in Run 18 with CachyOS; intended e820 reservation, authenticated SSH, and a 12 GiB USB write and read-back check; display not recorded as observed |
+| CI Ubuntu 24.04 image with the DMA E820 ELF | Pass in Run 19 with build 3; visible HDMI, authenticated SSH, intended e820 reservation, and the tester guide's checks, including a 12 GiB USB write and read-back check |
 | Run 15 CachyOS physical USB boot partition | Pass; FAT verification succeeded and the active files matched the working boot-media identities |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
-| Visible HDMI | **Pass in Runs 15 and 16**; physical output was directly observed and corroborated by active DRM state |
+| Visible HDMI | **Pass in Runs 15, 16, and 19**; physical output was directly observed and corroborated by active DRM state |
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
 | PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
 | MP3 initialization without the redundant runtime clear | Pass in Run 14; authenticated SSH, white light, no HDMI |

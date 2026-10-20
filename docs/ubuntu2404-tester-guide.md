@@ -16,9 +16,12 @@ fixed the same problem on 13.60. No exact error text has been received and the
 errors have not been reproduced on the test console, so this build is not a
 known fix. [Run 18](../evidence/11.60-cachyos-run-18-dma-e820.md) booted it
 with CachyOS on one console: Linux received the intended memory map and
-passed a short USB write and read check. No CI-built Ubuntu image has been
-booted on hardware yet, with this ELF or any other. That pair is what testers
-are checking.
+passed a short USB write and read check.
+[Run 19](../evidence/11.60-ubuntu-ci-run-19.md) then booted this ELF with the
+build 3 image from this guide on the same CFI-1115B. A picture appeared on the
+monitor, SSH worked, the e820 check showed the `device reserved` line, and the
+optional I/O check passed. Other models have no recorded result with this
+pair yet. Reports from other consoles are still needed.
 
 Expect about 1008 MiB less usable RAM than with the Run 15 loader.
 
@@ -26,7 +29,7 @@ Expect about 1008 MiB less usable RAM than with the Run 15 loader.
 
 | Console | Status |
 |---|---|
-| Original model, digital edition | This ELF booted in Run 18 on one CFI-1115B, with CachyOS. Not yet booted with the CI Ubuntu image. |
+| Original model, digital edition | This ELF booted on one CFI-1115B: with CachyOS in Run 18, and with the build 3 image from this guide in Run 19 (picture, SSH, e820 line, and I/O check pass). No other console has a recorded result yet. |
 | Original model, disc edition | Should work: same chip, board, and firmware as the digital edition. Not tested. |
 | Slim (CFI-2xxx) | Allowed by the loader, but nobody has booted a Slim with the 11.60 port. The display path is the most likely failure, which would look like Linux running with no picture. |
 | Pro (CFI-7xxx) | Refused. The loader stops before it changes anything. |
@@ -38,8 +41,9 @@ What has run on hardware so far:
 |---|---|
 | Run 15 ELF with the Run 16 Ubuntu image | Booted in Runs 16 and 17. That image has the same kernel, command line, and VRAM file as the CI image, and a different initrd build of the same size. |
 | DMA ELF with CachyOS | Booted in Run 18 |
-| Any CI-built Ubuntu image | Not booted |
-| DMA ELF with the CI Ubuntu image | Not booted |
+| DMA ELF with the CI Ubuntu image (build 3) | Booted in Run 19 on one CFI-1115B: picture on the monitor, SSH, the `device reserved` e820 line, and the I/O check passed |
+| Run 15 ELF with the CI Ubuntu image | Not booted |
+| Any other CI build | Not booted |
 
 ## Requirements
 
@@ -204,10 +208,12 @@ official `ps5-linux-image` releases do not work with the 11.60 loader: their
    sender app; the `<` in the command above does not work in PowerShell.
 
    If your sender shows the loader's output, it should include
-   `11.60 Sonic-style Linux wake chain armed`. The line
-   `PS5 WiFi firmware offset missing for firmware 1160` is expected. If the
-   output does not include the `wake chain armed` line, copy all of it into
-   your report. You can stop `socat` with Ctrl+C once the console is in Rest
+   `11.60 Sonic-style Linux wake chain armed`. The lines
+   `PS5 WiFi firmware offset missing for firmware 1160` and
+   `Something went wrong while dumping device firmwares - Continuing` are
+   expected: this build cannot copy the Wi-Fi firmware, and the boot carries
+   on. If the output does not include the `wake chain armed` line, copy all
+   of it into your report. You can stop `socat` with Ctrl+C once the console is in Rest
    Mode.
 6. The console enters Rest Mode by itself. Wait until the orange light stops
    blinking and stays solid.
@@ -452,19 +458,25 @@ Anything else:
 
 ## Limits
 
-- This build is not a confirmed fix for the reported read/write errors. Run 18
-  did not reproduce them and had no A/B control: the Run 15 ELF was never run
-  through the same check.
-- Run 18 was one boot on one console. Its I/O check wrote 12 GiB to the USB
-  root in about 2 minutes. There was no soak test, no M.2 or NVMe test, no GPU
-  or gaming load, and no sustained Wi-Fi traffic. A picture on the monitor was
-  not recorded as directly observed.
+- This build is not a confirmed fix for the reported read/write errors. Runs
+  18 and 19 did not reproduce them and had no A/B control: the Run 15 ELF was
+  never run through the same check.
+- Runs 18 and 19 were one boot each on the same console, a CFI-1115B original
+  digital edition. Each I/O check wrote 12 GiB to the USB root in about 2
+  minutes. There was no soak test, no M.2 or NVMe test, no GPU or gaming load,
+  and no sustained Wi-Fi traffic. Run 19 is the only recorded boot of this ELF
+  with a directly observed picture.
+- Other models, including the disc edition and the Slim, have no recorded test
+  with this ELF or with any CI image.
 - The CI image is a rebuild of the tested profile, not the Run 16 control
   image. The [Run 16 Ubuntu USB guide](ubuntu2404-run16-usb.md) describes the
   control image. The CI image's root filesystem and image hash change with
-  every build. `tools/check_ubuntu2404_usb.py` checks the exact Run 16
-  hashes, so its initrd check fails on a CI image. Do not use it as a pass or
-  fail check here.
+  every build, and only build 3 has a recorded boot.
+  `tools/check_ubuntu2404_usb.py` checks the exact Run 16 hashes, so its initrd
+  check fails on a CI image. Do not use it as a pass or fail check here.
+- Build 3 has two known image defects, seen in Run 19. The hostname is the ID
+  of the CI build container. At boot, systemd logs an ordering cycle involving
+  `ssh.socket` and `ps5-ssh-host-keys.service`; SSH still worked in Run 19.
 - The image has no Wi-Fi driver or firmware. The
   [Wi-Fi guide](ubuntu2404-wifi.md) covers adding them with firmware taken
   from your own console. Do not share that firmware.

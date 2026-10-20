@@ -109,7 +109,7 @@ class ToolTests(unittest.TestCase):
             ]
         )
         ubuntu = data["ubuntu_control"]
-        self.assertEqual(data["latest_authenticated_working_run"], 18)
+        self.assertEqual(data["latest_authenticated_working_run"], 19)
         self.assertEqual(ubuntu["run"], 16)
         self.assertTrue(ubuntu["loader"]["byte_identical_to_run15"])
         self.assertFalse(ubuntu["initrd"]["byte_identical_to_run15"])
@@ -576,7 +576,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = load_pinned_manifest()
-            data["latest_authenticated_working_run"] = 17
+            data["latest_authenticated_working_run"] = 18
             path.write_text(json.dumps(data))
             self.assertTrue(any("latest authenticated working run" in error
                                 for error in validate(path)))
@@ -742,6 +742,144 @@ class ToolTests(unittest.TestCase):
             data["dma_e820_build"]["io_check"]["bytes_written"] = 2**30
             path.write_text(json.dumps(data))
             self.assertTrue(any("inconsistent Run 18 I/O check size" in error
+                                for error in validate(path)))
+
+    def test_manifest_records_run19_ubuntu_ci_dma(self):
+        data = load_pinned_manifest()
+        run19 = data["ubuntu_ci_dma_run"]
+        self.assertEqual(run19["run"], 19)
+        self.assertEqual(run19["image"]["release_tag"], "ubuntu2404-1160-build-3")
+        self.assertEqual(
+            run19["image"]["raw"]["sha256"],
+            "cb01a4f53dedc390a07cdcd42b93dda0762e0c4dee8efe0130af7bdb36ba7fda",
+        )
+        self.assertEqual(run19["loader"]["sha256"],
+                         data["dma_e820_build"]["loader"]["sha256"])
+        self.assertTrue(run19["loader"]["output_byte_identical_to_run18"])
+        self.assertEqual(run19["boot_files"]["initrd"]["size"], 54376639)
+        self.assertNotEqual(run19["boot_files"]["initrd"]["sha256"],
+                            data["ubuntu_control"]["initrd"]["sha256"])
+        self.assertEqual(run19["observed_e820"]["reserved"],
+                         data["dma_e820_build"]["observed_e820"]["reserved"])
+        self.assertEqual(run19["mem_total_kib"],
+                         data["dma_e820_build"]["mem_total_kib"])
+        self.assertEqual(
+            run19["tester_guide_checks"]["io_check"]["bytes_written"], 12 * 2**30)
+        self.assertTrue(run19["physical_display_observed"])
+        self.assertTrue(run19["display"]["direct_operator_observation"])
+        self.assertEqual(run19["wake"]["attempts"], 1)
+        self.assertEqual(len(run19["image_defects"]), 2)
+        self.assertFalse(run19["release_loader_baseline"])
+        self.assertTrue(
+            data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
+        self.assertEqual(data["dma_e820_build"]["run"], 18)
+        self.assertEqual(data["latest_tested_run"], "run19-ubuntu-ci-dma-e820-pass")
+
+    def test_manifest_requires_run19_record(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            del data["ubuntu_ci_dma_run"]
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("missing ubuntu_ci_dma_run" in error
+                                for error in errors))
+            self.assertTrue(any("ubuntu_ci_dma_run is not an object" in error
+                                for error in errors))
+
+    def test_manifest_rejects_run19_loader_hash_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_ci_dma_run"]["loader"]["sha256"] = (
+                "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336"
+            )
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("Run 19 loader SHA-256" in error
+                                for error in errors))
+            self.assertTrue(any("Run 19 loader must be the Run 18 DMA loader" in error
+                                for error in errors))
+            self.assertTrue(any("Run 15 must remain the release loader ELF" in error
+                                for error in errors))
+
+    def test_manifest_rejects_run19_image_hash_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_ci_dma_run"]["image"]["raw"]["sha256"] = (
+                "bf4bca3ab6583c74eb06b17e8c3e4243972690a38fa40bd9a652c6d71a7ee347"
+            )
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("unexpected Run 19 image SHA-256" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_run19_boot_file_drift(self):
+        cases = (
+            ("initrd", "size", 54376640, "Run 19 boot file initrd size"),
+            ("bzimage", "sha256", "0" * 64, "Run 19 boot file bzimage SHA-256"),
+        )
+        for name, field, value, message in cases:
+            with self.subTest(name=name), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ubuntu_ci_dma_run"]["boot_files"][name][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_wrong_run19_reserved_range(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_ci_dma_run"]["observed_e820"]["reserved"]["start"] = (
+                "0x000000003fffc000"
+            )
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 19 observed e820 reserved range" in error
+                                for error in validate(path)))
+
+    def test_manifest_requires_run19_display_observation(self):
+        for target in ("run", "display"):
+            with self.subTest(target=target), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                run19 = data["ubuntu_ci_dma_run"]
+                if target == "run":
+                    run19["physical_display_observed"] = False
+                else:
+                    run19["display"]["direct_operator_observation"] = False
+                path.write_text(json.dumps(data))
+                self.assertTrue(any("Run 19 must record the directly observed display"
+                                    in error for error in validate(path)))
+
+    def test_manifest_rejects_overstated_run19_scope(self):
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested", "wifi_tested"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ubuntu_ci_dma_run"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(f"Run 19 {field} is overstated" in error
+                                    for error in validate(path)))
+
+    def test_manifest_rejects_inconsistent_run19_io_check(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["ubuntu_ci_dma_run"]["tester_guide_checks"]["io_check"][
+                "bytes_written"] = 2**30
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("inconsistent Run 19 I/O check size" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_latest_tested_run_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["latest_tested_run"] = "run18-cachyos-dma-e820-pass"
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("latest tested run must be Run 19" in error
                                 for error in validate(path)))
 
 

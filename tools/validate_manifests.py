@@ -49,7 +49,7 @@ def validate(path: Path) -> list[str]:
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
                 "ubuntu_control", "ubuntu_wifi", "dma_e820_build",
-                "boot_media", "artifacts",
+                "ubuntu_ci_dma_run", "boot_media", "artifacts",
                 "latest_authenticated_working_run", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
         if key not in data:
@@ -660,8 +660,136 @@ def validate(path: Path) -> list[str]:
         if (not isinstance(dma_wifi, dict) or
                 dma_wifi.get("autoload_observed_across_reboot") is not False):
             errors.append(f"{path}: Run 18 Wi-Fi autoload across reboot is overstated")
-        if data.get("latest_authenticated_working_run") != 18:
-            errors.append(f"{path}: latest authenticated working run must be 18")
+
+    tester_run = data.get("ubuntu_ci_dma_run")
+    if not isinstance(tester_run, dict):
+        errors.append(f"{path}: ubuntu_ci_dma_run is not an object")
+    else:
+        if tester_run.get("run") != 19:
+            errors.append(f"{path}: CI Ubuntu and DMA loader test must be Run 19")
+        if tester_run.get("result") != (
+            "pass-physical-display-authenticated-wired-ssh-reserved-map-tester-guide-checks"
+        ):
+            errors.append(f"{path}: unexpected Run 19 result")
+        if tester_run.get("same_console_as_run15") is not True:
+            errors.append(f"{path}: Run 19 must record same-console scope")
+        if tester_run.get("release_loader_baseline") is not False:
+            errors.append(f"{path}: Run 19 must not replace the Run 15 release baseline")
+        image = tester_run.get("image", {})
+        if not isinstance(image, dict):
+            image = {}
+            errors.append(f"{path}: Run 19 image is not an object")
+        if image.get("release_tag") != "ubuntu2404-1160-build-3":
+            errors.append(f"{path}: unexpected Run 19 image release tag")
+        source_commit = image.get("source_commit", "")
+        if not isinstance(source_commit, str) or not GIT_COMMIT.fullmatch(source_commit):
+            errors.append(f"{path}: invalid Run 19 image source commit")
+        raw = image.get("raw", {})
+        if not isinstance(raw, dict):
+            raw = {}
+        if raw.get("size") != 16777216000:
+            errors.append(f"{path}: unexpected Run 19 image size")
+        if raw.get("sha256") != (
+            "cb01a4f53dedc390a07cdcd42b93dda0762e0c4dee8efe0130af7bdb36ba7fda"
+        ):
+            errors.append(f"{path}: unexpected Run 19 image SHA-256")
+        for name in ("xz", "kernel_package"):
+            entry = image.get(name)
+            digest = entry.get("sha256", "") if isinstance(entry, dict) else ""
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"{path}: invalid Run 19 image {name} SHA-256")
+        if image.get("included") is not False:
+            errors.append(f"{path}: Run 19 disk image must not be included")
+        loader = tester_run.get("loader", {})
+        if not isinstance(loader, dict):
+            loader = {}
+            errors.append(f"{path}: Run 19 loader is not an object")
+        if loader.get("size") != 169872:
+            errors.append(f"{path}: unexpected Run 19 loader size")
+        if loader.get("sha256") != (
+            "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0"
+        ):
+            errors.append(f"{path}: unexpected Run 19 loader SHA-256")
+        dma_loader = dma.get("loader") if isinstance(dma, dict) else None
+        if (not isinstance(dma_loader, dict) or
+                dma_loader.get("sha256") != loader.get("sha256")):
+            errors.append(f"{path}: Run 19 loader must be the Run 18 DMA loader")
+        if loader.get("release_tag") != "firmware-11.60-dma-e820-run18":
+            errors.append(f"{path}: unexpected Run 19 loader release tag")
+        if loader.get("output_byte_identical_to_run18") is not True:
+            errors.append(f"{path}: Run 19 loader output must match Run 18")
+        if loader.get("included") is not False:
+            errors.append(f"{path}: Run 19 loader binary must not be included")
+        release = display.get("release") if isinstance(display, dict) else None
+        if (isinstance(release, dict) and
+                release.get("elf_sha256") == loader.get("sha256")):
+            errors.append(f"{path}: Run 15 must remain the release loader ELF")
+        expected_boot_files = {
+            "bzimage": (12702720, "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde"),
+            "initrd": (54376639, None),
+            "cmdline": (121, "6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d"),
+            "vram": (11, "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"),
+            "kexec": (136, "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"),
+        }
+        boot_files = tester_run.get("boot_files", {})
+        for name, (size, digest) in expected_boot_files.items():
+            artifact = boot_files.get(name) if isinstance(boot_files, dict) else None
+            if not isinstance(artifact, dict):
+                errors.append(f"{path}: Run 19 boot file {name} is not an object")
+                continue
+            if artifact.get("size") != size:
+                errors.append(f"{path}: unexpected Run 19 boot file {name} size")
+            actual = artifact.get("sha256", "")
+            if digest is None:
+                if not isinstance(actual, str) or not SHA256.fullmatch(actual):
+                    errors.append(f"{path}: invalid Run 19 boot file {name} SHA-256")
+            elif actual != digest:
+                errors.append(f"{path}: unexpected Run 19 boot file {name} SHA-256")
+        observed = tester_run.get("observed_e820", {})
+        reserved = observed.get("reserved") if isinstance(observed, dict) else None
+        if reserved != {
+            "start": "0x0000000001000000",
+            "end_inclusive": "0x000000003fffffff",
+            "type": "device reserved",
+        }:
+            errors.append(f"{path}: unexpected Run 19 observed e820 reserved range")
+        if tester_run.get("mem_total_kib") != 14783608:
+            errors.append(f"{path}: unexpected Run 19 mem_total_kib")
+        checks = tester_run.get("tester_guide_checks", {})
+        io_check = checks.get("io_check") if isinstance(checks, dict) else None
+        if not isinstance(io_check, dict):
+            io_check = {}
+            errors.append(f"{path}: Run 19 tester guide I/O check is not an object")
+        if io_check.get("result") != "pass":
+            errors.append(f"{path}: unexpected Run 19 I/O check result")
+        files = io_check.get("files")
+        file_size = io_check.get("file_size_bytes")
+        written = io_check.get("bytes_written")
+        if (not all(isinstance(value, int) and not isinstance(value, bool)
+                    for value in (files, file_size, written)) or
+                files != 3 or files * file_size != written):
+            errors.append(f"{path}: inconsistent Run 19 I/O check size")
+        if io_check.get("caches_dropped") is not True:
+            errors.append(f"{path}: Run 19 I/O check must drop caches before re-reading")
+        if io_check.get("sha256_matched") is not True:
+            errors.append(f"{path}: Run 19 I/O check hashes must match")
+        if io_check.get("script_sha256") != (
+            "7bc68fa14c1875cb07b9dde5c00c95edec2b1d1d441ff756ffd929bfb720aa52"
+        ):
+            errors.append(f"{path}: unexpected Run 19 I/O check script SHA-256")
+        display_state = tester_run.get("display", {})
+        if (tester_run.get("physical_display_observed") is not True or
+                not isinstance(display_state, dict) or
+                display_state.get("direct_operator_observation") is not True):
+            errors.append(f"{path}: Run 19 must record the directly observed display")
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested", "wifi_tested"):
+            if tester_run.get(field) is not False:
+                errors.append(f"{path}: Run 19 {field} is overstated")
+        if data.get("latest_authenticated_working_run") != 19:
+            errors.append(f"{path}: latest authenticated working run must be 19")
+        if data.get("latest_tested_run") != "run19-ubuntu-ci-dma-e820-pass":
+            errors.append(f"{path}: latest tested run must be Run 19")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

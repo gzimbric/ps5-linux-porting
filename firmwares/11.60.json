@@ -584,6 +584,195 @@
     "physical_display_observed": false,
     "ubuntu_ci_image_tested": false
   },
+  "ubuntu_ci_dma_run": {
+    "hardware_test_date": "2026-10-19",
+    "run": 19,
+    "distribution": "Ubuntu 24.04.5 LTS",
+    "result": "pass-physical-display-authenticated-wired-ssh-reserved-map-tester-guide-checks",
+    "published_tester_pair": true,
+    "first_recorded_boot_of_tester_pair": true,
+    "same_console_as_run15": true,
+    "same_usb_as_run16": true,
+    "usb_reflashed": true,
+    "usb_flash_audit": "pass-byte-compare-read-back-hash-backup-gpt-at-end",
+    "independent_hardware_reproduction": false,
+    "release_loader_baseline": false,
+    "image": {
+      "repository": "https://github.com/gzimbric/ps5-linux-image",
+      "release_tag": "ubuntu2404-1160-build-3",
+      "built_by_ci": true,
+      "source_branch": "ubuntu2404-1160-ci-image",
+      "source_commit": "ec8cd4e6d67d7dafb9bcee483fb34846eac549ca",
+      "raw": {
+        "size": 16777216000,
+        "sha256": "cb01a4f53dedc390a07cdcd42b93dda0762e0c4dee8efe0130af7bdb36ba7fda"
+      },
+      "xz": {
+        "name": "ps5-ubuntu2404.img.xz",
+        "size": 1917204004,
+        "sha256": "133819629e535a782ae8e3f83946eb2d69f523419aaf9f6fffee3454604a629e"
+      },
+      "kernel_package": {
+        "name": "linux-ps5_7.1.7_amd64.deb",
+        "sha256": "3a98bcddcf37e079f7a97076511af042b135df5c8145fa656e65450b657ee29f"
+      },
+      "partition_layout_matches_run16": true,
+      "root_grown_on_first_boot": true,
+      "included": false
+    },
+    "loader": {
+      "name": "ps5-linux-loader-1160-dma-e820.elf",
+      "size": 169872,
+      "sha256": "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0",
+      "repository": "https://github.com/gzimbric/ps5-linux-loader",
+      "release_tag": "firmware-11.60-dma-e820-run18",
+      "same_as_run18": true,
+      "byte_identical_to_run15": false,
+      "elf_loader_port": 9021,
+      "sends_recorded": 1,
+      "bytes_sent": 169872,
+      "output_bytes": 2832,
+      "output_byte_identical_to_run18": true,
+      "wifi_firmware_offset_missing_expected": true,
+      "included": false
+    },
+    "boot_files": {
+      "checked_in_image_before_flash": true,
+      "bzimage": {
+        "size": 12702720,
+        "sha256": "11280a8f5ca197ee5458fd446a4dadf2d0b5d0ef6218583cbe6325ee34e99cde",
+        "byte_identical_to_run15": true
+      },
+      "initrd": {
+        "size": 54376639,
+        "sha256": "6bd7506b805aea04a7ed22f8e5bcaa4687aaa291468c2c1ae750b96c4b004554",
+        "same_size_as_run15": true,
+        "byte_identical_to_run15": false,
+        "byte_identical_to_run16": false
+      },
+      "cmdline": {
+        "size": 121,
+        "sha256": "6b3c09112fe049d3cbeada65fb3c82bb0f5fcaddce6c0709051df3d9f5a79f6d",
+        "byte_identical_to_run16": true
+      },
+      "vram": {
+        "size": 11,
+        "sha256": "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"
+      },
+      "kexec": {
+        "size": 136,
+        "sha256": "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"
+      }
+    },
+    "wake": {
+      "rest_mode": "automatic",
+      "wake_input": "controller-ps-button",
+      "attempts": 1,
+      "first_attempt": "pass-white-light",
+      "seconds_wake_to_tcp22": 20
+    },
+    "kernel": {
+      "version": "7.1.7",
+      "cmdline": "root=LABEL=ubuntu2404 rw rootwait console=ttyTitania0 console=tty0 consoleblank=0 mitigations=off idle=halt preempt=full"
+    },
+    "observed_e820": {
+      "low_ram": {
+        "start": "0x0000000000100000",
+        "end_inclusive": "0x0000000000ffffff",
+        "type": "System RAM"
+      },
+      "reserved": {
+        "start": "0x0000000001000000",
+        "end_inclusive": "0x000000003fffffff",
+        "type": "device reserved"
+      },
+      "ram_above_reserved": {
+        "start": "0x0000000040000000",
+        "end_inclusive": "0x000000005fffffff",
+        "type": "System RAM"
+      },
+      "table_identical_to_run18": true
+    },
+    "mem_total_kib": 14783608,
+    "mem_total_identical_to_run18": true,
+    "hardware_corrupted_kib": 0,
+    "swap": "zram-7-gib",
+    "root_filesystem": {
+      "device": "sda1",
+      "filesystem": "ext4",
+      "label": "ubuntu2404",
+      "size_after_growth": "230.6 GB"
+    },
+    "tester_guide_checks": {
+      "guide": "docs/ubuntu2404-tester-guide.md",
+      "guide_commit": "cf877f4",
+      "run_as_written": true,
+      "e820_reserved_line": "pass",
+      "memory": "about-14-gib",
+      "kernel_cmdline_layout": "as-expected",
+      "storage_error_lines": 0,
+      "io_check": {
+        "script_extracted_verbatim": true,
+        "script_sha256": "7bc68fa14c1875cb07b9dde5c00c95edec2b1d1d441ff756ffd929bfb720aa52",
+        "run_with_sudo": true,
+        "free_space_reported_gib": 221,
+        "files": 3,
+        "file_size_bytes": 4294967296,
+        "bytes_written": 12884901888,
+        "write_seconds": [20, 20, 20],
+        "reread_seconds_total": 44,
+        "total_seconds": 105,
+        "caches_dropped": true,
+        "sha256_matched": true,
+        "storage_error_lines": 0,
+        "files_removed": true,
+        "printed_result": "Result: PASS (3 x 4 GiB)",
+        "result": "pass"
+      }
+    },
+    "kernel_log_scan": {
+      "scope": "whole-boot",
+      "buffer_io_errors": 0,
+      "blk_update_request": 0,
+      "uas_eh": 0,
+      "amd_vi_faults": 0,
+      "dmar": 0,
+      "machine_checks": 0,
+      "bug_oops_or_call_trace": 0
+    },
+    "network": {
+      "wired_authenticated_ssh": true,
+      "ssh_key_installed_with_default_login": true
+    },
+    "services_active": ["ssh", "NetworkManager", "gdm", "ps5fan", "ps5-amdgpu-reprobe", "ps5-boot-report.timer"],
+    "first_boot_service_completed": true,
+    "failed_units": 0,
+    "kernel_taint": 64,
+    "display": {
+      "direct_operator_observation": true,
+      "drm_connector": "card0-DP-1-connected-enabled",
+      "mode": "1920x1080",
+      "session": "gnome-autologin-seat0-gdm"
+    },
+    "warnings": [
+      "ahci_salina_drv: Salina SATA PHY init failed: -110 (also in Run 16; digital edition, no disc drive)",
+      "amdgpu: fence fallback timer expired on ring sdma0, twice at about 6 s (also in Run 16)",
+      "Bluetooth hci0/hci1 opcode messages at boot",
+      "systemd ordering cycle on sockets.target involving ssh.socket and ps5-ssh-host-keys.service; systemd deleted the sockets.target job and SSH still worked (new since Run 16)",
+      "GNOME session scope and keyring start failures in the journal"
+    ],
+    "image_defects": [
+      "Hostname is the ID of the CI build container, baked into the image; the Run 16 image had the same kind of hostname",
+      "ps5-ssh-host-keys.service causes an ordering cycle with ssh.socket and sockets.target"
+    ],
+    "not_tested": ["wifi", "bluetooth", "m2", "sustained-gpu-load", "soak", "repeat-boots", "other-consoles"],
+    "wifi_driver_in_image": false,
+    "physical_display_observed": true,
+    "ab_control_run": false,
+    "tester_errors_reproduced": false,
+    "soak_tested": false,
+    "wifi_tested": false
+  },
   "superseded_candidate_build": {
     "strategy": "wake-coupled-bypass-and-linux-handoff",
     "superseded": true,
@@ -668,12 +857,12 @@
       "sha256": "ada1624ce72ef2fe4e9400e13d544116be4050f5187234a1fa19c6bd26988fee"
     }
   },
-  "latest_authenticated_working_run": 18,
-  "latest_tested_run": "run18-cachyos-dma-e820-pass",
-  "last_observed_marker": "Run 18 DMA E820 build reservation in the Linux e820 map and a 12 GiB USB root write/read check over authenticated SSH",
-  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, and Run 18 DMA E820 build on CachyOS; tester read/write errors, an A/B I/O control, the CI Ubuntu image with the DMA build, Wi-Fi autoload across reboot, soak, loader firmware dump, repeatability, and minimal display subset not yet characterized",
+  "latest_authenticated_working_run": 19,
+  "latest_tested_run": "run19-ubuntu-ci-dma-e820-pass",
+  "last_observed_marker": "Run 19 CI Ubuntu build 3 with the DMA E820 loader: directly observed HDMI picture, the reserved e820 range, and the tester guide checks over authenticated SSH",
+  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, Run 18 DMA E820 build on CachyOS, and Run 19 published tester pair (CI Ubuntu build 3 with the DMA E820 build); tester read/write errors, an A/B I/O control, other consoles, Wi-Fi with the CI image, Wi-Fi autoload across reboot, soak, loader firmware dump, repeatability, and minimal display subset not yet characterized",
   "notes": [
-    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, and 18; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
+    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, 18, and 19; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
     "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
     "Run 16 reused the exact Run 15 loader and kernel with a distinct Ubuntu 24.04 initramfs, then produced directly observed physical output and authenticated wired SSH on the same console.",
     "Run 16 is a cross-distribution control, not an independent hardware reproduction and not a reproduction of the exact Run 15 CachyOS initrd recipe.",
@@ -684,7 +873,12 @@
     "In Run 18 the e820 map passed to Linux showed 0x100000-0xffffff as System RAM and 0x1000000-0x3fffffff as device reserved, as intended; MemTotal was 14,783,608 kB.",
     "Run 18 wrote three 4 GiB files to the USB root, dropped caches, and re-read them with matching SHA-256 and no new kernel errors. The Run 15 loader was not put through the same check and the read/write errors reported by testers were never reproduced on this console, so Run 18 does not show that the reservation fixes them.",
     "Run 18 DRM state reported card0-DP-1 connected at 1920x1080 and a KDE Plasma session started, but the picture was not recorded as directly observed.",
-    "Run 15 remains the release loader baseline; the DMA E820 build is a separate opt-in build.",
+    "Run 19 booted the image and ELF from the tester guide: CI Ubuntu 24.04 image release ubuntu2404-1160-build-3 and the DMA E820 loader ELF from release firmware-11.60-dma-e820-run18. It is the first recorded hardware boot of that pair and of a CI-built image on this console.",
+    "In Run 19 the operator directly observed the HDMI picture. The loader output was byte-identical to Run 18, and the e820 table and MemTotal matched Run 18.",
+    "Run 19 ran the tester guide checks as written, including the optional 3 x 4 GiB write and read-back check, which passed with no storage error lines. It used the same console and USB drive as Run 18 and had no A/B control, so it does not show that the reservation fixes the tester errors.",
+    "Run 19 found two image defects for the backlog: the hostname is the CI build container ID, and ps5-ssh-host-keys.service causes an ordering cycle with ssh.socket that systemd breaks by dropping the sockets.target job. SSH still worked.",
+    "The dma_e820_build record describes Run 18 only; its physical_display_observed and ubuntu_ci_image_tested values are Run 18 results. Run 19 (ubuntu_ci_dma_run) booted the DMA build with the CI Ubuntu image and a directly observed picture.",
+    "Run 15 remains the release loader baseline; the DMA E820 build is a separate opt-in build. Run 18 remains the DMA validation run.",
     "Run 14 PRE3/OP0 with the runtime clear disabled remains the initializer-only control.",
     "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
     "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes, which Runs 14 and 15 also used; the Linux root partition was not directly mounted on macOS.",

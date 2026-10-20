@@ -1,9 +1,10 @@
 # 11.60 maintenance backlog
 
 This page tracks follow-up work after the first successful Run 15 HDMI boot,
-the Run 16 Ubuntu control, the Run 17 Wi-Fi bring-up, and the Run 18 DMA E820
-boot. Keep the working boot chain unchanged while testing kernel fixes. A
-source-level defect is not evidence that it caused an earlier failed boot.
+the Run 16 Ubuntu control, the Run 17 Wi-Fi bring-up, the Run 18 DMA E820
+boot, and the Run 19 CI Ubuntu boot. Keep the working boot chain unchanged
+while testing kernel fixes. A source-level defect is not evidence that it
+caused an earlier failed boot.
 
 ## Run 15 CachyOS loader baseline
 
@@ -99,13 +100,37 @@ console, so Run 18 does not show that the reservation fixes them.
 
 Next tests, one at a time:
 
-1. Boot the CI-built Ubuntu 24.04 image with this ELF, using the
-   [tester guide](ubuntu2404-tester-guide.md). That pairing has not been
-   booted.
+1. Done in Run 19: the CI-built Ubuntu 24.04 image (build 3) booted with this
+   ELF, using the [tester guide](ubuntu2404-tester-guide.md). The picture was
+   directly observed, SSH worked, the e820 line was present, and the guide's
+   I/O check passed. See the
+   [Run 19 evidence](../evidence/11.60-ubuntu-ci-run-19.md).
 2. Run the same write and read-back check with the Run 15 ELF on the same
-   USB, as the A/B control Run 18 did not have.
+   USB, as the A/B control that Runs 18 and 19 did not have.
 3. Get the exact error text from testers who saw read/write errors, and ask
    them to repeat their workload with this ELF.
+
+## Run 19 CI Ubuntu image
+
+Run 19 booted CI Ubuntu build 3 (`ubuntu2404-1160-build-3`, built from
+`ps5-linux-image` commit `ec8cd4e`) with the DMA E820 ELF. Two image defects
+were found. Neither blocked the boot or SSH. Both belong to the Ubuntu image
+profile, not the loader, so fixing them needs a new CI build and a new boot.
+
+1. Hostname. `/etc/hostname` in the image holds the 12-character ID of the CI
+   build container, and Run 19 booted with that hostname. The Run 16 image also
+   had a container-ID hostname, so this is a profile issue and not new to CI.
+   Set the hostname in the profile instead of keeping the build container's,
+   and check `/etc/hostname` in the next built image.
+2. SSH host-key ordering cycle. At boot systemd logged
+   `basic.target: Found ordering cycle on sockets.target/start` involving
+   `ssh.socket` and `ps5-ssh-host-keys.service`, and deleted the
+   `sockets.target` job to break the cycle. SSH still worked. This was not
+   seen in Run 16. Fix the ordering of `ps5-ssh-host-keys.service` in the
+   profile, then check that a fresh boot logs no ordering cycle, still creates
+   the host keys, and starts SSH.
+
+The other warnings seen in Run 19 are listed in the evidence.
 
 ## Next controlled test: MTS Ethernet
 
@@ -221,10 +246,10 @@ keep a tested local recovery path before closing the current SSH session.
 
 - The Run 15 loader does not reserve TMR ranges in e820, and the reference
   artifact behaves the same way. The opt-in DMA E820 build now reserves
-  `[0x01000000, 0x40000000)` like upstream's 13.60 support, and Run 18 booted
-  it. That is not a TMR audit, and it does not show that missing reservations
-  caused corruption. Capture the live e820 and TMR state before changing the
-  Run 15 map.
+  `[0x01000000, 0x40000000)` like upstream's 13.60 support, and Runs 18 and 19
+  booted it. That is not a TMR audit, and it does not show that missing
+  reservations caused corruption. Capture the live e820 and TMR state before
+  changing the Run 15 map.
 - The loader currently identifies the tested kernel and initramfs by exact
   size. Add setup-header and content-manifest validation in a separate loader
   experiment; do not change the Run 15 release ELF.
@@ -238,7 +263,9 @@ separately, that the USB, ICC, or HDMI findings caused an observed failure,
 that missing TMR reservations caused memory corruption, or that the DMA E820
 reservation fixes the read/write errors reported by testers. Run 18 shows
 that the DMA E820 build boots, applies the intended map, and passed a short
-USB write and read-back check; it is not a visible-display result. The current
-evidence also does not support an HV-entry address truncation, an initramfs
-identity-map overrun, a page-install overflow on the tested path, or a fan
-left disabled for the next kernel.
+USB write and read-back check; it is not a visible-display result. Run 19
+adds a directly observed picture with the CI Ubuntu image on the same
+CFI-1115B; it is not a result for other models. The current evidence also
+does not support an HV-entry address truncation, an initramfs identity-map
+overrun, a page-install overflow on the tested path, or a fan left disabled
+for the next kernel.

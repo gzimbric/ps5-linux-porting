@@ -26,3 +26,7 @@ instruction executed.
   lines Linux received, the USB write and read-back check, and evidence
   limits. Steps for testing that build with the CI-built Ubuntu image are in
   the [tester guide](../docs/ubuntu2404-tester-guide.md).
+- `11.60-ubuntu-ci-run-19.md` records Run 19, which booted the image and ELF
+  from the tester guide (CI Ubuntu build 3 and the DMA E820 ELF): input
+  identities, the directly observed picture, the e820 lines, the guide's checks
+  including the I/O check, warnings, two image defects, and evidence limits.
