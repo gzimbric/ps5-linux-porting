@@ -180,9 +180,9 @@ These findings are confirmed in the source but have not been reproduced on the
 Two upstream `ps5-linux-mwifiex` problems were found while building the Run 17
 modules:
 
-- `install.sh` applies `ps5-iw620-kernel72-compat.patch` to every 7.x kernel.
-  On 7.1.7 the patched `remain_on_channel` has the wrong signature and the
-  build fails.
+- `install.sh` applies `ps5-iw620-kernel72-compat.patch` to every kernel from
+  7.0 on. On 7.1.7 the patched `remain_on_channel` has the wrong signature and
+  the build fails.
 - `ps5-iw620-kernel71-compat.patch` computes the TDLS discovery-response length
   without the category byte, so the frame is one byte short: the capability's
   high byte is lost and the IEs after it shift by one. There is no memory

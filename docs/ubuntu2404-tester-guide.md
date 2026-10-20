@@ -478,5 +478,6 @@ Anything else:
   of the CI build container. At boot, systemd logs an ordering cycle involving
   `ssh.socket` and `ps5-ssh-host-keys.service`; SSH still worked in Run 19.
 - The image has no Wi-Fi driver or firmware. The
-  [Wi-Fi guide](ubuntu2404-wifi.md) covers adding them with firmware taken
-  from your own console. Do not share that firmware.
+  [Wi-Fi guide](ubuntu2404-wifi.md) documents the Run 17 build for
+  developers. There is no published way yet to get the firmware off your own
+  console, so Wi-Fi is not part of this test. Never share that firmware.

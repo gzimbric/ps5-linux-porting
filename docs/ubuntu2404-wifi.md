@@ -6,8 +6,11 @@ the exact Run 16 kernel, and the firmware came from the console's own 11.60
 kernel data. See the [Run 17 evidence](../evidence/11.60-ubuntu-run-17-wifi.md)
 for what was observed.
 
-The published image contains neither the modules nor the firmware and still
-blacklists the driver. This repository does not redistribute either.
+The published images, including the CI builds, contain neither the modules nor
+the firmware and still blacklist the driver. This repository does not
+redistribute either. Run 18 loaded the same modules on CachyOS, which has the
+same kernel; see the
+[Run 18 evidence](../evidence/11.60-cachyos-run-18-dma-e820.md).
 
 ## Hardware
 
@@ -25,8 +28,14 @@ used in Run 17 is NXP's `mlan`/`moal` pair with the PS5 patches from
 
 | Source | Branch | Commit |
 |---|---|---|
-| [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` |
+| [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` at the time of Run 17 | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` |
+
+Check out exactly `4aff908`; the patch hashes below are for that commit.
+Upstream `main` has since moved to `4bce848` (pull request #10). That commit
+changes `ps5-iw620-cmd-timeout-recover.patch` and adds `ps5-iw620-he.patch`,
+`ps5-iw620-tx-min128.patch`, and `ps5-iw620-tx-priority.patch`. None of those
+changes are in the Run 17 build or have been tested here.
 
 Apply these `ps5-linux-mwifiex` patches to the NXP tree, in this order:
 
@@ -38,7 +47,7 @@ Apply these `ps5-linux-mwifiex` patches to the NXP tree, in this order:
 | `ps5-iw620-rtnl-bounded-wait.patch` | `9b63bdd86301ca65768836dc6f7baa94797e5981d6d572c44f53e0512cc1fe1a` |
 
 Do not apply `ps5-iw620-kernel72-compat.patch` to a 7.1.7 build. Upstream
-`install.sh` applies it to every 7.x kernel, but it changes
+`install.sh` applies it to every kernel from 7.0 on, but it changes
 `woal_cfg80211_remain_on_channel` to take six arguments, while
 `cfg80211_ops.remain_on_channel` in 7.1.7 takes five. With the Run 16 compiler
 that is a hard `-Wincompatible-pointer-types` error. Its `strncpy` to
@@ -71,17 +80,18 @@ entry for entry, the modpost-generated `Module.symvers` shipped in the official
 ps5-linux 7.1.7 image's kernel metadata. A full `make bzImage modules` of the
 Run 16 tree was not run for this comparison.
 
-Build with objtool enabled. Upstream `install.sh` passes `CONFIG_OBJTOOL=`,
-which leaves the modules without `.return_sites`. This kernel has
+Build with objtool enabled. Upstream `install.sh` at `4aff908` passes
+`CONFIG_OBJTOOL=`, which leaves the modules without `.return_sites`. Upstream
+`main` stopped passing it in `4bce848`. This kernel has
 `MITIGATION_RETHUNK`, `MITIGATION_UNRET_ENTRY`, and `MITIGATION_SRSO` set, so
 from the 7.1.7 source such a module would trigger
 `Unpatched return thunk in use` on first use and taint the kernel `W`. That
-case was not tested on the console. Inside the builder, with the prepared tree
-at `/src`:
+case was not tested on the console. Inside the builder, with the prepared
+kernel tree at `/src` and the patched NXP tree at `/build/nxp`:
 
 ```sh
-cd nxp-mwifiex
-make -C "$PWD" KERNELDIR=/src ARCH=x86 -j12
+cd /build/nxp
+make -C /build/nxp KERNELDIR=/src ARCH=x86 -j12
 x86_64-linux-gnu-strip --strip-debug mlan.ko moal.ko
 ```
 
@@ -93,7 +103,11 @@ modules from Run 17 were:
 | `mlan.ko` | 1,491,280 | `e6f8e649974767f26d9bd8c60b3b49e1203d5282700493864b7e6fd7be482b23` |
 | `moal.ko` | 2,112,848 | `3e00f26af4d71d6f459a56a1b99c435dcacb09d3ead28e0e722898a68a6347ed` |
 
-A second build from separate clones of the same sources was byte-identical.
+A second build from separate clones at the same paths was byte-identical. The
+hashes depend on those two paths: the build ID that `strip --strip-debug` keeps
+is computed over debug information that records them. The same sources built
+at another path gave different hashes, and the scripts below refuse such
+modules unless `IW620_ALLOW_UNTESTED=1` is set.
 Both modules report version `542.p8` and vermagic
 `7.1.7 SMP preempt mod_unload modversions`.
 
@@ -121,11 +135,13 @@ console's own kernel-data dump.
 ## Loading
 
 Copy `mlan.ko`, `moal.ko`, and `pcieuartiw620_combo_v1.bin` into one directory
-on the console, together with [`tools/iw620_load.sh`](../tools/iw620_load.sh).
-The script checks the files against the hashes above, installs the firmware,
-and loads the driver once. Run 17 used a shorter version of this script with
-the same file checks and options; the kernel-version and vermagic checks added
-here have not run on the console. The options are:
+on the console, together with [`tools/iw620_load.sh`](../tools/iw620_load.sh)
+and [`tools/iw620_persist.sh`](../tools/iw620_persist.sh). Both scripts look
+for the three files in their own directory unless a directory is given as the
+first argument. `iw620_load.sh` checks the files against the hashes above,
+installs the firmware, and loads the driver once. Run 17 used a shorter
+version of it with the same file checks and options; the kernel-version and
+vermagic checks added here have not run on the console. The options are:
 
 ```text
 fw_name=nxp/pcieuartiw620_combo_v1.bin pcie_int_mode=1 drv_mode=1
@@ -133,7 +149,8 @@ cfg80211_wext=4 sta_name=mlan ext_scan=1 auto_fw_reload=0 wifi_reset_config=0
 sched_scan=0 ps_mode=2 auto_ds=2 amsdu_disable=1 drvdbg=0x7
 ```
 
-These match the options in upstream `install.sh` and `test-iw620.sh`.
+These are the options upstream `test-iw620.sh` passes at `4aff908`. Upstream
+`install.sh` uses the same set without `drvdbg=0x7`.
 `pcie_int_mode=1` selects MSI; the PS5 kernel patch disables legacy INTx on
 this bus, and upstream issue #3 reports that `pcie_int_mode=0` fails probe.
 `ps_mode=2` and `auto_ds=2` keep the chip out of power save, which upstream
@@ -176,12 +193,16 @@ afterwards, so loading at boot has not been observed.
   concurrent traffic. Neither a firmware reset nor a driver reload recovers
   it; only a reboot does.
 - Unload the driver before a warm reboot through `kexec.sh`
-  (`sudo modprobe -r moal mlan`). With `moal` loaded, its PCI shutdown hook
-  starts an in-band chip reset. `ps5-linux-tools` pull request
-  [#3](https://github.com/ps5-linux/ps5-linux-tools/pull/3) unloads the driver
-  first for the same reason.
-- Do not use PCI function-level reset, `auto_fw_reload`, or PCI remove and
-  rescan. Upstream reports that each one leaves the device unusable until
-  reboot.
+  (`sudo rmmod moal mlan`; `modprobe -r` works only after `iw620_persist.sh`
+  has installed the modules). With `moal` loaded, its PCI shutdown hook starts
+  an in-band chip reset. An unmerged `ps5-linux-tools` pull request,
+  [#3](https://github.com/ps5-linux/ps5-linux-tools/pull/3), unloads the
+  driver before kexec because Wi-Fi failed to scan after a warm reboot. The
+  image's `kexec.sh` does not unload it.
+- Do not enable `auto_fw_reload` and do not use PCI function-level reset.
+  Upstream issue #3 reports that `auto_fw_reload=1`, which does a
+  function-level reset, removes the device from the bus, that the in-band
+  reset fails, and that only a reboot recovers. PCI remove and rescan was not
+  tried here or reported upstream; avoid it as well.
 - Firmware versions other than p47, and console firmware other than 11.60,
   were not tested.
