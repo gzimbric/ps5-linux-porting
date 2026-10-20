@@ -34,6 +34,37 @@ Steam's **Switch to Desktop** action and joining Wi-Fi from KDE's network menu
 are already known open issues. Record them, but do not confuse them with a
 loader failure.
 
+## Recover from the Switch to Desktop hang
+
+On image 2, Steam can stay forever on **Switching to Desktop** because the
+power-menu action does not call the image's session-switch helper. Linux is
+usually still running. Do not put the console into Rest Mode and do not rerun
+the payload.
+
+From another computer, SSH to the console over wired Ethernet:
+
+```sh
+ssh steam@LINUX_IP
+sudo steamos-session-select plasma
+cat /home/steam/.config/ps5-next-session
+sudo systemctl restart getty@tty1.service
+```
+
+The `cat` command must print `plasma`. Restarting tty1 deliberately closes the
+stuck Gamescope/Steam session, so the SSH command may briefly appear to pause;
+the SSH connection itself should remain available. KDE Plasma should then
+appear on HDMI. If it does not, press `Ctrl`+`Alt`+`F1` once.
+
+With a USB keyboard, the same recovery can be run locally: press
+`Ctrl`+`Alt`+`F2`, log in as `steam`, run the four commands above starting at
+`sudo steamos-session-select plasma`, then press `Ctrl`+`Alt`+`F1` if needed.
+
+If `steamos-session-select` reports that `/etc/ps5-use-tty-sessions` is
+missing, or the token does not read back as `plasma`, stop and save that exact
+output. Do not repeatedly restart tty1. Image 3 is intended to wire the Steam
+button to this already-tested handoff automatically; this section is the
+image-2 fallback.
+
 ## Requirements
 
 - A regular retail PS5 on firmware 11.60: original model or Slim, not Pro.
