@@ -4,6 +4,9 @@ This page is for people with a retail PS5 on firmware 11.60 who want to test
 one combination: the DMA E820 build of the 11.60 loader with the Ubuntu 24.04
 image built by GitHub CI.
 
+A CachyOS image on Linux 7.3.0 is in testing, but it is not ready for testers
+yet; this guide still covers only the Ubuntu image.
+
 ## What this tests
 
 The DMA E820 build (`ps5-linux-loader-1160-dma-e820.elf`) is the Run 15 loader

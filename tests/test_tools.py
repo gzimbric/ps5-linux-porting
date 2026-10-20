@@ -109,7 +109,7 @@ class ToolTests(unittest.TestCase):
             ]
         )
         ubuntu = data["ubuntu_control"]
-        self.assertEqual(data["latest_authenticated_working_run"], 19)
+        self.assertEqual(data["latest_authenticated_working_run"], 21)
         self.assertEqual(ubuntu["run"], 16)
         self.assertTrue(ubuntu["loader"]["byte_identical_to_run15"])
         self.assertFalse(ubuntu["initrd"]["byte_identical_to_run15"])
@@ -422,6 +422,15 @@ class ToolTests(unittest.TestCase):
                 for error in check_public_tree(root)
             ))
 
+    def test_public_tree_allows_upstream_credit(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "README.md").write_text(
+                "The 7.3 port and frequency drivers are by rmux (Armandas Kvietkus), "
+                "https://github.com/rmuxnet/ps5-linux-patches-1.\n"
+            )
+            self.assertEqual(check_public_tree(root), [])
+
     def test_manifest_requires_complete_ubuntu_source_pin(self):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
@@ -576,7 +585,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = load_pinned_manifest()
-            data["latest_authenticated_working_run"] = 18
+            data["latest_authenticated_working_run"] = 19
             path.write_text(json.dumps(data))
             self.assertTrue(any("latest authenticated working run" in error
                                 for error in validate(path)))
@@ -773,7 +782,7 @@ class ToolTests(unittest.TestCase):
         self.assertTrue(
             data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
         self.assertEqual(data["dma_e820_build"]["run"], 18)
-        self.assertEqual(data["latest_tested_run"], "run19-ubuntu-ci-dma-e820-pass")
+        self.assertTrue(run19["published_tester_pair"])
 
     def test_manifest_requires_run19_record(self):
         with TemporaryDirectory() as temp:
@@ -877,10 +886,315 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "manifest.json"
             data = load_pinned_manifest()
-            data["latest_tested_run"] = "run18-cachyos-dma-e820-pass"
+            data["latest_tested_run"] = "run19-ubuntu-ci-dma-e820-pass"
             path.write_text(json.dumps(data))
-            self.assertTrue(any("latest tested run must be Run 19" in error
+            self.assertTrue(any("latest tested run must be Run 21" in error
                                 for error in validate(path)))
+
+    def test_manifest_records_run21_cachyos_k73(self):
+        data = load_pinned_manifest()
+        run21 = data["cachyos_k73_run"]
+        self.assertEqual(run21["run"], 21)
+        self.assertEqual(run21["kernel"]["version"], "7.3.0")
+        self.assertEqual(run21["upstream_kernel_work"]["author"],
+                         "Armandas Kvietkus (rmux)")
+        self.assertEqual(run21["upstream_kernel_work"]["repository"],
+                         "https://github.com/rmuxnet/ps5-linux-patches-1")
+        self.assertTrue(run21["kernel"]["patch_commit"].startswith("36f173f"))
+        self.assertFalse(run21["image"]["built_by_ci"])
+        self.assertEqual(run21["later_ci_build"]["workflow_conclusion"], "success")
+        self.assertTrue(run21["later_ci_build"]["draft_release_created"])
+        self.assertFalse(run21["later_ci_build"]["booted"])
+        self.assertEqual(
+            run21["image"]["raw"]["sha256"],
+            "d593bb5d52c9054d8e3671d6b67fae0687aa239cb3d104a503999e6a5906789d",
+        )
+        self.assertEqual(
+            run21["loader"]["sha256"],
+            "e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f",
+        )
+        self.assertNotEqual(run21["loader"]["sha256"],
+                            data["dma_e820_build"]["loader"]["sha256"])
+        self.assertEqual(run21["loader"]["wifi_firmware_dump"]["bytes"],
+                         data["ubuntu_wifi"]["firmware"]["size"])
+        self.assertEqual(run21["wifi"]["firmware"]["sha256"],
+                         data["ubuntu_wifi"]["firmware"]["sha256"])
+        self.assertTrue(run21["loader"]["wake_copy"]["inside_proven_window"])
+        self.assertEqual(run21["wake"]["seconds_wake_to_tcp22"], 25)
+        self.assertEqual(run21["observed_e820"]["reserved"],
+                         data["dma_e820_build"]["observed_e820"]["reserved"])
+        self.assertEqual(run21["kaslr"]["kernel_code_physical_start"], "0x26ec00000")
+        self.assertEqual(run21["mem_total_kib"], 14788356)
+        self.assertTrue(run21["physical_display_observed"])
+        self.assertTrue(run21["vcn"]["vcn_initialized"])
+        self.assertFalse(run21["vcn"]["decode_tested"])
+        self.assertTrue(run21["wifi"]["joined"])
+        self.assertFalse(run21["bluetooth_working"])
+        self.assertTrue(run21["dualsense_usb"])
+        self.assertFalse(run21["thermal"]["frequency_drivers_autoloaded"])
+        install = run21["large_install_observation"]
+        self.assertEqual(install["download_bytes"], 53229366208)
+        self.assertFalse(install["manual_steam_integrity_check"])
+        self.assertFalse(install["independent_readback_or_hash_check"])
+        self.assertEqual(install["watcher"]["samples"], 480)
+        self.assertFalse(
+            install["watcher"]["throughput_and_total_counters_valid"])
+        game_load = run21["game_load_observation"]
+        self.assertEqual(game_load["samples"], 540)
+        self.assertEqual(game_load["gpu_peak_mhz"], 2230)
+        self.assertEqual(game_load["temperature_peak_c"], 84.0)
+        self.assertTrue(game_load["logger_ended_while_load_active"])
+        self.assertFalse(game_load["operator_confirmed_gameplay"])
+        self.assertFalse(game_load["thermal_equilibrium_established"])
+        self.assertTrue(run21["game_load_telemetry_recorded"])
+        self.assertEqual(len(run21["pending"]), 3)
+        self.assertEqual(len(run21["fixes_identified_for_ci_build_2"]), 5)
+        self.assertFalse(run21["gaming_load_tested"])
+        self.assertFalse(run21["release_loader_baseline"])
+        self.assertTrue(
+            data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
+        self.assertEqual(data["dma_e820_build"]["run"], 18)
+        self.assertEqual(data["ubuntu_ci_dma_run"]["run"], 19)
+        self.assertEqual(data["latest_tested_run"], "run21-cachyos-k73-bounded-wifi-pass")
+
+    def test_manifest_requires_run21_record(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            del data["cachyos_k73_run"]
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("missing cachyos_k73_run" in error
+                                for error in errors))
+            self.assertTrue(any("cachyos_k73_run is not an object" in error
+                                for error in errors))
+
+    def test_manifest_requires_run21_upstream_credit(self):
+        for field in ("author", "repository"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                del data["cachyos_k73_run"]["upstream_kernel_work"][field]
+                path.write_text(json.dumps(data))
+                self.assertTrue(any("Run 21 must credit rmux" in error
+                                    for error in validate(path)))
+
+    def test_manifest_rejects_run21_loader_hash_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["loader"]["sha256"] = (
+                "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0"
+            )
+            path.write_text(json.dumps(data))
+            errors = validate(path)
+            self.assertTrue(any("unexpected Run 21 loader SHA-256" in error
+                                for error in errors))
+            self.assertTrue(any("Run 21 loader must differ from the Run 18 DMA loader"
+                                in error for error in errors))
+
+    def test_manifest_rejects_run21_release_baseline_claim(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["sonic_display_diagnostics"]["release"]["elf_sha256"] = (
+                data["cachyos_k73_run"]["loader"]["sha256"])
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 15 must remain the release loader ELF" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_run21_image_drift(self):
+        cases = (
+            (("raw", "sha256"), "0" * 64, "unexpected Run 21 image SHA-256"),
+            (("built_by_ci",), True, "Run 21 booted a local image build"),
+        )
+        for keys, value, message in cases:
+            with self.subTest(keys=keys), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"]["image"]
+                for key in keys[:-1]:
+                    target = target[key]
+                target[keys[-1]] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_later_ci_state_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["later_ci_build"]["workflow_conclusion"] = "failure"
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 21 later CI build" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_run21_boot_file_drift(self):
+        cases = (
+            ("bzimage", "size", 12702720, "Run 21 boot file bzimage size"),
+            ("initrd", "sha256", "0" * 64, "Run 21 boot file initrd SHA-256"),
+        )
+        for name, field, value, message in cases:
+            with self.subTest(name=name), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["cachyos_k73_run"]["boot_files"][name][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_wifi_firmware_drift(self):
+        cases = (
+            (("loader", "wifi_firmware_dump", "bytes"), 498109,
+             "Run 21 loader Wi-Fi firmware dump size disagrees"),
+            (("wifi", "firmware", "sha256"), "0" * 64,
+             "Run 21 Wi-Fi firmware must be the Run 17 p47 blob"),
+        )
+        for keys, value, message in cases:
+            with self.subTest(keys=keys), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"]
+                for key in keys[:-1]:
+                    target = target[key]
+                target[keys[-1]] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_wake_copy_outside_window(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["loader"]["wake_copy"]["end"] = "0x104100000"
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 21 wake copy must stay inside the proven window"
+                                in error for error in validate(path)))
+
+    def test_manifest_rejects_wrong_run21_memory_layout(self):
+        cases = (
+            ("observed_e820", "reserved", "start", "0x000000003fffc000",
+             "unexpected Run 21 observed e820 reserved range"),
+            ("kaslr", None, "kernel_code_physical_start", "0x2000000",
+             "Run 21 kernel must sit above the reserved range"),
+        )
+        for outer, inner, field, value, message in cases:
+            with self.subTest(outer=outer), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"][outer]
+                if inner is not None:
+                    target = target[inner]
+                target[field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_requires_run21_display_observation(self):
+        for target in ("run", "display"):
+            with self.subTest(target=target), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                run21 = data["cachyos_k73_run"]
+                if target == "run":
+                    run21["physical_display_observed"] = False
+                else:
+                    run21["display"]["direct_operator_observation"] = False
+                path.write_text(json.dumps(data))
+                self.assertTrue(any("Run 21 must record the directly observed display"
+                                    in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_device_overstatement(self):
+        cases = (
+            (("vcn", "decode_tested"), True,
+             "Run 21 VCN must be initialized with decode not tested"),
+            (("bluetooth_working",), True, "Run 21 Bluetooth is overstated"),
+            (("thermal", "frequency_drivers_autoloaded"), True,
+             "Run 21 frequency driver autoload is overstated"),
+        )
+        for keys, value, message in cases:
+            with self.subTest(keys=keys), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"]
+                for key in keys[:-1]:
+                    target = target[key]
+                target[keys[-1]] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_thermal_drift(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["thermal"]["steps"][1]["settled_c"] = [30.0, 31.0]
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("unexpected Run 21 thermal steps" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_run21_large_install_drift(self):
+        cases = (
+            (("download_bytes",), 0,
+             "unexpected Run 21 large-install observation"),
+            (("manual_steam_integrity_check",), True,
+             "unexpected Run 21 large-install observation"),
+            (("watcher", "throughput_and_total_counters_valid"), True,
+             "unexpected Run 21 storage-watcher observation"),
+            (("watcher", "diskstats_fields_used"), [6, 10],
+             "unexpected Run 21 storage-watcher observation"),
+        )
+        for keys, value, message in cases:
+            with self.subTest(keys=keys), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"]["large_install_observation"]
+                for key in keys[:-1]:
+                    target = target[key]
+                target[keys[-1]] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_run21_game_load_drift(self):
+        cases = (
+            ("samples", 539),
+            ("temperature_peak_c", 80.0),
+            ("operator_confirmed_gameplay", True),
+            ("thermal_equilibrium_established", True),
+        )
+        for field, value in cases:
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["cachyos_k73_run"]["game_load_observation"][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any("unexpected Run 21 game-load observation" in error
+                                    for error in validate(path)))
+
+    def test_manifest_requires_run21_game_load_telemetry_marker(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["game_load_telemetry_recorded"] = False
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 21 game-load telemetry is missing" in error
+                                for error in validate(path)))
+
+    def test_manifest_requires_run21_pending_checks(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["pending"] = []
+            path.write_text(json.dumps(data))
+            self.assertTrue(any("Run 21 must list the three remaining checks" in error
+                                for error in validate(path)))
+
+    def test_manifest_rejects_overstated_run21_scope(self):
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested",
+                      "gaming_load_tested", "ci_built_image"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["cachyos_k73_run"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(f"Run 21 {field} is overstated" in error
+                                    for error in validate(path)))
 
 
 if __name__ == "__main__":

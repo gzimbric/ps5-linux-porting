@@ -30,3 +30,11 @@ instruction executed.
   from the tester guide (CI Ubuntu build 3 and the DMA E820 ELF): input
   identities, the directly observed picture, the e820 lines, the guide's checks
   including the I/O check, warnings, two image defects, and evidence limits.
+- `11.60-cachyos-k73-run-21.md` records Run 21, the first boot of CachyOS on
+  Linux 7.3.0 (rmux's 7.3 port of the PS5 patches) with the bounded Wi-Fi
+  loader build: input identities for the loader and the image, the loader
+  lines, the e820 lines and KASLR placement, onboard Wi-Fi with the firmware
+  the loader copied, VCN, the Bluetooth failure, the DualSense over USB, the
+  desktop switch issue, idle temperatures with rmux's frequency drivers, the
+  later install watcher and game-load telemetry, the fixes identified, and
+  evidence limits.

@@ -773,6 +773,387 @@
     "soak_tested": false,
     "wifi_tested": false
   },
+  "cachyos_k73_run": {
+    "hardware_test_date": "2026-10-19",
+    "run": 21,
+    "distribution": "CachyOS",
+    "result": "pass-physical-display-authenticated-wired-ssh-reserved-map-wifi-join",
+    "first_linux_73_boot": true,
+    "first_bounded_wifi_loader_boot": true,
+    "merges_planned_runs": [21, 22],
+    "deferred_run": 20,
+    "same_console_as_run15": true,
+    "same_usb_as_run16": true,
+    "usb_reflashed": true,
+    "usb_flash_audit": "pass-hash-locked-flash-script",
+    "replaced_run19_image_on_usb": true,
+    "independent_hardware_reproduction": false,
+    "release_loader_baseline": false,
+    "upstream_kernel_work": {
+      "author": "Armandas Kvietkus (rmux)",
+      "repository": "https://github.com/rmuxnet/ps5-linux-patches-1",
+      "patch": "linux.patch",
+      "commit": "36f173f39e5e76c00c4e366a7b909f33bc665ad5",
+      "provides": ["linux-7.3-port-of-the-ps5-patches", "ps5_cpufreq", "ps5_gpufreq"]
+    },
+    "image": {
+      "repository": "https://github.com/gzimbric/ps5-linux-image",
+      "name": "ps5-cachyos1160-k73.img",
+      "built_by_ci": false,
+      "local_build": true,
+      "source_branch": "cachyos-1160-k73",
+      "built_before_review_fixes": true,
+      "nearest_source_commit": "b97b6b0f9650a07ac6878d18fb6f6a15fdf17e21",
+      "exact_build_tree_pinned": false,
+      "base": "official-ps5-linux-image-cachyos-release",
+      "base_same_as_run18": true,
+      "partition_ids_match_run18": true,
+      "raw": {
+        "size": 12582912000,
+        "sha256": "d593bb5d52c9054d8e3671d6b67fae0687aa239cb3d104a503999e6a5906789d"
+      },
+      "root_grown_on_first_boot": true,
+      "included": false
+    },
+    "later_ci_build": {
+      "release_tag": "cachyos1160-k73-image-1",
+      "workflow_run": 39370806218,
+      "workflow_conclusion": "success",
+      "draft_release_created": true,
+      "includes_review_fixes": true,
+      "started_after_run": true,
+      "booted": false
+    },
+    "loader": {
+      "name": "ps5-linux-loader-1160-dma-e820-bounded-wifi.elf",
+      "size": 170904,
+      "sha256": "e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f",
+      "repository": "https://github.com/gzimbric/ps5-linux-loader",
+      "source_branch": "firmware-11.60-dma-e820",
+      "source_commit": "98925a2561ad43769a7a7445a0bd957b24e84073",
+      "build_target": "linux-1160-dma-e820-bounded-wifi",
+      "adds_to_run18_build": [
+        "visible-refusals",
+        "bounded-boot-file-checks",
+        "11.60-iw620-firmware-dump"
+      ],
+      "review_rounds": 2,
+      "ci_reproduces_hash": true,
+      "release_tag": "firmware-11.60-dma-e820-bounded-run21",
+      "release_is_draft": true,
+      "release_also_holds_unbooted_bounded_elf": true,
+      "exact_size_loaders_refuse_these_boot_files": [
+        "422b87ec39ca0edfce8dddd609c2eff1cc7adcb2732b7909b76fafbd60dd2336",
+        "2e1758a2d013305bcb9faa0eb3adf18c34ed76ad85313dd945719c8bf2a0c9c0"
+      ],
+      "byte_identical_to_run15": false,
+      "byte_identical_to_run18": false,
+      "elf_loader_port": 9021,
+      "sends_recorded": 1,
+      "bytes_sent": 170904,
+      "output_bytes": 3035,
+      "output_highlights": [
+        "11.60 bounded: bzImage protocol 0x20f, setup 20480, payload 11592704 at 0x100000, decompress 0x1000000-0x36c5000",
+        "Dumped PS5 WiFi firmware to the USB FAT partition as lib/nxp/pcieuartiw620_combo_v1.bin (498108 bytes)",
+        "11.60 bounded: wake copy 0x100000000-0x103c9d000 (3878 logical pages)",
+        "11.60 Sonic-style Linux wake chain armed"
+      ],
+      "bzimage_check": {
+        "boot_protocol": "0x20f",
+        "setup_bytes": 20480,
+        "payload_bytes": 11592704,
+        "payload_address": "0x100000",
+        "decompress_range": "0x1000000-0x36c5000"
+      },
+      "wifi_firmware_dump": {
+        "destination": "usb-fat:lib/nxp/pcieuartiw620_combo_v1.bin",
+        "bytes": 498108,
+        "first_dump_on_1160": true
+      },
+      "wake_copy": {
+        "start": "0x100000000",
+        "end": "0x103c9d000",
+        "logical_pages": 3878,
+        "proven_window": {
+          "start": "0x100000000",
+          "end_exclusive": "0x1040048c0"
+        },
+        "inside_proven_window": true
+      },
+      "wake_chain_armed": true,
+      "included": false
+    },
+    "boot_files": {
+      "bzimage": {
+        "size": 11613184,
+        "sha256": "db8617da59ffe196fd2e6f9ef5a1a3872f77eaca7189858a395c91112b6629a7",
+        "byte_identical_to_run15": false
+      },
+      "initrd": {
+        "size": 51900862,
+        "sha256": "56a8a0b91cfa46d4f666aba89055ec6621b3c86708c7b0c28ccf09ac23aa9bbc",
+        "generator": "mkinitcpio",
+        "padded": false,
+        "byte_identical_to_run15": false
+      },
+      "cmdline": {
+        "size": 118,
+        "sha256": "aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8",
+        "byte_identical_to_run15": true
+      },
+      "vram": {
+        "size": 11,
+        "sha256": "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"
+      },
+      "kexec": {
+        "size": 136,
+        "sha256": "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"
+      }
+    },
+    "wake": {
+      "wake_input": "controller-ps-button",
+      "attempts": 1,
+      "first_attempt": "pass-white-light",
+      "seconds_elf_send_to_wake": 67,
+      "seconds_wake_to_tcp22": 25,
+      "wake_time_source": "operator-report"
+    },
+    "kernel": {
+      "version": "7.3.0",
+      "base": "v7.3",
+      "patch_repository": "https://github.com/rmuxnet/ps5-linux-patches-1",
+      "patch_commit": "36f173f39e5e76c00c4e366a7b909f33bc665ad5",
+      "compiler": "GCC 14.2",
+      "frequency_drivers_built_as_modules": true,
+      "cmdline": "root=LABEL=cachyos rw rootwait console=ttyTitania0 console=tty0 consoleblank=0 mitigations=off idle=halt preempt=full",
+      "cmdline_same_as_run15": true,
+      "nokaslr": false
+    },
+    "observed_e820": {
+      "low_ram": {
+        "start": "0x0000000000100000",
+        "end_inclusive": "0x0000000000ffffff",
+        "type": "System RAM"
+      },
+      "reserved": {
+        "start": "0x0000000001000000",
+        "end_inclusive": "0x000000003fffffff",
+        "type": "device reserved"
+      },
+      "ram_above_reserved": {
+        "start": "0x0000000040000000",
+        "end_inclusive": "0x000000005fffffff",
+        "type": "System RAM"
+      },
+      "table_identical_to_run18": true,
+      "table_identical_to_run19": true
+    },
+    "kaslr": {
+      "enabled": true,
+      "kernel_code_physical_start": "0x26ec00000",
+      "kernel_code_physical_end_inclusive": "0x26fe70adf",
+      "above_reserved_range": true
+    },
+    "mem_total_kib": 14788356,
+    "mem_total_identical_to_run18": false,
+    "hardware_corrupted_kib": 0,
+    "root_filesystem": {
+      "filesystem": "ext4",
+      "label": "cachyos",
+      "size_after_growth": "230.6 GB"
+    },
+    "kernel_log_scan": {
+      "io_errors": 0,
+      "ext4_errors": 0,
+      "iommu_errors": 0,
+      "bug_or_oops": 0
+    },
+    "kernel_taint": 4160,
+    "kernel_taint_parts": {
+      "as_in_earlier_runs": 64,
+      "out_of_tree_iw620_modules": 4096
+    },
+    "network": {
+      "wired_authenticated_ssh": true
+    },
+    "display": {
+      "direct_operator_observation": true,
+      "first_session": "steam-gaming-mode",
+      "steam_switch_to_desktop": "hang-steamos-session-select-not-run",
+      "kde_plasma_after_manual_session_switch": true,
+      "picture_normal_after_switch": true
+    },
+    "vcn": {
+      "ip_block": "vcn_v2_0",
+      "firmware_reported": "ENC: 1.24 DEC: 8",
+      "rings": ["vcn_dec", "vcn_enc"],
+      "error_lines": 0,
+      "vcn_initialized": true,
+      "decode_tested": false
+    },
+    "wifi": {
+      "firmware": {
+        "name": "nxp/pcieuartiw620_combo_v1.bin",
+        "size": 498108,
+        "sha256": "eafef24af118f96f84a652e17aeed555ec4ac719b9fac11ff98a2de7e2b4b369",
+        "version": "17.130.3.p47",
+        "source": "loader-dump-on-usb-fat",
+        "matches_run17_firmware": true,
+        "included": false
+      },
+      "first_probe_before_firmware": {
+        "seconds_after_boot": 12,
+        "request_firmware": -2,
+        "probe": -14
+      },
+      "firmware_service_reload": {
+        "service": "ps5-iw620-firmware",
+        "seconds_after_boot_approx": 18,
+        "firmware_active": true
+      },
+      "scan_networks_seen": [13, 16],
+      "join_from_kde_menu": "fail-twice-access-point-not-in-scan-list",
+      "join_with_nmcli": "pass-with-sudo",
+      "nm_control_over_ssh_without_sudo": "refused-by-polkit",
+      "joined": true,
+      "association": {
+        "band": "5GHz",
+        "frequency_mhz": 5320,
+        "security": "WPA3",
+        "reported_rate_mbit": 1170,
+        "signal": 74
+      },
+      "download": {
+        "protocol": "https",
+        "bytes": 50000000,
+        "bytes_per_second": 23979239,
+        "approx_mbit_per_second": 192,
+        "run17_approx_mbit_per_second": 158,
+        "bound_to_wifi_interface": true
+      },
+      "wired_default_route_kept": true,
+      "route_metric_wired": 100,
+      "route_metric_wifi": 600
+    },
+    "bluetooth": {
+      "usb_id": "1286:2059",
+      "btusb_controllers": ["hci0-interface-0", "hci1-interface-2"],
+      "error_lines": [
+        "hci0: Opcode 0x2031 failed: -22",
+        "hci1: Opcode 0x0c03 failed: -110"
+      ],
+      "btmgmt_index_count": 0,
+      "bluetoothctl_default_controller": false
+    },
+    "bluetooth_working": false,
+    "input": {
+      "dualsense_usb_driver": "hid-playstation",
+      "dualsense_functions": ["gamepad", "motion-sensors", "touchpad", "headset-jack"],
+      "dualsense_fw_version": "0x010f0000",
+      "logitech_usb_receiver": true
+    },
+    "dualsense_usb": true,
+    "thermal": {
+      "sensor": "k10temp-temp1",
+      "fan_request": "servo-pattern-3-max-as-in-all-runs",
+      "sample_seconds": 30,
+      "minutes_per_step": 10,
+      "load": "desktop-or-gaming-mode-idle",
+      "run19_idle_baseline_c": 49.5,
+      "steps": [
+        {
+          "name": "linux-7.3-no-frequency-drivers",
+          "start_c": 51.75,
+          "settled_c": [49.5, 50.25],
+          "note": "Steam first-boot activity, load average 0.3-1.7"
+        },
+        {
+          "name": "plus-ps5_gpufreq",
+          "devfreq": "ps5-gpufreq",
+          "governor": "simple_ondemand",
+          "gpu_steps_mhz": [400, 800, 1200, 1600, 2000, 2230],
+          "gpu_idle_mhz": 400,
+          "c_at_30_seconds": 45.0,
+          "c_at_4_minutes": 37.0,
+          "settled_c": [35.75, 36.5],
+          "picture_normal_at_400_mhz": true,
+          "kernel_line": "_allocate_opp_table: Error finding interconnect paths: -95"
+        },
+        {
+          "name": "plus-ps5_cpufreq",
+          "driver": "ps5-cpufreq",
+          "governor": "schedutil",
+          "cpu_steps_mhz": [800, 1280, 1600, 1829, 1969, 2327, 2560, 3200],
+          "boost": 0,
+          "cpu_idle_average_mhz": [820, 860],
+          "cpu_on_demand_mhz_approx": 3180,
+          "settled_c": [35.5, 36.5]
+        }
+      ],
+      "gpu_driver_idle_drop_c_approx": 14,
+      "cpu_driver_idle_rise_c_max": 0.5,
+      "frequency_drivers_loaded_by_hand": true,
+      "frequency_drivers_autoloaded": false
+    },
+    "sleep_inhibited_during_testing": true,
+    "suspend_supported_on_this_path": false,
+    "large_install_observation": {
+      "steam_update_result": "finished-no-error",
+      "download_bytes": 53229366208,
+      "staged_bytes": 59880080270,
+      "committed_files": 347,
+      "steam_staged_verification_observed": true,
+      "manual_steam_integrity_check": false,
+      "independent_readback_or_hash_check": false,
+      "watcher": {
+        "samples": 480,
+        "duration_seconds": 14393,
+        "root_free_start_gib_displayed": 213,
+        "root_free_end_gib_displayed": 159,
+        "storage_error_lines_per_sample": 0,
+        "throughput_and_total_counters_valid": false,
+        "diskstats_fields_used": [7, 11],
+        "diskstats_sector_fields_required": [6, 10]
+      }
+    },
+    "game_load_observation": {
+      "sample_seconds": 5,
+      "samples": 540,
+      "game_thread_samples": 88,
+      "gpu_peak_mhz": 2230,
+      "gpu_peak_samples": 76,
+      "gpu_peak_trans_stat_ms": 386159,
+      "temperature_min_c": 35.0,
+      "temperature_peak_c": 84.0,
+      "samples_at_or_above_80_c": 30,
+      "gpu_or_iommu_error_lines": 0,
+      "logger_ended_while_load_active": true,
+      "operator_confirmed_gameplay": false,
+      "operator_confirmed_display_during_load": false,
+      "thermal_equilibrium_established": false,
+      "stability_established": false
+    },
+    "pending": [
+      "operator-run Steam Verify integrity of game files",
+      "independent read-back or hash verification of the installed files",
+      "operator-observed gameplay and display with a bounded thermal and stability run"
+    ],
+    "fixes_identified_for_ci_build_2": [
+      "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
+      "joining Wi-Fi from the KDE network menu fails with the access point not in the scan list",
+      "test the built but unbooted internal-Bluetooth quirks fix",
+      "test the reviewed but unbooted Wi-Fi firmware and driver load-order fix",
+      "keep the CPU and GPU frequency drivers manual until thermal safety is established"
+    ],
+    "not_tested": ["video-decode", "manual-steam-integrity", "independent-readback-or-hash", "operator-confirmed-gameplay-and-display", "thermal-equilibrium", "reboot", "suspend", "soak", "ci-built-image", "other-consoles"],
+    "game_load_telemetry_recorded": true,
+    "physical_display_observed": true,
+    "ab_control_run": false,
+    "tester_errors_reproduced": false,
+    "soak_tested": false,
+    "gaming_load_tested": false,
+    "ci_built_image": false
+  },
   "superseded_candidate_build": {
     "strategy": "wake-coupled-bypass-and-linux-handoff",
     "superseded": true,
@@ -857,12 +1238,12 @@
       "sha256": "ada1624ce72ef2fe4e9400e13d544116be4050f5187234a1fa19c6bd26988fee"
     }
   },
-  "latest_authenticated_working_run": 19,
-  "latest_tested_run": "run19-ubuntu-ci-dma-e820-pass",
-  "last_observed_marker": "Run 19 CI Ubuntu build 3 with the DMA E820 loader: directly observed HDMI picture, the reserved e820 range, and the tester guide checks over authenticated SSH",
-  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, Run 18 DMA E820 build on CachyOS, and Run 19 published tester pair (CI Ubuntu build 3 with the DMA E820 build); tester read/write errors, an A/B I/O control, other consoles, Wi-Fi with the CI image, Wi-Fi autoload across reboot, soak, loader firmware dump, repeatability, and minimal display subset not yet characterized",
+  "latest_authenticated_working_run": 21,
+  "latest_tested_run": "run21-cachyos-k73-bounded-wifi-pass",
+  "last_observed_marker": "Run 21 CachyOS on Linux 7.3.0 with the bounded Wi-Fi loader: directly observed HDMI picture, the reserved e820 range, the loader's Wi-Fi firmware dump, a 5 GHz Wi-Fi join over authenticated SSH, and later limited install and game-load telemetry",
+  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, Run 18 DMA E820 build on CachyOS, Run 19 published tester pair (CI Ubuntu build 3 with the DMA E820 build), and Run 21 CachyOS 7.3.0 local build with the bounded Wi-Fi loader; tester read/write errors, an A/B I/O control, other consoles, the CI CachyOS 7.3 image, Bluetooth, video decode, file integrity, operator-confirmed gameplay and display under load, thermal equilibrium, reboot and suspend, Wi-Fi autoload across reboot, soak, repeatability, and the minimal display subset remain uncharacterized",
   "notes": [
-    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, 18, and 19; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
+    "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, 18, 19, and 21; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
     "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
     "Run 16 reused the exact Run 15 loader and kernel with a distinct Ubuntu 24.04 initramfs, then produced directly observed physical output and authenticated wired SSH on the same console.",
     "Run 16 is a cross-distribution control, not an independent hardware reproduction and not a reproduction of the exact Run 15 CachyOS initrd recipe.",
@@ -878,7 +1259,17 @@
     "Run 19 ran the tester guide checks as written, including the optional 3 x 4 GiB write and read-back check, which passed with no storage error lines. It used the same console and USB drive as Run 18 and had no A/B control, so it does not show that the reservation fixes the tester errors.",
     "Run 19 found two image defects for the backlog: the hostname is the CI build container ID, and ps5-ssh-host-keys.service causes an ordering cycle with ssh.socket that systemd breaks by dropping the sockets.target job. SSH still worked.",
     "The dma_e820_build record describes Run 18 only; its physical_display_observed and ubuntu_ci_image_tested values are Run 18 results. Run 19 (ubuntu_ci_dma_run) booted the DMA build with the CI Ubuntu image and a directly observed picture.",
-    "Run 15 remains the release loader baseline; the DMA E820 build is a separate opt-in build. Run 18 remains the DMA validation run.",
+    "Run 21 is the first boot of Linux 7.3.0 and of the bounded Wi-Fi loader on this console. The kernel is mainline v7.3 with the 7.3 port of the PS5 patches by rmux (Armandas Kvietkus), https://github.com/rmuxnet/ps5-linux-patches-1 at 36f173f, which also brings rmux's PS5 CPU and GPU frequency drivers. The planned Runs 21 (CachyOS 7.3) and 22 (Wi-Fi) were merged into this run, and Run 20 was deferred.",
+    "Run 21 booted a local build of the cachyos-1160-k73 image branch from before the review fixes, not a CI build. CI build cachyos1160-k73-image-1 completed successfully afterwards and is held in a draft release; it has not been booted.",
+    "The Run 21 loader (firmware-11.60-dma-e820 at 98925a2, target linux-1160-dma-e820-bounded-wifi) checks the boot files against bounds instead of exact sizes, prints its refusals, and dumps the 11.60 IW620 firmware. The Run 15 and Run 18 loaders refuse these boot files. In Run 21 it dumped the 498,108-byte firmware for the first time on 11.60, and the wake copy stayed inside the proven window.",
+    "In Run 21 the e820 table matched Runs 18 and 19, and KASLR put the kernel code at physical 0x26ec00000, far above the reserved range. MemTotal was 14,788,356 kB.",
+    "In Run 21 the Wi-Fi driver first probed before the firmware was in place, then the image's firmware service reloaded it and the 17.130.3.p47 firmware came up. Joining from the KDE menu failed twice; joining by name with nmcli worked, on 5 GHz with WPA3, and a 50 MB HTTPS download over Wi-Fi ran at about 192 Mbit/s.",
+    "In Run 21 Bluetooth did not work: btusb bound 1286:2059 but no controller came up. A DualSense over a USB cable worked. VCN initialized with its firmware, but video decode was not tried.",
+    "In Run 21 rmux's GPU frequency driver, loaded by hand, brought idle temperature from about 50 C to about 36 C with the GPU at 400 MHz and a normal picture; the CPU driver added at most about 0.5 C at idle. The drivers are not autoloaded in this image.",
+    "After the initial Run 21 checks, Steam completed a 53,229,366,208-byte download and committed 347 files. A watcher took 480 snapshots over about four hours; free space moved from 213G to 159G and every snapshot had zero new matching storage-error lines relative to the watcher's baseline. The watcher's diskstats throughput and total counters are invalid because it read I/O-time fields 7 and 11 instead of sector fields 6 and 10. This was not a read-back, hash, or operator-run Steam integrity pass.",
+    "Run 21 later recorded 540 five-second game-load samples: GameThread appeared in 88, the GPU was at 2.23 GHz in 76, the transition table recorded 386,159 ms at 2.23 GHz, and temperature peaked at 84.0 C. The logger ended while load remained active without operator-confirmed gameplay or display, so this is not a thermal-equilibrium or stability result. The frequency drivers remain manual-only.",
+    "The ubuntu_wifi record describes Run 17; its loader_dump_hardware_tested value is a Run 17 result. Run 21 (cachyos_k73_run) is the first run in which the loader dumped the Wi-Fi firmware.",
+    "Run 15 remains the release loader baseline; the DMA E820 build is a separate opt-in build. Run 18 remains the DMA validation run, Run 19 the Ubuntu tester-pair run, and Run 21 the first CachyOS 7.3.0 boot with the bounded Wi-Fi loader.",
     "Run 14 PRE3/OP0 with the runtime clear disabled remains the initializer-only control.",
     "The exact Run 13 PRE3/OP0 ELF failed twice and must not be described as working.",
     "The attached physical USB FAT boot partition passed verification and its active files exactly match the Run 12 hashes, which Runs 14 and 15 also used; the Linux root partition was not directly mounted on macOS.",

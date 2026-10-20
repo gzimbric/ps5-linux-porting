@@ -1,6 +1,7 @@
 # Upstream references
 
-The following revisions were checked through 2026-10-18.
+The following revisions were checked through 2026-10-18. The rmuxnet patch set
+and the bounded loader branch were added on 2026-10-19.
 
 | Project | Branch | Commit | Role |
 |---|---|---|---|
@@ -13,6 +14,8 @@ The following revisions were checked through 2026-10-18.
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Hardware-verified 11.60 loader source with a hash-pinned Run 15 release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
+| [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1) | `meower` (default) | `36f173f39e5e76c00c4e366a7b909f33bc665ad5` | rmux's Linux 7.3 port of the PS5 patches and the PS5 CPU and GPU frequency drivers, used for the Run 21 kernel |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Bounded 11.60 loader builds; the bounded Wi-Fi build booted in Run 21 |
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
@@ -67,6 +70,32 @@ and makes `linux-1160-check` require the authenticated dumps and all three Run
 ELF, wake blob, and wake ELF byte for byte. Building requires the PS5 payload
 SDK and authenticated 11.60 kernel-text and hypervisor dumps, which are not
 distributed. See `PORTING_1160.md` on that branch for build details.
+
+## Linux 7.3 patch set
+
+The Linux 7.3.0 kernel used from Run 21 on is built from the work of rmux
+(Armandas Kvietkus):
+[rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
+pinned at commit `36f173f39e5e76c00c4e366a7b909f33bc665ad5`. It ports the
+ps5-linux PS5 patches to Linux 7.3 and adds rmux's PS5 CPU frequency
+(`ps5_cpufreq`) and GPU frequency (`ps5_gpufreq`) drivers. The image build
+applies `linux.patch` from that commit to mainline v7.3 and builds the two
+frequency drivers as modules. The VCN firmware from the same commit is built
+into the kernel. The patch is used as published, and its authorship and the
+authorship of the drivers are unchanged.
+
+The build lives on the `cachyos-1160-k73` branch of the
+[`gzimbric/ps5-linux-image`](https://github.com/gzimbric/ps5-linux-image/tree/cachyos-1160-k73)
+fork. It checks the patch, its kernel config, and the VCN firmware by SHA-256
+before using them. Nothing from the patch set is copied into this repository.
+
+The Run 21 image boots only with a bounded loader build, because its boot
+files are not the sizes the earlier 11.60 loaders accept. Those builds are on
+the
+[`firmware-11.60-dma-e820`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820)
+branch at commit `98925a2`. See the
+[Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md) for the tested
+hashes.
 
 ## Published Run 16 image source
 

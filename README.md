@@ -58,6 +58,32 @@ CFI-1115B; other models have not been tested, and there was still no A/B
 control with the Run 15 ELF. See the
 [Run 19 evidence](evidence/11.60-ubuntu-ci-run-19.md).
 
+Run 21 is the first boot of CachyOS on Linux 7.3.0, which is now the main
+line for gaming. The kernel is mainline v7.3 with the 7.3 port of the PS5
+patches by rmux (Armandas Kvietkus), from
+[rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
+which also brings rmux's PS5 CPU and GPU frequency drivers. The earlier
+loaders only accept boot files of exact sizes, so Run 21 used a new bounded
+loader build that checks the files themselves, keeps the DMA E820 map, and
+copies the console's own Wi-Fi firmware to the USB drive. The picture was
+directly observed in Steam Gaming Mode, SSH worked, and Linux got the same
+e820 map as in Runs 18 and 19. Onboard Wi-Fi came up with the firmware the
+loader copied and carried an HTTPS download at about 192 Mbit/s. With rmux's
+GPU frequency driver loaded by hand, the GPU idled at 400 MHz and the chip
+temperature at idle dropped by about 14 °C. Bluetooth does not work yet. A
+later four-hour install watcher found no new matching storage-error lines
+after its baseline, but a
+logger bug invalidated its byte and throughput counters, and no read-back or
+manual Steam integrity check ran. A separate game-load log reached 2.23 GHz
+and 84.0 °C, but ended while the load was active without operator-confirmed
+gameplay or display. The frequency drivers remain manual-only. The image that
+booted was a local build; the later CI-built image is held in a draft release
+and has not been booted. The bounded Wi-Fi loader in the draft loader release
+is the build that booted in Run 21; the companion bounded build without the
+Wi-Fi dump has not been booted. Run 15 remains the release baseline. Run 20,
+the bounded loader with the Ubuntu image, was deferred. See the
+[Run 21 evidence](evidence/11.60-cachyos-k73-run-21.md).
+
 The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
 that password immediately after first login, before exposing SSH beyond a
 trusted local network.
@@ -72,15 +98,19 @@ for how its commits map to the source hashes recorded in the evidence.
 | Boundary | 11.60 result |
 |---|---|
 | Byepervisor resume strike | Pass, 16 of 16 GameOS VMCBs written and verified |
-| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, 16, 17, 18, and 19 |
+| Sonic-style resume carrier, HV transition, and Linux transfer | Pass; authenticated Linux userspace in Runs 10, 12, 14, 15, 16, 17, 18, 19, and 21 |
 | Linux 7.1.7 and 54,376,639-byte loader input | Pass in Runs 15 and 16; their initrd contents differ as documented |
 | Ubuntu 24.04 control image | Pass in Run 16 with the exact Run 15 loader; authenticated SSH and visible desktop |
 | Onboard Wi-Fi (IW620) | Pass in Run 17 with separately built modules and the 11.60 firmware; scan, 5 GHz association, and an HTTPS download over Wi-Fi |
 | Opt-in DMA E820 loader build | Pass in Run 18 with CachyOS; intended e820 reservation, authenticated SSH, and a 12 GiB USB write and read-back check; display not recorded as observed |
 | CI Ubuntu 24.04 image with the DMA E820 ELF | Pass in Run 19 with build 3; visible HDMI, authenticated SSH, intended e820 reservation, and the tester guide's checks, including a 12 GiB USB write and read-back check |
+| CachyOS 7.3.0 boot with the bounded loader | Pass in Run 21 with a local image build; visible HDMI, authenticated SSH, intended e820 reservation, and the kernel placed above it by KASLR; Bluetooth does not work |
+| Onboard Wi-Fi via the loader's firmware dump | Pass in Run 21; the loader wrote the 11.60 firmware to the boot partition with the Run 17 hash, the driver started it, a 5 GHz WPA3 join by name worked, and an HTTPS download over Wi-Fi ran at about 192 Mbit/s; joining from the KDE menu failed |
+| Large install observation | Run 21 recorded 480 snapshots over about four hours, with free space moving from 213G to 159G and no new matching storage-error lines after the watcher's baseline; invalid diskstats fields made its throughput and total counters unusable, and this was not a read-back, hash, or Steam integrity pass |
+| GPU frequency driver (`ps5_gpufreq`) | Run 21 loaded it by hand; at idle the GPU held 400 MHz and `k10temp` fell from about 50 °C to about 36 °C. Later load telemetry reached 2.23 GHz and 84.0 °C, but did not establish gameplay, thermal equilibrium, or stability; autoload remains disabled |
 | Run 15 CachyOS physical USB boot partition | Pass; FAT verification succeeded and the active files matched the working boot-media identities |
 | Sonic PRE1/PRE2: VBIOS copy, transmitter call, timed wait | Pass as part of Run 12 |
-| Visible HDMI | **Pass in Runs 15, 16, and 19**; physical output was directly observed and corroborated by active DRM state |
+| Visible HDMI | **Pass in Runs 15, 16, 19, and 21**; physical output was directly observed, and in Runs 15, 16, and 19 also corroborated by active DRM state |
 | Full Sonic preamble with display table disabled | Fail in Run 11; no SSH |
 | PRE3 with runtime MP3 buffer clear and `mp3_initialize(0)` | Fail twice in Run 13; no SSH |
 | MP3 initialization without the redundant runtime clear | Pass in Run 14; authenticated SSH, white light, no HDMI |
@@ -198,6 +228,8 @@ metadata. See [publication policy](docs/publication-policy.md).
 - [11.60 loader source fork](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
 - [ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image)
 - [ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex)
+- [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
+  rmux's 7.3 port of the PS5 patches and the CPU and GPU frequency drivers
 - [Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn)
 - [PS5 Hypervisor Bypass Porting](https://github.com/gzimbric/ps5-hv-bypass-porting)
 

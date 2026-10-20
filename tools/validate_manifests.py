@@ -49,7 +49,7 @@ def validate(path: Path) -> list[str]:
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
                 "ubuntu_control", "ubuntu_wifi", "dma_e820_build",
-                "ubuntu_ci_dma_run", "boot_media", "artifacts",
+                "ubuntu_ci_dma_run", "cachyos_k73_run", "boot_media", "artifacts",
                 "latest_authenticated_working_run", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
         if key not in data:
@@ -786,10 +786,287 @@ def validate(path: Path) -> list[str]:
                       "tester_errors_reproduced", "soak_tested", "wifi_tested"):
             if tester_run.get(field) is not False:
                 errors.append(f"{path}: Run 19 {field} is overstated")
-        if data.get("latest_authenticated_working_run") != 19:
-            errors.append(f"{path}: latest authenticated working run must be 19")
-        if data.get("latest_tested_run") != "run19-ubuntu-ci-dma-e820-pass":
-            errors.append(f"{path}: latest tested run must be Run 19")
+
+    k73 = data.get("cachyos_k73_run")
+    if not isinstance(k73, dict):
+        errors.append(f"{path}: cachyos_k73_run is not an object")
+    else:
+        if k73.get("run") != 21:
+            errors.append(f"{path}: CachyOS 7.3 and bounded Wi-Fi loader test must be Run 21")
+        if k73.get("result") != (
+            "pass-physical-display-authenticated-wired-ssh-reserved-map-wifi-join"
+        ):
+            errors.append(f"{path}: unexpected Run 21 result")
+        if k73.get("same_console_as_run15") is not True:
+            errors.append(f"{path}: Run 21 must record same-console scope")
+        if k73.get("release_loader_baseline") is not False:
+            errors.append(f"{path}: Run 21 must not replace the Run 15 release baseline")
+        upstream = k73.get("upstream_kernel_work", {})
+        if (not isinstance(upstream, dict) or
+                upstream.get("author") != "Armandas Kvietkus (rmux)" or
+                upstream.get("repository") != "https://github.com/rmuxnet/ps5-linux-patches-1"):
+            errors.append(f"{path}: Run 21 must credit rmux for the 7.3 port and frequency drivers")
+        kernel = k73.get("kernel", {})
+        if not isinstance(kernel, dict):
+            kernel = {}
+            errors.append(f"{path}: Run 21 kernel is not an object")
+        if kernel.get("version") != "7.3.0":
+            errors.append(f"{path}: unexpected Run 21 kernel version")
+        patch_commit = kernel.get("patch_commit", "")
+        if (not isinstance(patch_commit, str) or not GIT_COMMIT.fullmatch(patch_commit) or
+                not isinstance(upstream, dict) or upstream.get("commit") != patch_commit or
+                not patch_commit.startswith("36f173f")):
+            errors.append(f"{path}: unexpected Run 21 kernel patch commit")
+        image = k73.get("image", {})
+        if not isinstance(image, dict):
+            image = {}
+            errors.append(f"{path}: Run 21 image is not an object")
+        if image.get("source_branch") != "cachyos-1160-k73":
+            errors.append(f"{path}: unexpected Run 21 image source branch")
+        if image.get("built_by_ci") is not False or k73.get("ci_built_image") is not False:
+            errors.append(f"{path}: Run 21 booted a local image build, not a CI build")
+        raw = image.get("raw", {})
+        if not isinstance(raw, dict):
+            raw = {}
+        if raw.get("size") != 12582912000:
+            errors.append(f"{path}: unexpected Run 21 image size")
+        if raw.get("sha256") != (
+            "d593bb5d52c9054d8e3671d6b67fae0687aa239cb3d104a503999e6a5906789d"
+        ):
+            errors.append(f"{path}: unexpected Run 21 image SHA-256")
+        if image.get("included") is not False:
+            errors.append(f"{path}: Run 21 disk image must not be included")
+        later_ci = k73.get("later_ci_build", {})
+        if (not isinstance(later_ci, dict) or
+                later_ci.get("workflow_conclusion") != "success" or
+                later_ci.get("draft_release_created") is not True or
+                later_ci.get("booted") is not False):
+            errors.append(f"{path}: Run 21 later CI build boot is overstated")
+        loader = k73.get("loader", {})
+        if not isinstance(loader, dict):
+            loader = {}
+            errors.append(f"{path}: Run 21 loader is not an object")
+        if loader.get("size") != 170904:
+            errors.append(f"{path}: unexpected Run 21 loader size")
+        if loader.get("sha256") != (
+            "e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f"
+        ):
+            errors.append(f"{path}: unexpected Run 21 loader SHA-256")
+        if loader.get("source_commit") != "98925a2561ad43769a7a7445a0bd957b24e84073":
+            errors.append(f"{path}: unexpected Run 21 loader source commit")
+        if loader.get("build_target") != "linux-1160-dma-e820-bounded-wifi":
+            errors.append(f"{path}: unexpected Run 21 loader build target")
+        if loader.get("included") is not False:
+            errors.append(f"{path}: Run 21 loader binary must not be included")
+        release = display.get("release") if isinstance(display, dict) else None
+        if (isinstance(release, dict) and
+                release.get("elf_sha256") == loader.get("sha256")):
+            errors.append(f"{path}: Run 15 must remain the release loader ELF")
+        dma_loader = dma.get("loader") if isinstance(dma, dict) else None
+        if isinstance(dma_loader, dict) and dma_loader.get("sha256") == loader.get("sha256"):
+            errors.append(f"{path}: Run 21 loader must differ from the Run 18 DMA loader")
+        if loader.get("sends_recorded") != 1 or loader.get("bytes_sent") != loader.get("size"):
+            errors.append(f"{path}: Run 21 loader send must be one full ELF")
+        if loader.get("output_bytes") != 3035:
+            errors.append(f"{path}: unexpected Run 21 loader output size")
+        wifi = k73.get("wifi", {})
+        if not isinstance(wifi, dict):
+            wifi = {}
+            errors.append(f"{path}: Run 21 Wi-Fi is not an object")
+        wifi_firmware = wifi.get("firmware", {})
+        if not isinstance(wifi_firmware, dict):
+            wifi_firmware = {}
+        run17_wifi = data.get("ubuntu_wifi", {})
+        run17_firmware = run17_wifi.get("firmware", {}) if isinstance(run17_wifi, dict) else {}
+        if not isinstance(run17_firmware, dict):
+            run17_firmware = {}
+        dump = loader.get("wifi_firmware_dump", {})
+        if (not isinstance(dump, dict) or dump.get("bytes") != 498108 or
+                dump.get("bytes") != wifi_firmware.get("size") or
+                dump.get("bytes") != run17_firmware.get("size")):
+            errors.append(f"{path}: Run 21 loader Wi-Fi firmware dump size disagrees")
+        if (wifi_firmware.get("sha256") !=
+                "eafef24af118f96f84a652e17aeed555ec4ac719b9fac11ff98a2de7e2b4b369" or
+                wifi_firmware.get("sha256") != run17_firmware.get("sha256")):
+            errors.append(f"{path}: Run 21 Wi-Fi firmware must be the Run 17 p47 blob")
+        if wifi_firmware.get("included") is not False:
+            errors.append(f"{path}: Run 21 Wi-Fi firmware must not be included")
+        wake_copy = loader.get("wake_copy", {})
+        if not isinstance(wake_copy, dict):
+            wake_copy = {}
+        window = wake_copy.get("proven_window", {})
+        if not isinstance(window, dict):
+            window = {}
+        try:
+            inside = (
+                int(window["start"], 16) <= int(wake_copy["start"], 16) <
+                int(wake_copy["end"], 16) <= int(window["end_exclusive"], 16)
+            )
+        except (KeyError, TypeError, ValueError):
+            inside = False
+        if not inside or wake_copy.get("inside_proven_window") is not True:
+            errors.append(f"{path}: Run 21 wake copy must stay inside the proven window")
+        if window != {"start": "0x100000000", "end_exclusive": "0x1040048c0"}:
+            errors.append(f"{path}: unexpected Run 21 proven wake copy window")
+        expected_boot_files = {
+            "bzimage": (11613184, "db8617da59ffe196fd2e6f9ef5a1a3872f77eaca7189858a395c91112b6629a7"),
+            "initrd": (51900862, "56a8a0b91cfa46d4f666aba89055ec6621b3c86708c7b0c28ccf09ac23aa9bbc"),
+            "cmdline": (118, "aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8"),
+            "vram": (11, "bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0"),
+            "kexec": (136, "0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52"),
+        }
+        boot_files = k73.get("boot_files", {})
+        for name, (size, digest) in expected_boot_files.items():
+            artifact = boot_files.get(name) if isinstance(boot_files, dict) else None
+            if not isinstance(artifact, dict):
+                errors.append(f"{path}: Run 21 boot file {name} is not an object")
+                continue
+            if artifact.get("size") != size:
+                errors.append(f"{path}: unexpected Run 21 boot file {name} size")
+            if artifact.get("sha256") != digest:
+                errors.append(f"{path}: unexpected Run 21 boot file {name} SHA-256")
+        wake = k73.get("wake", {})
+        if not isinstance(wake, dict):
+            wake = {}
+        for field in ("seconds_elf_send_to_wake", "seconds_wake_to_tcp22"):
+            value = wake.get(field)
+            if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                errors.append(f"{path}: invalid Run 21 wake timing {field}")
+        observed = k73.get("observed_e820", {})
+        reserved = observed.get("reserved") if isinstance(observed, dict) else None
+        expected_reserved = {
+            "start": "0x0000000001000000",
+            "end_inclusive": "0x000000003fffffff",
+            "type": "device reserved",
+        }
+        if reserved != expected_reserved:
+            errors.append(f"{path}: unexpected Run 21 observed e820 reserved range")
+        kaslr = k73.get("kaslr", {})
+        if not isinstance(kaslr, dict):
+            kaslr = {}
+        if kaslr.get("kernel_code_physical_start") != "0x26ec00000":
+            errors.append(f"{path}: unexpected Run 21 KASLR kernel physical start")
+        try:
+            above = (int(kaslr["kernel_code_physical_start"], 16) >
+                     int(expected_reserved["end_inclusive"], 16))
+        except (KeyError, TypeError, ValueError):
+            above = False
+        if not above or kaslr.get("above_reserved_range") is not True:
+            errors.append(f"{path}: Run 21 kernel must sit above the reserved range")
+        if k73.get("mem_total_kib") != 14788356:
+            errors.append(f"{path}: unexpected Run 21 mem_total_kib")
+        display_state = k73.get("display", {})
+        if (k73.get("physical_display_observed") is not True or
+                not isinstance(display_state, dict) or
+                display_state.get("direct_operator_observation") is not True):
+            errors.append(f"{path}: Run 21 must record the directly observed display")
+        vcn = k73.get("vcn", {})
+        if (not isinstance(vcn, dict) or vcn.get("vcn_initialized") is not True or
+                vcn.get("decode_tested") is not False):
+            errors.append(f"{path}: Run 21 VCN must be initialized with decode not tested")
+        association = wifi.get("association", {})
+        download = wifi.get("download", {})
+        if (wifi.get("joined") is not True or not isinstance(association, dict) or
+                association.get("band") != "5GHz" or not isinstance(download, dict) or
+                download.get("bound_to_wifi_interface") is not True or
+                download.get("bytes_per_second") != 23979239):
+            errors.append(f"{path}: unexpected Run 21 Wi-Fi join or speed")
+        if k73.get("bluetooth_working") is not False:
+            errors.append(f"{path}: Run 21 Bluetooth is overstated")
+        if k73.get("dualsense_usb") is not True:
+            errors.append(f"{path}: Run 21 must record the DualSense over USB")
+        thermal = k73.get("thermal", {})
+        if not isinstance(thermal, dict):
+            thermal = {}
+        steps = thermal.get("steps")
+        expected_steps = {
+            "linux-7.3-no-frequency-drivers": [49.5, 50.25],
+            "plus-ps5_gpufreq": [35.75, 36.5],
+            "plus-ps5_cpufreq": [35.5, 36.5],
+        }
+        if (not isinstance(steps, list) or
+                any(not isinstance(step, dict) or not isinstance(step.get("name"), str)
+                    for step in steps) or
+                {step["name"]: step.get("settled_c") for step in steps} != expected_steps):
+            errors.append(f"{path}: unexpected Run 21 thermal steps")
+        if thermal.get("frequency_drivers_autoloaded") is not False:
+            errors.append(f"{path}: Run 21 frequency driver autoload is overstated")
+
+        install = k73.get("large_install_observation", {})
+        if not isinstance(install, dict):
+            install = {}
+        expected_install = {
+            "steam_update_result": "finished-no-error",
+            "download_bytes": 53229366208,
+            "staged_bytes": 59880080270,
+            "committed_files": 347,
+            "steam_staged_verification_observed": True,
+            "manual_steam_integrity_check": False,
+            "independent_readback_or_hash_check": False,
+        }
+        if any(install.get(key) != value for key, value in expected_install.items()):
+            errors.append(f"{path}: unexpected Run 21 large-install observation")
+        watcher = install.get("watcher", {})
+        expected_watcher = {
+            "samples": 480,
+            "duration_seconds": 14393,
+            "root_free_start_gib_displayed": 213,
+            "root_free_end_gib_displayed": 159,
+            "storage_error_lines_per_sample": 0,
+            "throughput_and_total_counters_valid": False,
+            "diskstats_fields_used": [7, 11],
+            "diskstats_sector_fields_required": [6, 10],
+        }
+        if (not isinstance(watcher, dict) or
+                any(watcher.get(key) != value
+                    for key, value in expected_watcher.items())):
+            errors.append(f"{path}: unexpected Run 21 storage-watcher observation")
+
+        game_load = k73.get("game_load_observation", {})
+        expected_game_load = {
+            "sample_seconds": 5,
+            "samples": 540,
+            "game_thread_samples": 88,
+            "gpu_peak_mhz": 2230,
+            "gpu_peak_samples": 76,
+            "gpu_peak_trans_stat_ms": 386159,
+            "temperature_min_c": 35.0,
+            "temperature_peak_c": 84.0,
+            "samples_at_or_above_80_c": 30,
+            "gpu_or_iommu_error_lines": 0,
+            "logger_ended_while_load_active": True,
+            "operator_confirmed_gameplay": False,
+            "operator_confirmed_display_during_load": False,
+            "thermal_equilibrium_established": False,
+            "stability_established": False,
+        }
+        if (not isinstance(game_load, dict) or
+                any(game_load.get(key) != value
+                    for key, value in expected_game_load.items())):
+            errors.append(f"{path}: unexpected Run 21 game-load observation")
+        if k73.get("game_load_telemetry_recorded") is not True:
+            errors.append(f"{path}: Run 21 game-load telemetry is missing")
+
+        pending = k73.get("pending")
+        expected_pending = [
+            "operator-run Steam Verify integrity of game files",
+            "independent read-back or hash verification of the installed files",
+            "operator-observed gameplay and display with a bounded thermal and stability run",
+        ]
+        if pending != expected_pending:
+            errors.append(f"{path}: Run 21 must list the three remaining checks")
+        fixes = k73.get("fixes_identified_for_ci_build_2")
+        if not isinstance(fixes, list) or len(fixes) != 5:
+            errors.append(f"{path}: Run 21 must list the five fixes for CI build 2")
+        for field in ("independent_hardware_reproduction", "ab_control_run",
+                      "tester_errors_reproduced", "soak_tested", "gaming_load_tested",
+                      "ci_built_image"):
+            if k73.get(field) is not False:
+                errors.append(f"{path}: Run 21 {field} is overstated")
+        if data.get("latest_authenticated_working_run") != 21:
+            errors.append(f"{path}: latest authenticated working run must be 21")
+        if data.get("latest_tested_run") != "run21-cachyos-k73-bounded-wifi-pass":
+            errors.append(f"{path}: latest tested run must be Run 21")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

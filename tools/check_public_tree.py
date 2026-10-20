@@ -29,7 +29,7 @@ MACHINE_UUID = re.compile(
     r"(?i)(?<![0-9a-f])[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-"
     r"[0-9a-f]{4}-[0-9a-f]{12}(?![0-9a-f])"
 )
-FORBIDDEN_NAMES = ("cl" + "aude", "r" + "mux", "r" + "muxnet")
+FORBIDDEN_NAMES = ("cl" + "aude",)
 FORBIDDEN_ATTRIBUTION = re.compile(
     r"\b(?:" + "|".join(re.escape(name) for name in FORBIDDEN_NAMES) + r")\b",
     re.I,

@@ -2,9 +2,9 @@
 
 This page tracks follow-up work after the first successful Run 15 HDMI boot,
 the Run 16 Ubuntu control, the Run 17 Wi-Fi bring-up, the Run 18 DMA E820
-boot, and the Run 19 CI Ubuntu boot. Keep the working boot chain unchanged
-while testing kernel fixes. A source-level defect is not evidence that it
-caused an earlier failed boot.
+boot, the Run 19 CI Ubuntu boot, and the Run 21 CachyOS 7.3.0 boot. Keep the
+working boot chain unchanged while testing kernel fixes. A source-level defect
+is not evidence that it caused an earlier failed boot.
 
 ## Run 15 CachyOS loader baseline
 
@@ -69,15 +69,21 @@ GHz network, and carried an HTTPS download. The steps are in the
 Next tests, one at a time:
 
 1. Cold boot with autoload enabled and confirm that the driver loads and the
-   saved network reconnects without SSH steps.
+   saved network reconnects without SSH steps. On the 7.3 image in Run 21 the
+   driver did come up at boot through the image's firmware service, after one
+   failed probe, but the network was joined by hand. This Ubuntu setup has
+   still not been seen across a reboot.
 2. Run a soak of at least 30 minutes with mixed traffic, then unload and
    reload the driver once. The reload should report the firmware as already
    running.
 3. Boot the loader build that adds only the 11.60 firmware offset
    (`0x1585D90`, `0x799BC`) to the Run 15 source. It differs from the Run 15
    ELF only in the build ID and those two fields. Check that the blob written
-   to `lib/nxp/` on the FAT partition has the hash above. Until then, the
-   firmware has to come from a kernel-data dump.
+   to `lib/nxp/` on the FAT partition has the hash above. Partly done in Run
+   21: the bounded Wi-Fi build, which sets the same two fields on top of the
+   DMA map and the bounded boot-file checks, wrote a blob with exactly that
+   hash. The build with only the offset change has not been booted, and no
+   loader that copies the firmware has been booted with an Ubuntu image.
 4. Build the modules in the Ubuntu image branch and stage the firmware from the
    FAT partition, so a new image has working Wi-Fi without manual steps. This
    changes the hash-gated kernel package, so it needs a full rebuild and boot.
@@ -106,7 +112,7 @@ Next tests, one at a time:
    I/O check passed. See the
    [Run 19 evidence](../evidence/11.60-ubuntu-ci-run-19.md).
 2. Run the same write and read-back check with the Run 15 ELF on the same
-   USB, as the A/B control that Runs 18 and 19 did not have.
+   USB, as the A/B control that Runs 18, 19, and 21 did not have.
 3. Get the exact error text from testers who saw read/write errors, and ask
    them to repeat their workload with this ELF.
 
@@ -131,6 +137,112 @@ profile, not the loader, so fixing them needs a new CI build and a new boot.
    the host keys, and starts SSH.
 
 The other warnings seen in Run 19 are listed in the evidence.
+
+## Run 21 CachyOS 7.3.0
+
+Run 21 booted a local build of the CachyOS 7.3 image (`ps5-linux-image`
+branch `cachyos-1160-k73`) with the bounded Wi-Fi loader build from
+`gzimbric/ps5-linux-loader` commit `98925a2`. The kernel is Linux v7.3 with
+the 7.3 port of the PS5 patches and the CPU and GPU frequency drivers by rmux
+(Armandas Kvietkus), from
+[rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1)
+at `36f173f`. The picture, SSH, the DMA map, and onboard Wi-Fi with the
+loader's firmware copy all worked. The result and its limits are in the
+[Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md).
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| Bounded Wi-Fi loader ELF | 170,904 | `e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f` |
+| `bzImage` (Linux 7.3.0) | 11,613,184 | `db8617da59ffe196fd2e6f9ef5a1a3872f77eaca7189858a395c91112b6629a7` |
+| `initrd.img` | 51,900,862 | `56a8a0b91cfa46d4f666aba89055ec6621b3c86708c7b0c28ccf09ac23aa9bbc` |
+
+CI build 1 of the branch (tag `cachyos1160-k73-image-1`) includes the review
+fixes made after the local build. Its workflow completed successfully and
+created a draft release after Run 21, but that image has not been booted.
+These fixes are for CI build 2, then a new boot:
+
+1. Steam desktop switch. Steam's Switch to Desktop hung on its switching
+   screen because the image's `steamos-session-select` was not run, so the
+   next-session token stayed `gamescope`. Setting it to `plasma` by hand and
+   ending the tty1 session started KDE Plasma. Make Steam's switch call the
+   image's session switch, then check that Switch to Desktop and the way back
+   to Gaming Mode both work from the controller.
+2. Wi-Fi join from the KDE menu. Joining from the KDE network menu failed
+   twice with NetworkManager saying the access point was not in the scan list,
+   while `sudo nmcli --ask device wifi connect <SSID>` joined the same network.
+   Find out why the menu's request fails and fix it in the image, then join
+   from the menu on a fresh boot.
+3. Internal Bluetooth. This is kernel work; see below.
+4. IW620 driver load order. The driver probed at about 12 seconds, before the
+   firmware was in place (`request_firmware` -2, probe -14). The image's
+   `ps5-iw620-firmware` service put the firmware in place and reloaded the
+   driver, which then worked. The reviewed image fix blacklists alias-driven
+   `moal` loading, copies the firmware, and then runs `modprobe moal`
+   explicitly. A blacklist does not block that explicit load. Do not make
+   NetworkManager wait for the helper: late device discovery already works,
+   while a blocked helper could delay Ethernet. This fix has not been booted.
+5. Keep the frequency drivers manual. At idle `ps5_gpufreq` lowered the
+   `k10temp` reading by about 14 °C, but the later logger reached 84.0 °C
+   under load, including 30 five-second samples at or above 80 °C. The
+   drivers have no thermal-cooling integration, and their boot-time sequence
+   has not been tested. Do not add the proposed autoload file to build 2.
+
+Steam completed the install. Its content log recorded 53,229,366,208
+downloaded bytes, staged-file verification, 347 committed files, and `No
+Error`. The watcher collected 480 snapshots over about four hours; free space
+moved from 213G to 159G and every snapshot had zero new matching storage-error
+lines relative to the watcher's baseline. Its throughput and total counters
+are invalid because it read
+diskstats I/O-time fields 7 and 11 instead of sector fields 6 and 10. This was
+not an independent read-back, hash check, or operator-run Steam integrity
+check.
+
+The game logger collected 540 five-second samples, including 88 with
+`GameThread`, 76 at 2.23 GHz, and an 84.0 °C peak. It ended while the load was
+active, without an operator-confirmed picture or gameplay. Treat it as
+telemetry, not a thermal-equilibrium or stability result.
+
+Suspend is not supported on this boot path. Run 21 held a `systemd-inhibit`
+lock while testing.
+
+### Bluetooth follow-up
+
+Bluetooth does not work on the 7.3 kernel. `btusb` binds the USB companion
+`1286:2059` as `hci0` (interface 0) and `hci1` (interface 2), and both fail
+at setup:
+
+```text
+hci0: Opcode 0x2031 failed: -22
+hci1: Opcode 0x0c03 failed: -110
+```
+
+`0x0c03` is HCI Reset and `0x2031` is LE Set Default PHY. `btmgmt` lists no
+controllers and `bluetoothctl` reports `No default controller`. Run 19 on
+Linux 7.1.7 also logged opcode messages from `hci0` and `hci1`, but Bluetooth
+was not tested there.
+
+There is a high-confidence kernel fix, but it has not been booted. In the 7.3
+fork, the `1286:2059` device entry is below a generic USB class entry, so the
+generic match wins with no device flags. The interface checks also run before
+the PS5 quirks-table lookup. The candidate adds a quirks entry with
+`BTUSB_MARVELL`, `BTUSB_IFNUM_0`, `BTUSB_BROKEN_LE_DEFAULT_PHY`,
+`BTUSB_BROKEN_READ_LOCAL_NAME`, and `BTUSB_NO_AUTOSUSPEND`, and moves both the
+`BTUSB_IFNUM_2` and `BTUSB_IFNUM_0` checks after that lookup. It applies to the
+pinned 7.3 source and a matching `btusb.ko` built without warnings. That is
+build evidence only, not a hardware result.
+
+For build 2:
+
+1. Carry the fix as a separate hash-pinned patch and record it in the build
+   metadata.
+2. Bump the kernel package identity to `linux-ps5 7.3.0-2`, preferably with
+   `KBUILD_BUILD_VERSION=2`; do not ship changed modules under `7.3.0-1`.
+3. Keep `ps5-bt-quiet` unchanged so the kernel patch is the only Bluetooth
+   variable.
+4. Cold boot and require one `hci0`, no `0x2031` or `0x0c03` failures,
+   `power/control=on`, successful DualSense pairing, working Wi-Fi alongside
+   Bluetooth, and no later USB loss. Run beyond the roughly 51-minute point
+   where Run 21 lost the Bluetooth USB device.
 
 ## Next controlled test: MTS Ethernet
 
@@ -246,13 +358,16 @@ keep a tested local recovery path before closing the current SSH session.
 
 - The Run 15 loader does not reserve TMR ranges in e820, and the reference
   artifact behaves the same way. The opt-in DMA E820 build now reserves
-  `[0x01000000, 0x40000000)` like upstream's 13.60 support, and Runs 18 and 19
-  booted it. That is not a TMR audit, and it does not show that missing
-  reservations caused corruption. Capture the live e820 and TMR state before
-  changing the Run 15 map.
-- The loader currently identifies the tested kernel and initramfs by exact
-  size. Add setup-header and content-manifest validation in a separate loader
-  experiment; do not change the Run 15 release ELF.
+  `[0x01000000, 0x40000000)` like upstream's 13.60 support, and Runs 18, 19,
+  and 21 booted that map. That is not a TMR audit, and it does not show that
+  missing reservations caused corruption. Capture the live e820 and TMR state
+  before changing the Run 15 map.
+- The Run 15 and DMA E820 loaders identify the tested kernel and initramfs by
+  exact size. The bounded builds at loader commit `98925a2` replace that with
+  checks on the `bzImage` setup header, the initrd format, `vram.txt`, and
+  `cmdline.txt`, and Run 21 booted the bounded Wi-Fi build. The files are
+  still not checked against a content manifest. The Run 15 release ELF is
+  unchanged.
 - Keep the existing `break_hv` error path unchanged. Adding a halt there can
   deadlock the all-CPU rendezvous.
 
@@ -265,7 +380,16 @@ reservation fixes the read/write errors reported by testers. Run 18 shows
 that the DMA E820 build boots, applies the intended map, and passed a short
 USB write and read-back check; it is not a visible-display result. Run 19
 adds a directly observed picture with the CI Ubuntu image on the same
-CFI-1115B; it is not a result for other models. The current evidence also
-does not support an HV-entry address truncation, an initramfs identity-map
-overrun, a page-install overflow on the tested path, or a fan left disabled
-for the next kernel.
+CFI-1115B; it is not a result for other models. Run 21 shows that a local
+build of the CachyOS 7.3 image boots with the bounded Wi-Fi loader on that
+console, with a directly observed picture and Wi-Fi from the loader's
+firmware copy. It is not a result for the CI build, for Bluetooth, for video
+decode, for file integrity, or for gaming stability. The later watcher saw no
+new matching storage-error lines after its baseline, but its rate and total
+counters are invalid and
+it did no read-back or hash check. The game logger captured load and an
+84.0 °C peak without operator-confirmed gameplay or display, thermal
+equilibrium, or a completed stability window. The current evidence also does
+not support an HV-entry address
+truncation, an initramfs identity-map overrun, a page-install overflow on the
+tested path, or a fan left disabled for the next kernel.
