@@ -378,6 +378,115 @@ Do not rely on `rmmod` as recovery: unloading these modules does not restore
 the clocks (`ps5_cpufreq` only unregisters itself). Do not suspend, enter Rest
 Mode, or start the other module before the console has fully powered off.
 
+## Bluetooth hotfix for image 2
+
+If KDE reports that setting up a DualSense failed, do not copy `btusb.ko`
+from Bazzite or any other image. A kernel module must match the exact kernel
+build, configuration and symbol versions that load it. A module built for a
+different image can fail to load or make the diagnosis less clear even when
+both kernels report `7.3.0`.
+
+First confirm that this is the published image-2 kernel, then try the safe
+userspace reset once:
+
+```sh
+sha256sum /boot/efi/bzImage
+sudo rfkill unblock bluetooth
+sudo systemctl restart bluetooth.service
+sudo systemctl restart ps5-bt-quiet.service
+bluetoothctl list
+```
+
+The expected image-2 `bzImage` SHA-256 is
+`8cc74e8d29a9a2a2e8bd7fd0a2834b4b898868711816ab77194c05f66c6f757e`.
+Stop and report the actual hash if it differs.
+
+Continue only if `bluetoothctl list` shows exactly one internal controller.
+Close KDE's pairing wizard, unplug the DualSense USB cable and hold the
+controller's PS button for about ten seconds to turn it off. Then open the
+terminal pairing tool:
+
+```text
+bluetoothctl
+power on
+agent on
+default-agent
+devices Paired
+```
+
+If `devices Paired` lists an old **DualSense Wireless Controller** entry,
+remove only that entry with `remove XX:XX:XX:XX:XX:XX`. Do not remove an
+unknown device. Hold **Create + PS** on the controller until its blue light
+flashes rapidly, then run:
+
+```text
+scan on
+devices
+pair XX:XX:XX:XX:XX:XX
+trust XX:XX:XX:XX:XX:XX
+connect XX:XX:XX:XX:XX:XX
+info XX:XX:XX:XX:XX:XX
+scan off
+quit
+```
+
+Replace the example address with the DualSense address shown by `devices`.
+Redact that address from any public report. Pairing the controller in Linux
+may replace its GameOS bond. If GameOS no longer connects wirelessly later,
+attach the controller by USB and press PS in GameOS to pair it there again.
+
+If `bluetoothctl list` shows no controller or more than one controller, or the
+kernel log contains failed HCI opcodes, timeouts, USB disconnects or USB
+descriptor errors, stop. Repeating the service restart or KDE wizard cannot
+repair a failed kernel or USB probe. Save a diagnostic report instead:
+
+```sh
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+report="$HOME/ps5-bluetooth-$stamp.txt"
+sudo -v
+{
+  echo '[identity]'
+  date -u
+  uname -a
+  pacman -Q linux-ps5 bluez bluez-utils bluedevil 2>&1 || true
+  sha256sum /boot/efi/bzImage 2>&1 || true
+  echo '[usb-and-module]'
+  lsusb -d 1286:2059 2>&1 || true
+  lsusb -t 2>&1 || true
+  btusb=$(modinfo -n btusb 2>/dev/null || true)
+  echo "btusb=$btusb"
+  [ -z "$btusb" ] || sha256sum "$btusb" 2>&1 || true
+  modinfo -F vermagic btusb 2>&1 || true
+  lsmod | grep -E '^(btusb|btintel|btbcm|btrtl|btmtk|bluetooth|hid_playstation)' || true
+  echo '[controllers]'
+  bluetoothctl list 2>&1 || true
+  bluetoothctl show 2>&1 || true
+  bluetoothctl devices 2>&1 || true
+  bluetoothctl devices Paired 2>&1 || true
+  sudo btmgmt info 2>&1 || true
+  rfkill list bluetooth 2>&1 || true
+  echo '[services-and-journal]'
+  systemctl status bluetooth.service ps5-bt-quiet.service --no-pager --full 2>&1 || true
+  sudo journalctl -b -u bluetooth.service -u ps5-bt-quiet.service --no-pager 2>&1 || true
+  sudo journalctl -b -k --no-pager 2>&1 |
+    grep -Ei 'Bluetooth|btusb|hci[0-9]|1286|2059|opcode|xhci|usb.*disconnect|error -[0-9]+' |
+    tail -n 250 || true
+  echo '[desktop-journal]'
+  journalctl --user -b --no-pager 2>&1 |
+    grep -Ei 'bluez|bluetooth|bluedevil|pair|authentication' |
+    tail -n 200 || true
+} 2>&1 | tee "$report"
+chmod 600 "$report"
+echo "Saved $report"
+```
+
+The report contains Bluetooth MAC addresses and may contain other private
+identifiers. Redact it before attaching it to a public issue. A single healthy
+controller that pairs in `bluetoothctl` points to a stale bond or KDE pairing
+problem. No controller, two controllers, a zero address, failed opcodes such
+as `0x2031` or `0x0c03`, timeout `-110`, or a USB disconnect points to the
+kernel/USB path and needs a new image rather than another userspace reset.
+
 ## Bluetooth test
 
 Use no external Bluetooth adapter. The kernel should probe the internal device
@@ -494,6 +603,9 @@ a headless Linux boot, so check DHCP and SSH before powering off.
 - **No Wi-Fi with the non-Wi-Fi ELF:** expected. That build never copies the
   firmware.
 - **KDE Wi-Fi join fails:** record it once, then use the `nmcli` workaround.
+- **KDE says DualSense setup failed:** use the one-time userspace reset and
+  terminal pairing steps in [Bluetooth hotfix for image 2](#bluetooth-hotfix-for-image-2).
+  Never install another image's `btusb.ko`.
 - **Switch to Desktop hangs:** this is a known image issue. Do not repeatedly
   trigger it during the baseline run.
 - **Suspend or Rest Mode inside Linux:** unsupported. Finish with
