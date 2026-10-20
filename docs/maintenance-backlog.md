@@ -158,8 +158,46 @@ loader's firmware copy all worked. The result and its limits are in the
 
 CI build 1 of the branch (tag `cachyos1160-k73-image-1`) includes the review
 fixes made after the local build. Its workflow completed successfully and
-created a draft release after Run 21, but that image has not been booted.
-These fixes are for CI build 2, then a new boot:
+created a draft release after Run 21, but that image has not been booted and
+is superseded by image 2.
+
+Image 2 is the source candidate tagged `cachyos1160-k73-image-2` at commit
+`346088a48f66eb956dafdec9de5085e73b2d44a5`. Workflow run `39481460775`
+completed successfully. The private draft's one image archive is
+`ps5-cachyos1160-k73.img.xz`, 1,943,471,712 bytes, SHA-256
+`8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a`.
+It expands to a 12,582,912,000-byte raw image with SHA-256
+`3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d`.
+The workflow, draft state and assets were checked, but the image has not been
+booted. Keep the release draft until a hardware boot, and ship one `.img.xz`;
+if compression reaches 2 GiB, fail rather than splitting the image.
+
+Included in the image 2 source:
+
+1. Internal Bluetooth follow-up. The build still uses rmux's published 7.3
+   patch set at `36f173f` as its base, then applies the separate hash-pinned
+   `ps5-btusb-iw620-quirks.patch` (`54d7addb...`). The follow-up restores the
+   IW620 quirks-table entry and post-lookup interface checks present in merged
+   [ps5-linux patch-set PR #35](https://github.com/ps5-linux/ps5-linux-patches/pull/35)
+   but absent from the pinned rmux 7.3 patch, while retaining rmux's 7.3 IW620
+   quirk flags. [VivaLaVent's Bazzite Deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3)
+   independently reports the same core correction with a paired DualSense on
+   a CFI-10xx PS5 running firmware 13.60. Its patch is not byte-identical, and
+   that result is not an 11.60 hardware test of image 2. The image 2 follow-up
+   has build evidence only and still needs the cold-boot checks below.
+2. IW620 driver load order. Alias-driven `moal` loading is blacklisted, the
+   loader-dumped firmware is copied first, and the service then runs an
+   explicit `modprobe moal`. A blacklist does not block that explicit load.
+   NetworkManager is not ordered after the helper, so a blocked helper cannot
+   delay Ethernet. This fix has not been booted.
+3. Package identity. The changed kernel and modules are packaged as
+   `linux-ps5 7.3.0-2` with `KBUILD_BUILD_VERSION=2`, rather than being shipped
+   under the image 1 identity.
+4. Frequency-driver policy. `ps5_cpufreq` and `ps5_gpufreq` stay manual-only.
+   Run 21 reached 84.0 °C under load, including 30 five-second samples at or
+   above 80 °C, and the drivers have no thermal-cooling integration.
+
+Still unresolved after the image 2 source changes:
 
 1. Steam desktop switch. Steam's Switch to Desktop hung on its switching
    screen because the image's `steamos-session-select` was not run, so the
@@ -172,20 +210,6 @@ These fixes are for CI build 2, then a new boot:
    while `sudo nmcli --ask device wifi connect <SSID>` joined the same network.
    Find out why the menu's request fails and fix it in the image, then join
    from the menu on a fresh boot.
-3. Internal Bluetooth. This is kernel work; see below.
-4. IW620 driver load order. The driver probed at about 12 seconds, before the
-   firmware was in place (`request_firmware` -2, probe -14). The image's
-   `ps5-iw620-firmware` service put the firmware in place and reloaded the
-   driver, which then worked. The reviewed image fix blacklists alias-driven
-   `moal` loading, copies the firmware, and then runs `modprobe moal`
-   explicitly. A blacklist does not block that explicit load. Do not make
-   NetworkManager wait for the helper: late device discovery already works,
-   while a blocked helper could delay Ethernet. This fix has not been booted.
-5. Keep the frequency drivers manual. At idle `ps5_gpufreq` lowered the
-   `k10temp` reading by about 14 °C, but the later logger reached 84.0 °C
-   under load, including 30 five-second samples at or above 80 °C. The
-   drivers have no thermal-cooling integration, and their boot-time sequence
-   has not been tested. Do not add the proposed autoload file to build 2.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No
@@ -207,9 +231,9 @@ lock while testing.
 
 ### Bluetooth follow-up
 
-Bluetooth does not work on the 7.3 kernel. `btusb` binds the USB companion
-`1286:2059` as `hci0` (interface 0) and `hci1` (interface 2), and both fail
-at setup:
+Bluetooth did not work in Run 21 on its Linux 7.3 kernel. `btusb` binds the
+USB companion `1286:2059` as `hci0` (interface 0) and `hci1` (interface 2),
+and both fail at setup:
 
 ```text
 hci0: Opcode 0x2031 failed: -22
@@ -221,25 +245,22 @@ controllers and `bluetoothctl` reports `No default controller`. Run 19 on
 Linux 7.1.7 also logged opcode messages from `hci0` and `hci1`, but Bluetooth
 was not tested there.
 
-There is a high-confidence kernel fix, but it has not been booted. In the 7.3
-fork, the `1286:2059` device entry is below a generic USB class entry, so the
-generic match wins with no device flags. The interface checks also run before
-the PS5 quirks-table lookup. The candidate adds a quirks entry with
+Image 2 contains a high-confidence kernel follow-up, but it has not been
+booted. In the 7.3 fork, the `1286:2059` device entry is below a generic USB
+class entry, so the generic match wins with no device flags. The interface
+checks also run before the PS5 quirks-table lookup. The follow-up adds a quirks
+entry with
 `BTUSB_MARVELL`, `BTUSB_IFNUM_0`, `BTUSB_BROKEN_LE_DEFAULT_PHY`,
 `BTUSB_BROKEN_READ_LOCAL_NAME`, and `BTUSB_NO_AUTOSUSPEND`, and moves both the
 `BTUSB_IFNUM_2` and `BTUSB_IFNUM_0` checks after that lookup. It applies to the
-pinned 7.3 source and a matching `btusb.ko` built without warnings. That is
-build evidence only, not a hardware result.
+pinned 7.3 source and a matching `btusb.ko` built without warnings. Image 2
+carries it as a separate patch with SHA-256 `54d7addb...`, after rmux's base
+patch. That is build evidence only, not a hardware result. `ps5-bt-quiet`
+remains unchanged so the follow-up is the only Bluetooth variable.
 
-For build 2:
+For the image 2 hardware test:
 
-1. Carry the fix as a separate hash-pinned patch and record it in the build
-   metadata.
-2. Bump the kernel package identity to `linux-ps5 7.3.0-2`, preferably with
-   `KBUILD_BUILD_VERSION=2`; do not ship changed modules under `7.3.0-1`.
-3. Keep `ps5-bt-quiet` unchanged so the kernel patch is the only Bluetooth
-   variable.
-4. Cold boot and require one `hci0`, no `0x2031` or `0x0c03` failures,
+1. Cold boot and require one `hci0`, no `0x2031` or `0x0c03` failures,
    `power/control=on`, successful DualSense pairing, working Wi-Fi alongside
    Bluetooth, and no later USB loss. Run beyond the roughly 51-minute point
    where Run 21 lost the Bluetooth USB device.
@@ -383,8 +404,10 @@ adds a directly observed picture with the CI Ubuntu image on the same
 CFI-1115B; it is not a result for other models. Run 21 shows that a local
 build of the CachyOS 7.3 image boots with the bounded Wi-Fi loader on that
 console, with a directly observed picture and Wi-Fi from the loader's
-firmware copy. It is not a result for the CI build, for Bluetooth, for video
-decode, for file integrity, or for gaming stability. The later watcher saw no
+firmware copy. It is not a result for either CI image, for Bluetooth, for
+video decode, for file integrity, or for gaming stability. Image 2 remains an
+unbooted candidate: its CI artifacts are verified, but it has not been tested
+on hardware. The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and
 it did no read-back or hash check. The game logger captured load and an

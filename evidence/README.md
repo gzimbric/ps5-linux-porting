@@ -36,5 +36,6 @@ instruction executed.
   lines, the e820 lines and KASLR placement, onboard Wi-Fi with the firmware
   the loader copied, VCN, the Bluetooth failure, the DualSense over USB, the
   desktop switch issue, idle temperatures with rmux's frequency drivers, the
-  later install watcher and game-load telemetry, the fixes identified, and
-  evidence limits.
+  later install watcher and game-load telemetry, the image 2 source follow-up
+  and evidence limits. The image 2 notes do not turn its later, verified CI
+  artifacts or still-unbooted hardware state into Run 21 results.

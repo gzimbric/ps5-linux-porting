@@ -4,8 +4,11 @@ This page is for people with a retail PS5 on firmware 11.60 who want to test
 one combination: the DMA E820 build of the 11.60 loader with the Ubuntu 24.04
 image built by GitHub CI.
 
-A CachyOS image on Linux 7.3.0 is in testing, but it is not ready for testers
-yet; this guide still covers only the Ubuntu image.
+A CachyOS image on Linux 7.3.0 is in controlled testing, but it is not a
+general tester release yet. Image 2 is pinned at
+`cachyos1160-k73-image-2` / `346088a`. Its successful CI run and exact draft
+image identity are verified, but it has not been booted. This guide still
+covers only the hardware-tested Ubuntu build 3 pair.
 
 ## What this tests
 
@@ -138,10 +141,9 @@ the tag you used.
 3. Keep the tag and the `ps5-ubuntu2404.img` line from `SHA256SUMS` for your
    report. They identify the build.
 
-A later build whose compressed image is too large for one release file comes
-as numbered parts, `ps5-ubuntu2404.img.xz.001`, `.002`, and so on. Its release
-notes give the commands to check and join them into `ps5-ubuntu2404.img.xz`;
-on Windows, join them in Command Prompt, not PowerShell.
+Every release uses one `ps5-ubuntu2404.img.xz`. The image workflow stops
+before creating a release if the compressed file reaches GitHub's 2 GiB
+per-file limit; it does not publish numbered parts.
 
 ### Flashing
 

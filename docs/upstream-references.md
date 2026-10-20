@@ -1,7 +1,8 @@
 # Upstream references
 
-The following revisions were checked through 2026-10-18. The rmuxnet patch set
-and the bounded loader branch were added on 2026-10-19.
+The following revisions were checked through 2026-10-20. Historical branches
+remain listed where they identify an exact tested artifact, but the active
+forks use `main` as their default source branch.
 
 | Project | Branch | Commit | Role |
 |---|---|---|---|
@@ -9,13 +10,18 @@ and the bounded loader branch were added on 2026-10-19.
 | [ps5-linux/ps5-linux-loader](https://github.com/ps5-linux/ps5-linux-loader) | `main` | `64637c177eaed277fb6ccce394cbb29dd047b893` | Established Linux boot path |
 | [ps5-linux/ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image) | `main` | `52db0a42302e4a6b5420a11fa00a84841ea5db56` | Upstream base for the custom Run 16 Ubuntu image |
 | [PS5Dev/Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn) | `main` | `ea04f7132b837087f552c57261cb800481a3a910` | Upstream high-firmware bypass |
-| [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `firmware-11.60-pr` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
+| [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
-| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Hardware-verified 11.60 loader source with a hash-pinned Run 15 release check |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `8de6c7fb7db86ee45059ecc154ebd267f7e779ef` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and bounded targets |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `824f55c70cc3fda5ce327ab202924dddd52e0241` | Canonical image source with the image 2 profile, verified CI record and one-file release policy |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 build source; CI and release identities verified, hardware unbooted |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
 | [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1) | `meower` (default) | `36f173f39e5e76c00c4e366a7b909f33bc665ad5` | rmux's Linux 7.3 port of the PS5 patches and the PS5 CPU and GPU frequency drivers, used for the Run 21 kernel |
-| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Bounded 11.60 loader builds; the bounded Wi-Fi build booted in Run 21 |
+| [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | Independent firmware 13.60 hardware confirmation of the same core IW620 Bluetooth fix; its patch is not byte-identical to image 2 |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Exact historical source of the bounded Wi-Fi ELF that booted in Run 21 |
 
 The local Linux research branch started from pLinux5-NG commit
 `d5bd6b9f45c465e466e1e97083c9f162b94aad2c`. It is intentionally not published
@@ -42,9 +48,11 @@ hashes as provenance but does not vendor the loader source or binaries.
 
 ## Published 11.60 loader source
 
-The loader source is published, without binaries, on the
+The canonical loader source is published, without binaries, on
+[`main`](https://github.com/gzimbric/ps5-linux-loader) in the
+`gzimbric/ps5-linux-loader` fork. The historical
 [`firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
-branch of the `gzimbric/ps5-linux-loader` fork, on top of official commit
+branch preserves the exact Run 15 lineage on top of official commit
 `64637c177eaed277fb6ccce394cbb29dd047b893`.
 
 Before publication, the local commits were rewritten only to replace a
@@ -69,7 +77,7 @@ and makes `linux-1160-check` require the authenticated dumps and all three Run
 15 artifact hashes. A clean build at that commit reproduced the tested outer
 ELF, wake blob, and wake ELF byte for byte. Building requires the PS5 payload
 SDK and authenticated 11.60 kernel-text and hypervisor dumps, which are not
-distributed. See `PORTING_1160.md` on that branch for build details.
+distributed. See `PORTING_1160.md` on `main` for build details.
 
 ## Linux 7.3 patch set
 
@@ -84,16 +92,37 @@ frequency drivers as modules. The VCN firmware from the same commit is built
 into the kernel. The patch is used as published, and its authorship and the
 authorship of the drivers are unchanged.
 
-The build lives on the `cachyos-1160-k73` branch of the
-[`gzimbric/ps5-linux-image`](https://github.com/gzimbric/ps5-linux-image/tree/cachyos-1160-k73)
-fork. It checks the patch, its kernel config, and the VCN firmware by SHA-256
-before using them. Nothing from the patch set is copied into this repository.
+The build profile is on the fork's default
+[`main`](https://github.com/gzimbric/ps5-linux-image) branch. Image 2's exact
+build source is preserved by the tag below. The build checks the patch, its
+kernel config, and the VCN firmware by SHA-256 before using them. Nothing from
+the patch set is copied into this repository.
+
+Image 2 is pinned independently by tag `cachyos1160-k73-image-2` at
+`346088a48f66eb956dafdec9de5085e73b2d44a5`. It uses rmux's `linux.patch` as
+published at `36f173f`, then applies a separate local IW620 Bluetooth quirk
+ordering follow-up with SHA-256
+`54d7addbb4cd95c943f9a4485229ac5516ad08ebe0f4aa02fd72cf33298fa0a2`.
+That follow-up is not represented as part of rmux's patch set. It restores
+the IW620 quirks-table entry and post-lookup interface checks present in merged
+[ps5-linux patch-set PR #35](https://github.com/ps5-linux/ps5-linux-patches/pull/35)
+but absent from the pinned rmux 7.3 patch, while retaining rmux's 7.3 IW620
+quirk flags, and remains unbooted.
+
+[VivaLaVent's Bazzite Deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3)
+independently reports a paired DualSense on a CFI-10xx PS5 running firmware
+13.60 after the same core `btusb` correction. Its patch is not byte-identical
+to the image 2 follow-up. That result corroborates the diagnosis, but it is
+not an 11.60 hardware test of image 2. Workflow `39481460775` completed
+successfully, and the private draft's one 1,943,471,712-byte image archive and
+12,582,912,000-byte raw image identities were verified. Image 2 itself remains
+unbooted.
 
 The Run 21 image boots only with a bounded loader build, because its boot
-files are not the sizes the earlier 11.60 loaders accept. Those builds are on
-the
-[`firmware-11.60-dma-e820`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820)
-branch at commit `98925a2`. See the
+files are not the sizes the earlier 11.60 loaders accept. Those targets are
+now on loader `main`. The exact bounded Wi-Fi artifact used in Run 21 was
+built at historical commit `98925a2`, and current `main` reproduces its hash.
+See the
 [Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md) for the tested
 hashes.
 

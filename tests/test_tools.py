@@ -905,6 +905,55 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(run21["later_ci_build"]["workflow_conclusion"], "success")
         self.assertTrue(run21["later_ci_build"]["draft_release_created"])
         self.assertFalse(run21["later_ci_build"]["booted"])
+        self.assertEqual(run21["later_ci_build"]["superseded_by"],
+                         "cachyos1160-k73-image-2")
+        image2 = run21["ci_build_2"]
+        self.assertEqual(image2["release_tag"], "cachyos1160-k73-image-2")
+        self.assertEqual(
+            image2["source_commit"],
+            "346088a48f66eb956dafdec9de5085e73b2d44a5",
+        )
+        self.assertEqual(image2["workflow_run"], 39481460775)
+        self.assertEqual(image2["workflow_conclusion"], "success")
+        self.assertTrue(image2["ci_result_verified"])
+        self.assertEqual(image2["release_policy"], "draft-until-hardware-boot")
+        self.assertTrue(image2["draft_release_created"])
+        self.assertTrue(image2["release_is_draft"])
+        self.assertFalse(image2["booted"])
+        self.assertEqual(image2["kernel_package"]["version"], "7.3.0-2")
+        self.assertTrue(image2["base_patch_set"]["used_as_published"])
+        self.assertFalse(
+            image2["bluetooth_followup_patch"]["hardware_tested"])
+        external_bt = image2["bluetooth_followup_patch"]["external_confirmation"]
+        self.assertEqual(external_bt["release_tag"], "v1.0.3")
+        self.assertEqual(
+            external_bt["patch_sha256"],
+            "c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8",
+        )
+        self.assertEqual(external_bt["firmware"], "13.60")
+        self.assertTrue(external_bt["same_core_fix"])
+        self.assertFalse(external_bt["byte_identical_patch"])
+        self.assertFalse(external_bt["image2_hardware_test"])
+        self.assertEqual(
+            image2["release_asset_policy"]["format"], "single-img-xz")
+        self.assertTrue(
+            image2["release_asset_policy"]["fail_instead_of_split"])
+        asset = image2["release_asset_policy"]
+        self.assertTrue(asset["verified"])
+        self.assertEqual(asset["asset_name"], "ps5-cachyos1160-k73.img.xz")
+        self.assertEqual(asset["size"], 1943471712)
+        self.assertEqual(
+            asset["sha256"],
+            "8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a",
+        )
+        raw_image = image2["raw_image"]
+        self.assertTrue(raw_image["verified"])
+        self.assertEqual(raw_image["name"], "ps5-cachyos1160-k73.img")
+        self.assertEqual(raw_image["size"], 12582912000)
+        self.assertEqual(
+            raw_image["sha256"],
+            "3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d",
+        )
         self.assertEqual(
             run21["image"]["raw"]["sha256"],
             "d593bb5d52c9054d8e3671d6b67fae0687aa239cb3d104a503999e6a5906789d",
@@ -948,7 +997,9 @@ class ToolTests(unittest.TestCase):
         self.assertFalse(game_load["thermal_equilibrium_established"])
         self.assertTrue(run21["game_load_telemetry_recorded"])
         self.assertEqual(len(run21["pending"]), 3)
-        self.assertEqual(len(run21["fixes_identified_for_ci_build_2"]), 5)
+        followup = run21["post_run21_image_followup"]
+        self.assertEqual(len(followup["included_in_ci_build_2_source"]), 4)
+        self.assertEqual(len(followup["unresolved_after_ci_build_2_source"]), 2)
         self.assertFalse(run21["gaming_load_tested"])
         self.assertFalse(run21["release_loader_baseline"])
         self.assertTrue(
@@ -956,6 +1007,27 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(data["dma_e820_build"]["run"], 18)
         self.assertEqual(data["ubuntu_ci_dma_run"]["run"], 19)
         self.assertEqual(data["latest_tested_run"], "run21-cachyos-k73-bounded-wifi-pass")
+
+    def test_run21_summary_separates_image2_changes_from_unresolved_behavior(self):
+        summary = (ROOT / "evidence" / "11.60-summary.txt").read_text()
+        self.assertNotIn("cachyos_k73_run.fix_for_ci_build_2_", summary)
+        expected = (
+            "cachyos_k73_run.post_run21_image_followup.included_1=iw620-bluetooth-quirk-ordering-followup-after-rmux-base",
+            "cachyos_k73_run.post_run21_image_followup.included_2=iw620-firmware-before-explicit-driver-load",
+            "cachyos_k73_run.post_run21_image_followup.included_3=linux-ps5-7.3.0-2-kbuild-build-version-2",
+            "cachyos_k73_run.post_run21_image_followup.included_4=frequency-drivers-manual-only",
+            "cachyos_k73_run.post_run21_image_followup.unresolved_1=steam-switch-to-desktop",
+            "cachyos_k73_run.post_run21_image_followup.unresolved_2=kde-network-menu-wifi-join",
+            "cachyos_k73_run.ci_build_2_workflow_conclusion=success",
+            "cachyos_k73_run.ci_build_2_ci_result_verified=true",
+            "cachyos_k73_run.ci_build_2_asset_size=1943471712",
+            "cachyos_k73_run.ci_build_2_asset_sha256=8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a",
+            "cachyos_k73_run.ci_build_2_raw_size=12582912000",
+            "cachyos_k73_run.ci_build_2_raw_sha256=3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d",
+        )
+        for line in expected:
+            with self.subTest(line=line):
+                self.assertIn(f"{line}\n", summary)
 
     def test_manifest_requires_run21_record(self):
         with TemporaryDirectory() as temp:
@@ -1027,6 +1099,80 @@ class ToolTests(unittest.TestCase):
             path.write_text(json.dumps(data))
             self.assertTrue(any("Run 21 later CI build" in error
                                 for error in validate(path)))
+
+    def test_manifest_rejects_cachyos_image2_identity_drift(self):
+        cases = (
+            ("source_commit", "0" * 40, "unexpected CachyOS image 2 source identity"),
+            ("booted", True, "CachyOS image 2 draft or boot state is overstated"),
+            ("release_is_draft", False,
+             "CachyOS image 2 draft or boot state is overstated"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["cachyos_k73_run"]["ci_build_2"][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_cachyos_image2_patch_or_package_drift(self):
+        cases = (
+            (("kernel_package", "version"), "7.3.0-1",
+             "unexpected CachyOS image 2 kernel package identity"),
+            (("base_patch_set", "used_as_published"), False,
+             "CachyOS image 2 must use the pinned rmux base patch"),
+            (("bluetooth_followup_patch", "hardware_tested"), True,
+             "unexpected CachyOS image 2 Bluetooth follow-up"),
+            (("bluetooth_followup_patch", "external_confirmation",
+              "byte_identical_patch"), True,
+             "unexpected image 2 Bluetooth external confirmation"),
+        )
+        for keys, value, message in cases:
+            with self.subTest(keys=keys), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                target = data["cachyos_k73_run"]["ci_build_2"]
+                for key in keys[:-1]:
+                    target = target[key]
+                target[keys[-1]] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_rejects_split_or_incorrect_image2_asset_claim(self):
+        cases = (
+            ("expected_image_asset_count", 2,
+             "CachyOS image 2 must be one unsplit .img.xz"),
+            ("size", 1,
+             "unexpected CachyOS image 2 release asset identity"),
+            ("verified", False,
+             "unexpected CachyOS image 2 release asset identity"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["cachyos_k73_run"]["ci_build_2"][
+                    "release_asset_policy"][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(message in error for error in validate(path)))
+
+    def test_manifest_accepts_verified_image2_ci_and_asset_metadata(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            path.write_text(json.dumps(data))
+            self.assertEqual(validate(path), [])
+
+    def test_manifest_rejects_incorrect_image2_raw_image_identity(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "manifest.json"
+            data = load_pinned_manifest()
+            data["cachyos_k73_run"]["ci_build_2"]["raw_image"]["size"] = 1
+            path.write_text(json.dumps(data))
+            self.assertTrue(any(
+                "unexpected CachyOS image 2 raw image identity" in error
+                for error in validate(path)
+            ))
 
     def test_manifest_rejects_run21_boot_file_drift(self):
         cases = (

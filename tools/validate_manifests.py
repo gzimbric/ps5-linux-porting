@@ -838,10 +838,103 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: Run 21 disk image must not be included")
         later_ci = k73.get("later_ci_build", {})
         if (not isinstance(later_ci, dict) or
+                later_ci.get("release_tag") != "cachyos1160-k73-image-1" or
                 later_ci.get("workflow_conclusion") != "success" or
                 later_ci.get("draft_release_created") is not True or
-                later_ci.get("booted") is not False):
+                later_ci.get("booted") is not False or
+                later_ci.get("superseded_by") != "cachyos1160-k73-image-2"):
             errors.append(f"{path}: Run 21 later CI build boot is overstated")
+        ci_build_2 = k73.get("ci_build_2", {})
+        if not isinstance(ci_build_2, dict):
+            ci_build_2 = {}
+            errors.append(f"{path}: CachyOS image 2 record is not an object")
+        if (ci_build_2.get("release_tag") != "cachyos1160-k73-image-2" or
+                ci_build_2.get("source_commit") !=
+                "346088a48f66eb956dafdec9de5085e73b2d44a5" or
+                ci_build_2.get("workflow_run") != 39481460775):
+            errors.append(f"{path}: unexpected CachyOS image 2 source identity")
+        if (ci_build_2.get("workflow_conclusion") != "success" or
+                ci_build_2.get("ci_result_verified") is not True):
+            errors.append(
+                f"{path}: CachyOS image 2 CI result is not the verified success")
+        if (ci_build_2.get("release_policy") != "draft-until-hardware-boot" or
+                ci_build_2.get("draft_release_created") is not True or
+                ci_build_2.get("release_is_draft") is not True or
+                ci_build_2.get("booted") is not False):
+            errors.append(f"{path}: CachyOS image 2 draft or boot state is overstated")
+        package = ci_build_2.get("kernel_package", {})
+        if (not isinstance(package, dict) or
+                package.get("name") != "linux-ps5" or
+                package.get("version") != "7.3.0-2" or
+                package.get("kbuild_build_version") != 2):
+            errors.append(f"{path}: unexpected CachyOS image 2 kernel package identity")
+        build2_base = ci_build_2.get("base_patch_set", {})
+        if (not isinstance(build2_base, dict) or
+                build2_base.get("repository") !=
+                "https://github.com/rmuxnet/ps5-linux-patches-1" or
+                build2_base.get("commit") != patch_commit or
+                build2_base.get("used_as_published") is not True):
+            errors.append(f"{path}: CachyOS image 2 must use the pinned rmux base patch")
+        bt_followup = ci_build_2.get("bluetooth_followup_patch", {})
+        if (not isinstance(bt_followup, dict) or
+                bt_followup.get("sha256") !=
+                "54d7addbb4cd95c943f9a4485229ac5516ad08ebe0f4aa02fd72cf33298fa0a2" or
+                bt_followup.get("applied_after_rmux_base") is not True or
+                bt_followup.get("hardware_tested") is not False):
+            errors.append(f"{path}: unexpected CachyOS image 2 Bluetooth follow-up")
+        external_bt = bt_followup.get("external_confirmation", {})
+        if (not isinstance(external_bt, dict) or
+                external_bt.get("repository") !=
+                "https://github.com/VivaLaVent/ps5-bazzite-deck" or
+                external_bt.get("release_tag") != "v1.0.3" or
+                external_bt.get("source_commit") !=
+                "807d5bcaa834f574f6d927703ff95c1caffc96ba" or
+                external_bt.get("patch_sha256") !=
+                "c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8" or
+                external_bt.get("firmware") != "13.60" or
+                external_bt.get("console_model") != "CFI-10xx" or
+                external_bt.get("same_core_fix") is not True or
+                external_bt.get("byte_identical_patch") is not False or
+                external_bt.get("image2_hardware_test") is not False):
+            errors.append(f"{path}: unexpected image 2 Bluetooth external confirmation")
+        expected_build2_changes = [
+            "IW620 Bluetooth quirk ordering follow-up after the rmux 7.3 base patch",
+            "IW620 firmware-before-explicit-driver-load ordering",
+            "linux-ps5 7.3.0-2 package identity with KBUILD_BUILD_VERSION=2",
+            "CPU and GPU frequency drivers remain manual-only",
+        ]
+        expected_build2_unresolved = [
+            "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
+            "joining Wi-Fi from the KDE network menu fails with the access point not in the scan list",
+        ]
+        if ci_build_2.get("included_in_source") != expected_build2_changes:
+            errors.append(f"{path}: unexpected CachyOS image 2 source changes")
+        if ci_build_2.get("unresolved_image_behaviors") != expected_build2_unresolved:
+            errors.append(f"{path}: unexpected CachyOS image 2 unresolved behaviors")
+        asset_policy = ci_build_2.get("release_asset_policy", {})
+        if (not isinstance(asset_policy, dict) or
+                asset_policy.get("format") != "single-img-xz" or
+                asset_policy.get("expected_image_asset_count") != 1 or
+                asset_policy.get("maximum_size_bytes_exclusive") != 2147483648 or
+                asset_policy.get("fail_instead_of_split") is not True):
+            errors.append(f"{path}: CachyOS image 2 must be one unsplit .img.xz")
+        elif (asset_policy.get("asset_name") !=
+              "ps5-cachyos1160-k73.img.xz" or
+              asset_policy.get("size") != 1943471712 or
+              asset_policy.get("sha256") !=
+              "8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a" or
+              asset_policy.get("verified") is not True):
+            errors.append(
+                f"{path}: unexpected CachyOS image 2 release asset identity")
+        raw_image = ci_build_2.get("raw_image", {})
+        if (not isinstance(raw_image, dict) or
+                raw_image.get("name") != "ps5-cachyos1160-k73.img" or
+                raw_image.get("size") != 12582912000 or
+                raw_image.get("sha256") !=
+                "3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d" or
+                raw_image.get("verified") is not True):
+            errors.append(
+                f"{path}: unexpected CachyOS image 2 raw image identity")
         loader = k73.get("loader", {})
         if not isinstance(loader, dict):
             loader = {}
@@ -1055,9 +1148,14 @@ def validate(path: Path) -> list[str]:
         ]
         if pending != expected_pending:
             errors.append(f"{path}: Run 21 must list the three remaining checks")
-        fixes = k73.get("fixes_identified_for_ci_build_2")
-        if not isinstance(fixes, list) or len(fixes) != 5:
-            errors.append(f"{path}: Run 21 must list the five fixes for CI build 2")
+        followup = k73.get("post_run21_image_followup", {})
+        if (not isinstance(followup, dict) or
+                followup.get("included_in_ci_build_2_source") !=
+                expected_build2_changes or
+                followup.get("unresolved_after_ci_build_2_source") !=
+                expected_build2_unresolved):
+            errors.append(
+                f"{path}: Run 21 follow-up must separate image 2 changes from unresolved behavior")
         for field in ("independent_hardware_reproduction", "ab_control_run",
                       "tester_errors_reproduced", "soak_tested", "gaming_load_tested",
                       "ci_built_image"):

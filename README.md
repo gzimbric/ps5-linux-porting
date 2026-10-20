@@ -77,21 +77,41 @@ logger bug invalidated its byte and throughput counters, and no read-back or
 manual Steam integrity check ran. A separate game-load log reached 2.23 GHz
 and 84.0 °C, but ended while the load was active without operator-confirmed
 gameplay or display. The frequency drivers remain manual-only. The image that
-booted was a local build; the later CI-built image is held in a draft release
-and has not been booted. The bounded Wi-Fi loader in the draft loader release
-is the build that booted in Run 21; the companion bounded build without the
-Wi-Fi dump has not been booted. Run 15 remains the release baseline. Run 20,
-the bounded loader with the Ubuntu image, was deferred. See the
+booted was a local build. CI image 1 was built afterwards and remains an
+unbooted draft superseded by image 2. Image 2 is pinned by tag
+`cachyos1160-k73-image-2` at source
+commit `346088a48f66eb956dafdec9de5085e73b2d44a5`. Its source uses rmux's
+published 7.3 patch set, adds a separate hash-pinned IW620 Bluetooth quirk
+follow-up, orders the Wi-Fi firmware copy before the explicit driver load,
+identifies the kernel package as `linux-ps5 7.3.0-2`, and keeps both frequency
+drivers manual. [Bazzite Deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3)
+independently reports a paired DualSense on firmware 13.60 after the same core
+Bluetooth correction; its patch is not byte-identical, and that result is not
+an 11.60 test of image 2. Workflow run `39481460775` completed successfully,
+and its private draft has one 1,943,471,712-byte image archive with SHA-256
+`8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a`.
+The 12,582,912,000-byte raw image has SHA-256
+`3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d`.
+Those are verified build and release facts; image 2 has not been booted and
+stays a draft until a hardware boot. Steam's desktop switch and joining Wi-Fi
+from the KDE menu remain open.
+
+Each image release is one `.img.xz`; the build fails instead of publishing
+numbered parts if that file reaches 2 GiB. The bounded Wi-Fi loader in the
+draft loader release is the build that booted in Run 21; the companion bounded
+build without the Wi-Fi dump has not been booted. Run 15 remains the release
+baseline. Run 20, the bounded loader with the Ubuntu image, was deferred. See the
 [Run 21 evidence](evidence/11.60-cachyos-k73-run-21.md).
 
 The public Ubuntu profile uses `ps5` / `ubuntu` as its initial login. Change
 that password immediately after first login, before exposing SSH beyond a
 trusted local network.
 
-The loader source for Run 15 is published at
-[gzimbric/ps5-linux-loader `firmware-11.60-sonic-display`](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
-(tested source commit `e0b7a2e`; reproducible release-check commit `69657e6`).
-It is source only; build it yourself. See
+The canonical loader source is published on
+[gzimbric/ps5-linux-loader `main`](https://github.com/gzimbric/ps5-linux-loader).
+The historical `firmware-11.60-sonic-display` branch preserves the exact Run
+15 lineage (tested source commit `e0b7a2e`; reproducible release-check commit
+`69657e6`). It is source only; build it yourself. See
 [upstream references](docs/upstream-references.md#published-1160-loader-source)
 for how its commits map to the source hashes recorded in the evidence.
 
@@ -105,6 +125,7 @@ for how its commits map to the source hashes recorded in the evidence.
 | Opt-in DMA E820 loader build | Pass in Run 18 with CachyOS; intended e820 reservation, authenticated SSH, and a 12 GiB USB write and read-back check; display not recorded as observed |
 | CI Ubuntu 24.04 image with the DMA E820 ELF | Pass in Run 19 with build 3; visible HDMI, authenticated SSH, intended e820 reservation, and the tester guide's checks, including a 12 GiB USB write and read-back check |
 | CachyOS 7.3.0 boot with the bounded loader | Pass in Run 21 with a local image build; visible HDMI, authenticated SSH, intended e820 reservation, and the kernel placed above it by KASLR; Bluetooth does not work |
+| CachyOS 7.3.0 image 2 candidate | Source pinned at `cachyos1160-k73-image-2` / `346088a`; includes the unbooted Bluetooth and Wi-Fi load-order follow-ups, `linux-ps5 7.3.0-2`, and manual-only frequency drivers; workflow `39481460775` and the one image archive's exact size and SHA-256 are verified, but no image 2 hardware boot has run; Bazzite v1.0.3 independently reports the same core Bluetooth fix on firmware 13.60 |
 | Onboard Wi-Fi via the loader's firmware dump | Pass in Run 21; the loader wrote the 11.60 firmware to the boot partition with the Run 17 hash, the driver started it, a 5 GHz WPA3 join by name worked, and an HTTPS download over Wi-Fi ran at about 192 Mbit/s; joining from the KDE menu failed |
 | Large install observation | Run 21 recorded 480 snapshots over about four hours, with free space moving from 213G to 159G and no new matching storage-error lines after the watcher's baseline; invalid diskstats fields made its throughput and total counters unusable, and this was not a read-back, hash, or Steam integrity pass |
 | GPU frequency driver (`ps5_gpufreq`) | Run 21 loaded it by hand; at idle the GPU held 400 MHz and `k10temp` fell from about 50 °C to about 36 °C. Later load telemetry reached 2.23 GHz and 84.0 °C, but did not establish gameplay, thermal equilibrium, or stability; autoload remains disabled |
@@ -225,11 +246,13 @@ metadata. See [publication policy](docs/publication-policy.md).
 
 - [pLinux5-NG](https://github.com/pLabs5/pLinux5-NG)
 - [ps5-linux-loader](https://github.com/ps5-linux/ps5-linux-loader)
-- [11.60 loader source fork](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display)
+- [11.60 loader source fork (`main`)](https://github.com/gzimbric/ps5-linux-loader)
 - [ps5-linux-image](https://github.com/ps5-linux/ps5-linux-image)
 - [ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex)
 - [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
   rmux's 7.3 port of the PS5 patches and the CPU and GPU frequency drivers
+- [VivaLaVent/ps5-bazzite-deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3),
+  independent Linux 7.3 hardware confirmation of the IW620 Bluetooth fix
 - [Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn)
 - [PS5 Hypervisor Bypass Porting](https://github.com/gzimbric/ps5-hv-bypass-porting)
 

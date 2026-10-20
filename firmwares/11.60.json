@@ -822,7 +822,74 @@
       "draft_release_created": true,
       "includes_review_fixes": true,
       "started_after_run": true,
-      "booted": false
+      "booted": false,
+      "superseded_by": "cachyos1160-k73-image-2"
+    },
+    "ci_build_2": {
+      "release_tag": "cachyos1160-k73-image-2",
+      "source_commit": "346088a48f66eb956dafdec9de5085e73b2d44a5",
+      "workflow_run": 39481460775,
+      "workflow_conclusion": "success",
+      "ci_result_verified": true,
+      "release_policy": "draft-until-hardware-boot",
+      "draft_release_created": true,
+      "release_is_draft": true,
+      "booted": false,
+      "kernel_package": {
+        "name": "linux-ps5",
+        "version": "7.3.0-2",
+        "kbuild_build_version": 2
+      },
+      "base_patch_set": {
+        "repository": "https://github.com/rmuxnet/ps5-linux-patches-1",
+        "commit": "36f173f39e5e76c00c4e366a7b909f33bc665ad5",
+        "used_as_published": true
+      },
+      "bluetooth_followup_patch": {
+        "path": "distros/cachyos1160-k73/kernel/ps5-btusb-iw620-quirks.patch",
+        "sha256": "54d7addbb4cd95c943f9a4485229ac5516ad08ebe0f4aa02fd72cf33298fa0a2",
+        "applied_after_rmux_base": true,
+        "based_on": "ps5-linux-patches-pr-35-quirk-ordering",
+        "hardware_tested": false,
+        "external_confirmation": {
+          "repository": "https://github.com/VivaLaVent/ps5-bazzite-deck",
+          "release_tag": "v1.0.3",
+          "source_commit": "807d5bcaa834f574f6d927703ff95c1caffc96ba",
+          "patch_sha256": "c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8",
+          "firmware": "13.60",
+          "console_model": "CFI-10xx",
+          "reported_result": "DualSense paired over internal Bluetooth",
+          "same_core_fix": true,
+          "byte_identical_patch": false,
+          "image2_hardware_test": false
+        }
+      },
+      "included_in_source": [
+        "IW620 Bluetooth quirk ordering follow-up after the rmux 7.3 base patch",
+        "IW620 firmware-before-explicit-driver-load ordering",
+        "linux-ps5 7.3.0-2 package identity with KBUILD_BUILD_VERSION=2",
+        "CPU and GPU frequency drivers remain manual-only"
+      ],
+      "unresolved_image_behaviors": [
+        "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
+        "joining Wi-Fi from the KDE network menu fails with the access point not in the scan list"
+      ],
+      "release_asset_policy": {
+        "format": "single-img-xz",
+        "expected_image_asset_count": 1,
+        "maximum_size_bytes_exclusive": 2147483648,
+        "fail_instead_of_split": true,
+        "asset_name": "ps5-cachyos1160-k73.img.xz",
+        "size": 1943471712,
+        "sha256": "8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a",
+        "verified": true
+      },
+      "raw_image": {
+        "name": "ps5-cachyos1160-k73.img",
+        "size": 12582912000,
+        "sha256": "3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d",
+        "verified": true
+      }
     },
     "loader": {
       "name": "ps5-linux-loader-1160-dma-e820-bounded-wifi.elf",
@@ -1138,13 +1205,18 @@
       "independent read-back or hash verification of the installed files",
       "operator-observed gameplay and display with a bounded thermal and stability run"
     ],
-    "fixes_identified_for_ci_build_2": [
-      "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
-      "joining Wi-Fi from the KDE network menu fails with the access point not in the scan list",
-      "test the built but unbooted internal-Bluetooth quirks fix",
-      "test the reviewed but unbooted Wi-Fi firmware and driver load-order fix",
-      "keep the CPU and GPU frequency drivers manual until thermal safety is established"
-    ],
+    "post_run21_image_followup": {
+      "included_in_ci_build_2_source": [
+        "IW620 Bluetooth quirk ordering follow-up after the rmux 7.3 base patch",
+        "IW620 firmware-before-explicit-driver-load ordering",
+        "linux-ps5 7.3.0-2 package identity with KBUILD_BUILD_VERSION=2",
+        "CPU and GPU frequency drivers remain manual-only"
+      ],
+      "unresolved_after_ci_build_2_source": [
+        "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
+        "joining Wi-Fi from the KDE network menu fails with the access point not in the scan list"
+      ]
+    },
     "not_tested": ["video-decode", "manual-steam-integrity", "independent-readback-or-hash", "operator-confirmed-gameplay-and-display", "thermal-equilibrium", "reboot", "suspend", "soak", "ci-built-image", "other-consoles"],
     "game_load_telemetry_recorded": true,
     "physical_display_observed": true,
@@ -1241,7 +1313,7 @@
   "latest_authenticated_working_run": 21,
   "latest_tested_run": "run21-cachyos-k73-bounded-wifi-pass",
   "last_observed_marker": "Run 21 CachyOS on Linux 7.3.0 with the bounded Wi-Fi loader: directly observed HDMI picture, the reserved e820 range, the loader's Wi-Fi firmware dump, a 5 GHz Wi-Fi join over authenticated SSH, and later limited install and game-load telemetry",
-  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, Run 18 DMA E820 build on CachyOS, Run 19 published tester pair (CI Ubuntu build 3 with the DMA E820 build), and Run 21 CachyOS 7.3.0 local build with the bounded Wi-Fi loader; tester read/write errors, an A/B I/O control, other consoles, the CI CachyOS 7.3 image, Bluetooth, video decode, file integrity, operator-confirmed gameplay and display under load, thermal equilibrium, reboot and suspend, Wi-Fi autoload across reboot, soak, repeatability, and the minimal display subset remain uncharacterized",
+  "current_boundary": "Run 15 loader baseline plus Run 16 Ubuntu control, Run 17 Wi-Fi, Run 18 DMA E820 build on CachyOS, Run 19 published tester pair (CI Ubuntu build 3 with the DMA E820 build), and Run 21 CachyOS 7.3.0 local build with the bounded Wi-Fi loader; CachyOS image 2 completed CI successfully and its one compressed image and raw-image identities are verified in a private draft release, but that exact image remains unbooted; tester read/write errors, an A/B I/O control, other consoles, Bluetooth with the image 2 follow-up, video decode, file integrity, operator-confirmed gameplay and display under load, thermal equilibrium, reboot and suspend, Wi-Fi autoload across reboot, KDE Wi-Fi joining, the Steam desktop switch, soak, repeatability, and the minimal display subset remain uncharacterized",
   "notes": [
     "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, 18, 19, and 21; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
     "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
@@ -1260,7 +1332,9 @@
     "Run 19 found two image defects for the backlog: the hostname is the CI build container ID, and ps5-ssh-host-keys.service causes an ordering cycle with ssh.socket that systemd breaks by dropping the sockets.target job. SSH still worked.",
     "The dma_e820_build record describes Run 18 only; its physical_display_observed and ubuntu_ci_image_tested values are Run 18 results. Run 19 (ubuntu_ci_dma_run) booted the DMA build with the CI Ubuntu image and a directly observed picture.",
     "Run 21 is the first boot of Linux 7.3.0 and of the bounded Wi-Fi loader on this console. The kernel is mainline v7.3 with the 7.3 port of the PS5 patches by rmux (Armandas Kvietkus), https://github.com/rmuxnet/ps5-linux-patches-1 at 36f173f, which also brings rmux's PS5 CPU and GPU frequency drivers. The planned Runs 21 (CachyOS 7.3) and 22 (Wi-Fi) were merged into this run, and Run 20 was deferred.",
-    "Run 21 booted a local build of the cachyos-1160-k73 image branch from before the review fixes, not a CI build. CI build cachyos1160-k73-image-1 completed successfully afterwards and is held in a draft release; it has not been booted.",
+    "Run 21 booted a local build of the cachyos-1160-k73 image branch from before the review fixes, not a CI build. CI build cachyos1160-k73-image-1 completed successfully afterwards and is held in a draft release; it has not been booted and is superseded by image 2.",
+    "CachyOS image 2 is source-pinned by tag cachyos1160-k73-image-2 at 346088a48f66eb956dafdec9de5085e73b2d44a5. It uses rmux's 36f173f Linux 7.3 patch as published, then applies a separate hash-pinned IW620 Bluetooth quirk-ordering follow-up; it also puts the firmware copy before the explicit Wi-Fi driver load, packages linux-ps5 7.3.0-2 with KBUILD_BUILD_VERSION=2, and keeps the frequency drivers manual. Workflow 39481460775 completed successfully. Its private draft release contains one 1,943,471,712-byte ps5-cachyos1160-k73.img.xz with SHA-256 8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a; it expands to the 12,582,912,000-byte raw image with SHA-256 3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d. Those are verified build and release facts, not hardware results, and image 2 has not been booted.",
+    "Steam's Switch to Desktop and joining Wi-Fi from the KDE menu remain unresolved after the image 2 source changes. Releases use one .img.xz and fail instead of publishing numbered parts if the compressed image reaches 2 GiB.",
     "The Run 21 loader (firmware-11.60-dma-e820 at 98925a2, target linux-1160-dma-e820-bounded-wifi) checks the boot files against bounds instead of exact sizes, prints its refusals, and dumps the 11.60 IW620 firmware. The Run 15 and Run 18 loaders refuse these boot files. In Run 21 it dumped the 498,108-byte firmware for the first time on 11.60, and the wake copy stayed inside the proven window.",
     "In Run 21 the e820 table matched Runs 18 and 19, and KASLR put the kernel code at physical 0x26ec00000, far above the reserved range. MemTotal was 14,788,356 kB.",
     "In Run 21 the Wi-Fi driver first probed before the firmware was in place, then the image's firmware service reloaded it and the 17.130.3.p47 firmware came up. Joining from the KDE menu failed twice; joining by name with nmcli worked, on 5 GHz with WPA3, and a 50 MB HTTPS download over Wi-Fi ran at about 192 Mbit/s.",
