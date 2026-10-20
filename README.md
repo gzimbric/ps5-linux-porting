@@ -104,21 +104,32 @@ remain open. Follow the
 without substituting either half of the test pair.
 
 Image 3 is the current source candidate at `ps5-linux-image` `main` commit
-`34bd8f5ce57e76c5d8d2733352b172e9b07a1897`, not a built or published release. It
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, not a built or published release. It
 changes the package identity to `linux-ps5 7.3.0-3` and rebuilds the exact
 `ps5-btusb-quirks-fix.patch` attached to Bazzite Deck v1.0.3 (SHA-256
 `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`)
 inside this kernel; testers must never copy Bazzite's prebuilt `btusb.ko`.
 The NXP driver base remains pinned at `a5fe4e1`, with the IW620 patch stack at
 `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX fixes,
-and NetworkManager gets `wifi.powersave=2`. At startup, the fixed maximum fan
+and NetworkManager gets `wifi.powersave=2`. The Bluetooth userspace policy now
+matches the working Bazzite path: `AlwaysPairable=true`, `PairableTimeout=0`,
+`ControllerMode=dual`, `Privacy=device`, `JustWorksRepairing=always`,
+`AutoEnable=true`, and `UserspaceHID=true`. It relies on the pairing agent
+supplied by KDE or `bluetoothctl` and the `uhid`/`hid-playstation` path; it
+does not preload `hidp` or install a custom pairing daemon. The comparison base is Bazzite OCI digest
+`sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
+built from `ublue-os/bazzite` revision
+`2fab72cbc9a3257d80c607e173f22527aea3b39b`. This remains source evidence,
+not an 11.60 pairing result. At startup, the fixed maximum fan
 request must succeed before a guarded GPU-then-CPU frequency policy runs by
 default; `/boot/efi/disable-ps5-performance` is the persistent opt-out. A
 narrow listener handles the Steam-to-Plasma handoff, and Linux sleep targets
 are masked. The hosted workflow is responsible for building, checking,
-compressing, and uploading one `.img.xz` to a draft prerelease. None of those
-image-3 changes has an exact artifact hash or hardware result yet. See the
-[image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) for the
+compressing, and uploading one `.img.xz` to a draft prerelease. Kernel-cache
+run [`39505071885`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39505071885)
+is still in progress; the full image run has not started. None of those
+image-3 changes has an artifact hash, tag, release, or hardware result yet.
+See the [image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) for the
 release identity fields that must be filled before flashing begins and the
 hardware gates that follow.
 
@@ -154,7 +165,7 @@ for how its commits map to the source hashes recorded in the evidence.
 | CI Ubuntu 24.04 image with the DMA E820 ELF | Pass in Run 19 with build 3; visible HDMI, authenticated SSH, intended e820 reservation, and the tester guide's checks, including a 12 GiB USB write and read-back check |
 | CachyOS 7.3.0 boot with the bounded loader | Pass in Run 21 with a local image build; visible HDMI, authenticated SSH, intended e820 reservation, and the kernel placed above it by KASLR; Bluetooth failed in that historical image |
 | CachyOS 7.3.0 image 2 tester prerelease | [Public prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-2), with source pinned at `cachyos1160-k73-image-2` / `346088a`; includes the Bluetooth and Wi-Fi load-order follow-ups, `linux-ps5 7.3.0-2`, fixed maximum fan pattern `3` at boot, and manual-only frequency drivers; workflow `39481460775` and the one image archive's exact size and SHA-256 are verified, but no identity-verified image 2 hardware boot is recorded; Bazzite v1.0.3 independently reports the same core Bluetooth fix on firmware 13.60 |
-| CachyOS 7.3.0 image 3 source candidate | Pinned on image-repo `main` at `34bd8f5`, but not built, tagged, published, or hardware-tested; intended package `linux-ps5 7.3.0-3`, exact Bazzite v1.0.3 Bluetooth source patch rebuilt in-kernel, NXP base `a5fe4e1` plus IW620 patch stack `4bce848`, `wifi.powersave=2`, guarded fan/GPU/CPU startup, narrow desktop handoff, masked Linux sleep, and one-file hosted CI; follow the [image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) only after it records exact artifact identities |
+| CachyOS 7.3.0 image 3 source candidate | Pinned on image-repo `main` at `f7d6fbd`, but not built, tagged, published, or hardware-tested; intended package `linux-ps5 7.3.0-3`, exact Bazzite v1.0.3 Bluetooth source patch rebuilt in-kernel, matching Bazzite BlueZ pairing and userspace-HID policy, NXP base `a5fe4e1` plus IW620 patch stack `4bce848`, `wifi.powersave=2`, guarded fan/GPU/CPU startup, narrow desktop handoff, masked Linux sleep, and one-file hosted CI; follow the [image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) only after it records exact artifact identities |
 | Onboard Wi-Fi via the loader's firmware dump | Pass in Run 21; the loader wrote the 11.60 firmware to the boot partition with the Run 17 hash, the driver started it, a 5 GHz WPA3 join by name worked, and an HTTPS download over Wi-Fi ran at about 192 Mbit/s; joining from the KDE menu failed |
 | Large install observation | Run 21 recorded 480 snapshots over about four hours, with free space moving from 213G to 159G and no new matching storage-error lines after the watcher's baseline; invalid diskstats fields made its throughput and total counters unusable, and this was not a read-back, hash, or Steam integrity pass |
 | GPU frequency driver (`ps5_gpufreq`) | Run 21 loaded it by hand; at idle the GPU held 400 MHz and `k10temp` fell from about 50 °C to about 36 °C. Later load telemetry reached 2.23 GHz and 84.0 °C, but did not establish gameplay, thermal equilibrium, or stability; image 2 keeps autoload disabled, while image 3's guarded default remains untested source |

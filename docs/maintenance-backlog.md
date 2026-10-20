@@ -230,28 +230,38 @@ Image 3 advances these source changes together:
    SHA-256
    `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`,
    and rebuilds it in this kernel. Never copy Bazzite's prebuilt `btusb.ko`.
-2. The NXP driver base stays pinned at
+2. The BlueZ policy mirrors the working Bazzite base at OCI digest
+   `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
+   built from `ublue-os/bazzite` revision
+   `2fab72cbc9a3257d80c607e173f22527aea3b39b`. It sets
+   `AlwaysPairable=true`, `PairableTimeout=0`, `ControllerMode=dual`,
+   `Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
+   `UserspaceHID=true`. It uses the pairing agent supplied by KDE or
+   `bluetoothctl` and `uhid`/`hid-playstation`; there is no custom pairing
+   daemon and no `hidp` preload.
+3. The NXP driver base stays pinned at
    `a5fe4e194bf99315e349d81d77d6dfacec70757a`. The IW620 patch stack is
    pinned at `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX
    fixes. NetworkManager uses `wifi.powersave=2`; the firmware still comes
    from the console through the bounded loader.
-3. `ps5fan.service` first requests fixed maximum servo pattern `3`. Only after
+4. `ps5fan.service` first requests fixed maximum servo pattern `3`. Only after
    that succeeds does the guarded performance service load GPU scaling and
    then CPU scaling. `/boot/efi/disable-ps5-performance` is a persistent,
    fail-closed opt-out. This is not a dynamic fan curve or a proved thermal
    policy.
-4. A constrained system-bus listener performs the Steam-to-Plasma handoff and
+5. A constrained system-bus listener performs the Steam-to-Plasma handoff and
    terminates only the expected `steam` session on `tty1`.
-5. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
+6. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
    `suspend-then-hibernate` targets are masked. Use a full power-off from
    Linux; GameOS Rest Mode remains only the loader carrier.
-6. Hosted CI owns the build, verification, compression, and upload of one
+7. Hosted CI owns the build, verification, compression, and upload of one
    `.img.xz`; the release must not be split into numbered parts.
 
 The image-3 source is pinned on image-repo `main` at
-`34bd8f5ce57e76c5d8d2733352b172e9b07a1897`, but there is no image-3 tag,
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, but there is no image-3 tag,
 hosted image artifact, archive hash, raw-image hash, `bzImage` hash, release,
-or hardware boot yet. Do not flash a local build or
+or hardware boot yet. Kernel-cache run `39505071885` is still in progress and
+the full image run has not started. Do not flash a local build or
 rename image 2. The exact hosted artifact must pass the cold-boot,
 Bluetooth/Wi-Fi coexistence, desktop-handoff, performance opt-out, integrity,
 and bounded-thermal gates in the image 3 tester guide before these items move
@@ -309,8 +319,16 @@ Image 3 replaces that earlier follow-up with the exact Bazzite Deck v1.0.3
 source patch asset, SHA-256
 `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`,
 rebuilt as part of `linux-ps5 7.3.0-3`. It does not copy Bazzite's prebuilt
-module. The Bazzite report proves pairing only for its firmware 13.60 image;
-the image 3 source still has no 11.60 build or boot result.
+module. It also matches the working Bazzite userspace path:
+`AlwaysPairable=true`, `PairableTimeout=0`, `ControllerMode=dual`,
+`Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
+`UserspaceHID=true`, using the pairing agent supplied by KDE or `bluetoothctl`
+and `uhid`/`hid-playstation` without a custom pairing daemon or `hidp` preload. The audited Bazzite base is OCI
+digest `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`
+from `ublue-os/bazzite` revision
+`2fab72cbc9a3257d80c607e173f22527aea3b39b`. The Bazzite report proves
+pairing only for its firmware 13.60 image; the image 3 source still has no
+11.60 build or boot result.
 
 For the next exact-artifact hardware test:
 

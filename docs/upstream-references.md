@@ -13,7 +13,7 @@ forks use `main` as their default source branch.
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `c70358f57e5a9d481fcde676454f4919e4e403b4` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and public bounded-loader tester guidance |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `34bd8f5ce57e76c5d8d2733352b172e9b07a1897` | Canonical public image source with the image 3 source candidate, hosted one-file workflow and image 2 history; image 3 has no artifact or release yet |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `f7d6fbd9d630cddaceb83f3b861869d4453af8ca` | Canonical public image source with the image 3 source candidate, hosted one-file workflow and image 2 history; kernel-cache run `39505071885` is in progress, with no full image artifact or release yet |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 public tester prerelease source; CI and release identities verified, with no identity-verified hardware boot recorded |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
@@ -22,6 +22,7 @@ forks use `main` as their default source branch.
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
 | [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1) | `meower` (default) | `36f173f39e5e76c00c4e366a7b909f33bc665ad5` | rmux's Linux 7.3 port of the PS5 patches and the PS5 CPU and GPU frequency drivers, used for the Run 21 kernel |
 | [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | Source of the exact `ps5-btusb-quirks-fix.patch` asset rebuilt by the image 3 candidate, asset SHA-256 `c01bdcc…`; its paired-DualSense result is on firmware 13.60, not proof on 11.60 |
+| [ublue-os/bazzite](https://github.com/ublue-os/bazzite/tree/2fab72cbc9a3257d80c607e173f22527aea3b39b) | source revision | `2fab72cbc9a3257d80c607e173f22527aea3b39b` | Source of the Bazzite base at OCI digest `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`; its effective BlueZ policy is mirrored by image 3 |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Exact historical source of the bounded Wi-Fi ELF that booted in Run 21 |
 
 The local Linux research branch started from pLinux5-NG commit
@@ -122,7 +123,7 @@ has one 1,943,471,712-byte image archive whose identity, together with the
 hardware boot of image 2 is recorded.
 
 Image 3 is pinned on image-repo `main` at
-`34bd8f5ce57e76c5d8d2733352b172e9b07a1897`, but is not yet a tagged release.
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, but is not yet a tagged release.
 It keeps rmux's `36f173f` Linux 7.3 base and changes the package identity to
 `linux-ps5 7.3.0-3`. For Bluetooth it consumes the exact
 `ps5-btusb-quirks-fix.patch` release asset attached to Bazzite Deck v1.0.3,
@@ -132,6 +133,17 @@ then rebuilds that source in its own kernel. Bazzite's prebuilt `btusb.ko` is
 not part of this project and must not be copied into this image. The external
 13.60 pairing report is useful source evidence, not an 11.60 image-3 result.
 
+The matching userspace reference is the Bazzite base at OCI digest
+`sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
+built from [`ublue-os/bazzite` revision `2fab72c`](https://github.com/ublue-os/bazzite/tree/2fab72cbc9a3257d80c607e173f22527aea3b39b).
+Image 3 mirrors its effective Bluetooth settings:
+`AlwaysPairable=true`, `PairableTimeout=0`, `ControllerMode=dual`,
+`Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
+`UserspaceHID=true`. It relies on the pairing agent supplied by KDE or
+`bluetoothctl` and the `uhid`/`hid-playstation` path; it neither installs a
+custom pairing daemon nor preloads `hidp`. This documents source parity only.
+The exact image still needs an 11.60 pairing and input test.
+
 The same candidate pins `ps5-linux-mwifiex` at
 `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, then applies the HE and TX
 follow-ups and sets NetworkManager `wifi.powersave=2`. It requests fixed
@@ -140,8 +152,9 @@ maximum fan pattern `3` before guarded GPU-then-CPU scaling at startup, with
 handles the Steam-to-Plasma handoff, and unsupported Linux sleep targets are
 masked. Hosted CI is intended to build, verify, compress, and upload one
 `.img.xz` to a draft prerelease, but no image-3 tag, image artifact, hash,
-release, or hardware result exists yet. The candidate becomes testable only
-when the missing identities in
+release, or hardware result exists yet. Kernel-cache run `39505071885` is
+still in progress and the full image run has not started. The candidate becomes
+testable only when the missing identities in
 the [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md) are filled
 from one exact hosted run.
 

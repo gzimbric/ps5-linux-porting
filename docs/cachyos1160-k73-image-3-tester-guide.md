@@ -20,7 +20,7 @@ same successful hosted-CI run.
 | Item | Image 3 status |
 |---|---|
 | Release/tag | Not published |
-| Source commit | `34bd8f5ce57e76c5d8d2733352b172e9b07a1897` on `main`; release tag pending |
+| Source commit | `f7d6fbd9d630cddaceb83f3b861869d4453af8ca` on `main`; release tag pending |
 | Hosted-CI run | [Kernel-cache run `39505071885`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39505071885) in progress; full image run not started |
 | Compressed archive size and SHA-256 | Not available |
 | Raw image size and SHA-256 | Not available |
@@ -54,8 +54,16 @@ The source candidate keeps Gaming Mode as the default and changes these areas:
   `ps5-btusb-quirks-fix.patch`, SHA-256
   `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`.
   It is rebuilt as part of this image's pinned Linux 7.3 kernel. It does not
-  copy Bazzite's `btusb.ko`. Bazzite's 13.60 result supports the source fix but
-  is not proof that it works on this 11.60 image.
+  copy Bazzite's `btusb.ko`. The image also follows the working Bazzite BlueZ
+  path with `AlwaysPairable=true`, `PairableTimeout=0`,
+  `ControllerMode=dual`, `Privacy=device`, `JustWorksRepairing=always`,
+  `AutoEnable=true`, and `UserspaceHID=true`. It uses the pairing agent
+  supplied by KDE or `bluetoothctl` and the `uhid`/`hid-playstation` path;
+  there is no custom pairing daemon and no `hidp` preload. The comparison base is Bazzite OCI digest
+  `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
+  built from [`ublue-os/bazzite` revision `2fab72c`](https://github.com/ublue-os/bazzite/tree/2fab72cbc9a3257d80c607e173f22527aea3b39b).
+  Bazzite's 13.60 result supports this source combination but is not proof that
+  it works on this 11.60 image.
 - **Fan:** `ps5fan.service` requests fixed maximum servo pattern `3` at
   startup, before the performance policy. This is not a dynamic fan curve,
   and the console does not provide confirmed RPM feedback.
@@ -261,7 +269,11 @@ bluetoothctl list
 sudo btmgmt info
 lsusb -d 1286:2059
 lsusb -t
-modinfo -F vermagic btusb
+for module in btusb uhid hid_playstation; do modinfo -F vermagic "$module"; done
+grep -E '^(AlwaysPairable|PairableTimeout|ControllerMode|Privacy|JustWorksRepairing|AutoEnable)=' /etc/bluetooth/main.conf
+grep -E '^UserspaceHID=' /etc/bluetooth/input.conf
+lsmod | grep -E '^(btusb|bluetooth|uhid|hid_playstation)' || true
+grep -Rxs 'hidp' /etc/modules-load.d /usr/lib/modules-load.d || true
 sudo dmesg | grep -Ei 'Bluetooth|btusb|hci[0-9]|1286|2059|opcode|xhci|usb.*disconnect|error -[0-9]+'
 ```
 
@@ -269,14 +281,57 @@ The target is exactly one internal controller, a real nonzero address, no
 failed opcodes, no USB descriptor errors and no disconnect. If there is no
 controller, two controllers, a zero address, opcode `0x2031` or `0x0c03`,
 timeout `-110`, or a USB failure, stop. Save logs instead of repeatedly
-restarting services or copying a binary module.
+restarting services or copying a binary module. The policy lines should be
+exactly `AlwaysPairable=true`, `PairableTimeout=0`, `ControllerMode=dual`,
+`Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
+`UserspaceHID=true`. `btusb`, `uhid`, and `hid_playstation` should report the
+running kernel's vermagic; `uhid` and `hid_playstation` may not appear in
+`lsmod` until the controller connects. The `hidp` preload search should print
+nothing.
 
-With one healthy controller, close KDE's pairing wizard and use
-`bluetoothctl`. Remove only a clearly identified stale DualSense bond, hold
-**Create + PS** until the controller flashes rapidly, then `scan on`, `pair`,
-`trust` and `connect` its address. Pairing in Linux may replace the GameOS
+With one healthy controller, first try KDE: open **System Settings →
+Bluetooth**, choose **Add New Device**, hold **Create + PS** until the
+controller flashes rapidly, and select **DualSense Wireless Controller**.
+Wait through the brief repair/reconnect step before judging the result. If the
+pair completes but KDE reports that the connection failed, press **PS once**
+and allow the controller to initiate the reconnect.
+
+For a clean command-line test, close KDE's pairing wizard first. Remove only a
+clearly identified stale DualSense bond, put the controller back into pairing
+mode with **Create + PS**, then run:
+
+```text
+bluetoothctl
+power on
+agent on
+default-agent
+pairable on
+scan on
+# Wait for the DualSense address, then substitute it below.
+scan off
+pair XX:XX:XX:XX:XX:XX
+trust XX:XX:XX:XX:XX:XX
+connect XX:XX:XX:XX:XX:XX
+info XX:XX:XX:XX:XX:XX
+quit
+```
+
+If only `connect` fails after a successful pair and trust, press **PS once**
+instead of repeating the pairing loop; this tests the controller-initiated
+reconnect used by the working path. Pairing in Linux may replace the GameOS
 bond. USB-connect the controller and press PS in GameOS to pair it there again
 if needed.
+
+After the controller reconnects, verify the bond, transport and input device:
+
+```sh
+bluetoothctl devices Paired
+bluetoothctl devices Connected
+bluetoothctl info XX:XX:XX:XX:XX:XX
+lsmod | grep -E '^(btusb|bluetooth|uhid|hid_playstation)'
+grep -Ei -A8 'DualSense|Wireless Controller' /proc/bus/input/devices
+sudo /usr/local/sbin/ps5-boot-report
+```
 
 Test buttons and sticks, then keep Bluetooth connected while Wi-Fi carries
 ordinary traffic for at least 60 minutes. At the end, confirm that the HCI and
