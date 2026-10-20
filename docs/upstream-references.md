@@ -12,10 +12,10 @@ forks use `main` as their default source branch.
 | [PS5Dev/Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn) | `main` | `ea04f7132b837087f552c57261cb800481a3a910` | Upstream high-firmware bypass |
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
-| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `8de6c7fb7db86ee45059ecc154ebd267f7e779ef` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and bounded targets |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `824f55c70cc3fda5ce327ab202924dddd52e0241` | Canonical image source with the image 2 profile, verified CI record and one-file release policy |
+| [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `c70358f57e5a9d481fcde676454f4919e4e403b4` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and public bounded-loader tester guidance |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `54b38eaa95dc060e5036cfaaba716d9d0e8d12b3` | Canonical image source with the image 2 profile, verified CI record, public tester guidance and one-file release policy |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 build source; CI and release identities verified, hardware unbooted |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 public tester prerelease source; CI and release identities verified, hardware unbooted |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
@@ -114,17 +114,21 @@ independently reports a paired DualSense on a CFI-10xx PS5 running firmware
 13.60 after the same core `btusb` correction. Its patch is not byte-identical
 to the image 2 follow-up. That result corroborates the diagnosis, but it is
 not an 11.60 hardware test of image 2. Workflow `39481460775` completed
-successfully, and the private draft's one 1,943,471,712-byte image archive and
-12,582,912,000-byte raw image identities were verified. Image 2 itself remains
+successfully, and the
+[public tester prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-2)
+has one 1,943,471,712-byte image archive whose identity, together with the
+12,582,912,000-byte raw image identity, was verified. Image 2 itself remains
 unbooted.
 
 The Run 21 image boots only with a bounded loader build, because its boot
 files are not the sizes the earlier 11.60 loaders accept. Those targets are
 now on loader `main`. The exact bounded Wi-Fi artifact used in Run 21 was
 built at historical commit `98925a2`, and current `main` reproduces its hash.
-See the
-[Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md) for the tested
-hashes.
+It and the unbooted non-Wi-Fi A/B build are in the
+[`firmware-11.60-dma-e820-bounded-run21` tester prerelease](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21).
+See the [tester guide](cachyos1160-k73-image-2-tester-guide.md) and
+[Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md) for their exact
+scope and hashes.
 
 ## Published Run 16 image source
 

@@ -857,11 +857,17 @@ def validate(path: Path) -> list[str]:
                 ci_build_2.get("ci_result_verified") is not True):
             errors.append(
                 f"{path}: CachyOS image 2 CI result is not the verified success")
-        if (ci_build_2.get("release_policy") != "draft-until-hardware-boot" or
+        if (ci_build_2.get("release_url") !=
+                "https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-2" or
+                ci_build_2.get("release_policy") !=
+                "public-prerelease-for-hardware-testing" or
                 ci_build_2.get("draft_release_created") is not True or
-                ci_build_2.get("release_is_draft") is not True or
+                ci_build_2.get("release_is_draft") is not False or
+                ci_build_2.get("release_is_prerelease") is not True or
+                ci_build_2.get("published_for_testing") is not True or
                 ci_build_2.get("booted") is not False):
-            errors.append(f"{path}: CachyOS image 2 draft or boot state is overstated")
+            errors.append(
+                f"{path}: CachyOS image 2 prerelease or boot state is overstated")
         package = ci_build_2.get("kernel_package", {})
         if (not isinstance(package, dict) or
                 package.get("name") != "linux-ps5" or
@@ -902,6 +908,7 @@ def validate(path: Path) -> list[str]:
             "IW620 firmware-before-explicit-driver-load ordering",
             "linux-ps5 7.3.0-2 package identity with KBUILD_BUILD_VERSION=2",
             "CPU and GPU frequency drivers remain manual-only",
+            "ps5fan.service enabled by default with fixed maximum servo pattern 3",
         ]
         expected_build2_unresolved = [
             "Steam Switch to Desktop hangs because the image's steamos-session-select is not run and the next-session token stays gamescope",
@@ -911,6 +918,16 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: unexpected CachyOS image 2 source changes")
         if ci_build_2.get("unresolved_image_behaviors") != expected_build2_unresolved:
             errors.append(f"{path}: unexpected CachyOS image 2 unresolved behaviors")
+        fan_policy = ci_build_2.get("fan_policy", {})
+        if fan_policy != {
+            "service": "ps5fan.service",
+            "enabled_by_default": True,
+            "servo_pattern": 3,
+            "requested_setting": "tested-maximum-bring-up-setting",
+            "dynamic_temperature_curve": False,
+            "rpm_telemetry": False,
+        }:
+            errors.append(f"{path}: unexpected CachyOS image 2 fan policy")
         asset_policy = ci_build_2.get("release_asset_policy", {})
         if (not isinstance(asset_policy, dict) or
                 asset_policy.get("format") != "single-img-xz" or
@@ -949,6 +966,37 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: unexpected Run 21 loader source commit")
         if loader.get("build_target") != "linux-1160-dma-e820-bounded-wifi":
             errors.append(f"{path}: unexpected Run 21 loader build target")
+        if (loader.get("release_tag") !=
+                "firmware-11.60-dma-e820-bounded-run21" or
+                loader.get("release_url") !=
+                "https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21" or
+                loader.get("release_policy") !=
+                "public-prerelease-for-hardware-testing" or
+                loader.get("release_is_draft") is not False or
+                loader.get("release_is_prerelease") is not True or
+                loader.get("published_for_testing") is not True or
+                loader.get("release_also_holds_unbooted_bounded_elf") is not True):
+            errors.append(f"{path}: unexpected Run 21 loader prerelease state")
+        loader_assets = loader.get("release_assets", {})
+        bounded_wifi_asset = (loader_assets.get("bounded_wifi", {})
+                              if isinstance(loader_assets, dict) else {})
+        if bounded_wifi_asset != {
+            "name": "ps5-linux-loader-1160-dma-e820-bounded-wifi.elf",
+            "size": 170904,
+            "sha256": "e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f",
+            "hardware_booted": True,
+            "booted_with_exact_ci_image_2": False,
+        }:
+            errors.append(f"{path}: unexpected bounded Wi-Fi release asset")
+        bounded_non_wifi_asset = (loader_assets.get("bounded_non_wifi", {})
+                                  if isinstance(loader_assets, dict) else {})
+        if bounded_non_wifi_asset != {
+            "name": "ps5-linux-loader-1160-dma-e820-bounded.elf",
+            "size": 170904,
+            "sha256": "1c80b040c5a808b3f09418728424a875d5598fe6b2a5d68adeb4db5979a7541a",
+            "hardware_booted": False,
+        }:
+            errors.append(f"{path}: unexpected bounded non-Wi-Fi release asset")
         if loader.get("included") is not False:
             errors.append(f"{path}: Run 21 loader binary must not be included")
         release = display.get("release") if isinstance(display, dict) else None

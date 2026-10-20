@@ -39,3 +39,5 @@ instruction executed.
   later install watcher and game-load telemetry, the image 2 source follow-up
   and evidence limits. The image 2 notes do not turn its later, verified CI
   artifacts or still-unbooted hardware state into Run 21 results.
+  Public tests of that exact CI artifact belong under the separate
+  [CachyOS image 2 tester guide](../docs/cachyos1160-k73-image-2-tester-guide.md).

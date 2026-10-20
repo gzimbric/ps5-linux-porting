@@ -161,16 +161,17 @@ fixes made after the local build. Its workflow completed successfully and
 created a draft release after Run 21, but that image has not been booted and
 is superseded by image 2.
 
-Image 2 is the source candidate tagged `cachyos1160-k73-image-2` at commit
+Image 2 is the public tester prerelease tagged `cachyos1160-k73-image-2` at commit
 `346088a48f66eb956dafdec9de5085e73b2d44a5`. Workflow run `39481460775`
-completed successfully. The private draft's one image archive is
+completed successfully. The prerelease's one image archive is
 `ps5-cachyos1160-k73.img.xz`, 1,943,471,712 bytes, SHA-256
 `8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a`.
 It expands to a 12,582,912,000-byte raw image with SHA-256
 `3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d`.
-The workflow, draft state and assets were checked, but the image has not been
-booted. Keep the release draft until a hardware boot, and ship one `.img.xz`;
-if compression reaches 2 GiB, fail rather than splitting the image.
+The workflow and assets were checked, but the exact image has not been booted.
+It is published as a prerelease for hardware testing, with one `.img.xz`; if
+compression reaches 2 GiB, fail rather than splitting the image. Testers must
+follow the [image 2 tester guide](cachyos1160-k73-image-2-tester-guide.md).
 
 Included in the image 2 source:
 
@@ -196,6 +197,9 @@ Included in the image 2 source:
 4. Frequency-driver policy. `ps5_cpufreq` and `ps5_gpufreq` stay manual-only.
    Run 21 reached 84.0 °C under load, including 30 five-second samples at or
    above 80 °C, and the drivers have no thermal-cooling integration.
+5. Fan policy. `ps5fan.service` is enabled by default and requests tested
+   maximum servo pattern `3`. It is a fixed bring-up setting, not a dynamic
+   temperature curve, and command acceptance does not provide RPM telemetry.
 
 Still unresolved after the image 2 source changes:
 

@@ -4,11 +4,12 @@ This page is for people with a retail PS5 on firmware 11.60 who want to test
 one combination: the DMA E820 build of the 11.60 loader with the Ubuntu 24.04
 image built by GitHub CI.
 
-A CachyOS image on Linux 7.3.0 is in controlled testing, but it is not a
-general tester release yet. Image 2 is pinned at
-`cachyos1160-k73-image-2` / `346088a`. Its successful CI run and exact draft
-image identity are verified, but it has not been booted. This guide still
-covers only the hardware-tested Ubuntu build 3 pair.
+CachyOS image 2 on Linux 7.3.0 is now a public tester prerelease, pinned at
+`cachyos1160-k73-image-2` / `346088a`. Its successful CI run and exact release
+identity are verified, but the exact image has not been booted. Use the
+[CachyOS image 2 tester guide](cachyos1160-k73-image-2-tester-guide.md) for
+that pair. This page continues to cover only the hardware-tested Ubuntu build
+3 pair.
 
 ## What this tests
 
