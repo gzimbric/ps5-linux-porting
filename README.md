@@ -252,7 +252,8 @@ metadata. See [publication policy](docs/publication-policy.md).
 - [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
   rmux's 7.3 port of the PS5 patches and the CPU and GPU frequency drivers
 - [VivaLaVent/ps5-bazzite-deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3),
-  independent Linux 7.3 hardware confirmation of the IW620 Bluetooth fix
+  external firmware 13.60 report of a paired DualSense after the same core
+  IW620 Bluetooth fix
 - [Byepervisor-Reborn](https://github.com/PS5Dev/Byepervisor-Reborn)
 - [PS5 Hypervisor Bypass Porting](https://github.com/gzimbric/ps5-hv-bypass-porting)
 

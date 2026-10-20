@@ -20,7 +20,7 @@ forks use `main` as their default source branch.
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
 | [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1) | `meower` (default) | `36f173f39e5e76c00c4e366a7b909f33bc665ad5` | rmux's Linux 7.3 port of the PS5 patches and the PS5 CPU and GPU frequency drivers, used for the Run 21 kernel |
-| [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | Independent firmware 13.60 hardware confirmation of the same core IW620 Bluetooth fix; its patch is not byte-identical to image 2 |
+| [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | External firmware 13.60 report of a paired DualSense after the same core IW620 Bluetooth fix; its patch is not byte-identical to image 2 and this is not an image 2 test |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Exact historical source of the bounded Wi-Fi ELF that booted in Run 21 |
 
 The local Linux research branch started from pLinux5-NG commit
