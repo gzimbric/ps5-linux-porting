@@ -8,8 +8,9 @@
 
 This document is the test plan for the next CachyOS prerelease. It describes
 what the current source is intended to do, not what hardware testing has
-already proved. The only known 11.60 boot remains Run 21, which used an earlier
-local image and manual follow-up steps.
+already proved. The only identity-recorded hardware result for this CachyOS
+7.3 profile remains Run 21, which used an earlier local image and manual
+follow-up steps.
 
 ## Release identity
 
@@ -19,8 +20,8 @@ same successful hosted-CI run.
 | Item | Image 3 status |
 |---|---|
 | Release/tag | Not published |
-| Source commit | Not tagged |
-| Hosted-CI run | Not completed for this source candidate |
+| Source commit | `34bd8f5ce57e76c5d8d2733352b172e9b07a1897` on `main`; release tag pending |
+| Hosted-CI run | [Kernel-cache run `39505071885`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39505071885) in progress; full image run not started |
 | Compressed archive size and SHA-256 | Not available |
 | Raw image size and SHA-256 | Not available |
 | `bzImage` SHA-256 | Not available |

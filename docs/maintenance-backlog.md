@@ -4,7 +4,10 @@ This page tracks follow-up work after the first successful Run 15 HDMI boot,
 the Run 16 Ubuntu control, the Run 17 Wi-Fi bring-up, the Run 18 DMA E820
 boot, the Run 19 CI Ubuntu boot, and the Run 21 CachyOS 7.3.0 boot. Keep the
 working boot chain unchanged while testing kernel fixes. A source-level defect
-is not evidence that it caused an earlier failed boot.
+is not evidence that it caused an earlier failed boot. Image 3 is the current
+source candidate, not a release or hardware result; its exact artifact fields
+and acceptance gates are in the
+[image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md).
 
 ## Run 15 CachyOS loader baseline
 
@@ -168,9 +171,10 @@ completed successfully. The prerelease's one image archive is
 `8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a`.
 It expands to a 12,582,912,000-byte raw image with SHA-256
 `3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d`.
-The workflow and assets were checked, but the exact image has not been booted.
-It is published as a prerelease for hardware testing, with one `.img.xz`; if
-compression reaches 2 GiB, fail rather than splitting the image. Testers must
+The workflow and assets were checked, but no identity-verified hardware boot
+of the exact image is recorded. It is published as a prerelease for hardware
+testing, with one `.img.xz`; if compression reaches 2 GiB, fail rather than
+splitting the image. Testers must
 follow the [image 2 tester guide](cachyos1160-k73-image-2-tester-guide.md).
 
 Included in the image 2 source:
@@ -201,19 +205,57 @@ Included in the image 2 source:
    maximum servo pattern `3`. It is a fixed bring-up setting, not a dynamic
    temperature curve, and command acceptance does not provide RPM telemetry.
 
-Still unresolved after the image 2 source changes:
+Findings carried forward from image 2:
 
 1. Steam desktop switch. Steam's Switch to Desktop hung on its switching
    screen because the image's `steamos-session-select` was not run, so the
    next-session token stayed `gamescope`. Setting it to `plasma` by hand and
-   ending the tty1 session started KDE Plasma. Make Steam's switch call the
-   image's session switch, then check that Switch to Desktop and the way back
-   to Gaming Mode both work from the controller.
+   ending the tty1 session started KDE Plasma. Image 3 adds a narrow listener
+   for that handoff; the exact hosted artifact still has to prove that Switch
+   to Desktop and the way back to Gaming Mode both work from the controller.
 2. Wi-Fi join from the KDE menu. Joining from the KDE network menu failed
    twice with NetworkManager saying the access point was not in the scan list,
    while `sudo nmcli --ask device wifi connect <SSID>` joined the same network.
-   Find out why the menu's request fails and fix it in the image, then join
-   from the menu on a fresh boot.
+   Image 3 updates the IW620 patch stack and sets `wifi.powersave=2`, but
+   neither change is proof that the menu problem is fixed. Test the menu on a
+   fresh boot and retain `nmcli --ask` as the recovery path.
+
+### Image 3 source candidate
+
+Image 3 advances these source changes together:
+
+1. Kernel package identity is `linux-ps5 7.3.0-3`. The build applies the exact
+   `ps5-btusb-quirks-fix.patch` asset from
+   [Bazzite Deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3),
+   SHA-256
+   `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`,
+   and rebuilds it in this kernel. Never copy Bazzite's prebuilt `btusb.ko`.
+2. The NXP driver base stays pinned at
+   `a5fe4e194bf99315e349d81d77d6dfacec70757a`. The IW620 patch stack is
+   pinned at `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX
+   fixes. NetworkManager uses `wifi.powersave=2`; the firmware still comes
+   from the console through the bounded loader.
+3. `ps5fan.service` first requests fixed maximum servo pattern `3`. Only after
+   that succeeds does the guarded performance service load GPU scaling and
+   then CPU scaling. `/boot/efi/disable-ps5-performance` is a persistent,
+   fail-closed opt-out. This is not a dynamic fan curve or a proved thermal
+   policy.
+4. A constrained system-bus listener performs the Steam-to-Plasma handoff and
+   terminates only the expected `steam` session on `tty1`.
+5. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
+   `suspend-then-hibernate` targets are masked. Use a full power-off from
+   Linux; GameOS Rest Mode remains only the loader carrier.
+6. Hosted CI owns the build, verification, compression, and upload of one
+   `.img.xz`; the release must not be split into numbered parts.
+
+The image-3 source is pinned on image-repo `main` at
+`34bd8f5ce57e76c5d8d2733352b172e9b07a1897`, but there is no image-3 tag,
+hosted image artifact, archive hash, raw-image hash, `bzImage` hash, release,
+or hardware boot yet. Do not flash a local build or
+rename image 2. The exact hosted artifact must pass the cold-boot,
+Bluetooth/Wi-Fi coexistence, desktop-handoff, performance opt-out, integrity,
+and bounded-thermal gates in the image 3 tester guide before these items move
+out of the backlog.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No
@@ -231,7 +273,8 @@ active, without an operator-confirmed picture or gameplay. Treat it as
 telemetry, not a thermal-equilibrium or stability result.
 
 Suspend is not supported on this boot path. Run 21 held a `systemd-inhibit`
-lock while testing.
+lock while testing; image 3 masks the Linux sleep targets in source, pending
+exact-artifact validation.
 
 ### Bluetooth follow-up
 
@@ -262,7 +305,14 @@ carries it as a separate patch with SHA-256 `54d7addb...`, after rmux's base
 patch. That is build evidence only, not a hardware result. `ps5-bt-quiet`
 remains unchanged so the follow-up is the only Bluetooth variable.
 
-For the image 2 hardware test:
+Image 3 replaces that earlier follow-up with the exact Bazzite Deck v1.0.3
+source patch asset, SHA-256
+`c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`,
+rebuilt as part of `linux-ps5 7.3.0-3`. It does not copy Bazzite's prebuilt
+module. The Bazzite report proves pairing only for its firmware 13.60 image;
+the image 3 source still has no 11.60 build or boot result.
+
+For the next exact-artifact hardware test:
 
 1. Cold boot and require one `hci0`, no `0x2031` or `0x0c03` failures,
    `power/control=on`, successful DualSense pairing, working Wi-Fi alongside
@@ -410,8 +460,9 @@ build of the CachyOS 7.3 image boots with the bounded Wi-Fi loader on that
 console, with a directly observed picture and Wi-Fi from the loader's
 firmware copy. It is not a result for either CI image, for Bluetooth, for
 video decode, for file integrity, or for gaming stability. Image 2 remains an
-unbooted candidate: its CI artifacts are verified, but it has not been tested
-on hardware. The later watcher saw no
+published prerelease with no identity-verified hardware result: its CI
+artifacts are verified. Image 3 remains source only, with no tag, artifact,
+hash, release, or hardware result. The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and
 it did no read-back or hash check. The game logger captured load and an
