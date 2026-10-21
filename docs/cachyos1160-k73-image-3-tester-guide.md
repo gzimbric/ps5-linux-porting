@@ -114,9 +114,13 @@ match a pacman-managed CachyOS image.
 - **Bluetooth.** The image rebuilds the exact Bazzite Deck v1.0.3 IW620
   `btusb` source correction in its own Linux 7.3 kernel and uses the audited
   BlueZ policy. It does not copy another image's prebuilt `btusb.ko`.
-- **Thermals and clocks.** The fixed maximum fan request runs before guarded
-  GPU-then-CPU scaling. This is a bring-up policy, not a calibrated fan curve.
-  `/boot/efi/disable-ps5-performance` remains the persistent opt-out.
+- **Thermals and clocks.** The released `ps5fan.service` sends the legacy
+  servo pattern `3` before guarded GPU-then-CPU scaling. That request does not
+  force or measure a maximum RPM. On the tested CFI-1115B, the exposed
+  autoservo target remained at 86 °C after the service ran. Apply and verify
+  the 65 °C per-boot correction in [Fan, clocks and opt-out](#fan-clocks-and-opt-out)
+  before a load test. `/boot/efi/disable-ps5-performance` remains the
+  persistent performance-policy opt-out.
 - **Sleep.** Linux suspend and hibernate targets remain masked. Fully power off
   Linux before another loader attempt; do not use Linux sleep or GameOS Rest
   Mode after Linux has started.
@@ -334,11 +338,40 @@ press PS in GameOS to pair it there again if necessary.
 
 ## Fan, clocks and opt-out
 
-Verify the default policy before a load test:
+The published Image 3 artifact contains the legacy servo-pattern helper. Its
+successful service status proves only that the ICC request was accepted; it
+does not establish a fan speed. On the tested CFI-1115B, reading the supported
+Linux control after that service ran still returned an 86 °C target.
+
+After **every boot**, wait for `ps5fan.service` to finish, then set and verify
+the documented 65 °C testing target before starting a load:
+
+```sh
+FAN_TARGET=/sys/bus/platform/devices/ps5-fan/target_temp
+if sudo test -w "$FAN_TARGET"; then
+  printf '65\n' | sudo tee "$FAN_TARGET"
+  cat "$FAN_TARGET"
+else
+  echo "PS5 fan target control is unavailable" >&2
+fi
+```
+
+The final command must print `65`. This correction lasts only for the current
+boot. The public testing range is 40-80 °C; lower targets cool more
+aggressively, while higher targets reduce the fan response. Do not use values
+outside that range for public testing.
+
+Linux 7.3 exposes no fan RPM or tachometer reading for this hardware: there is
+no `fan*_input`, PWM, duty, or RPM node to verify. An audible change and a
+temperature response are useful observations, but neither is an RPM
+measurement.
+
+Then verify the clock policy and collect the available temperature telemetry:
 
 ```sh
 systemctl status ps5fan.service ps5-performance.service --no-pager --full
 journalctl -b -u ps5fan.service -u ps5-performance.service --no-pager
+cat /sys/bus/platform/devices/ps5-fan/target_temp
 cat /sys/module/amdgpu/parameters/dpm
 lsmod | grep -E '^(ps5_cpufreq|ps5_gpufreq)'
 cat /sys/class/devfreq/ps5-gpufreq/governor
@@ -348,9 +381,9 @@ cat /sys/devices/system/cpu/cpufreq/boost
 sensors
 ```
 
-The intended state is GPU `simple_ondemand`, CPU `schedutil` and CPU boost
-`0`. A successful fan command proves only that the request was sent; no RPM
-feedback or calibrated temperature curve is available.
+The intended state is a fan target readback of `65`, GPU `simple_ondemand`, CPU
+`schedutil` and CPU boost `0`. The target is an autoservo temperature target,
+not a fan RPM setting or a calibrated temperature curve.
 
 Treat 80 °C as a conservative test stop, not a claimed hardware limit. Stop
 earlier for a continuing rise, visual corruption, lost input or network, or a
@@ -389,8 +422,8 @@ hardware-tested release until that same exact image passes:
    touchpad input, followed by a cold-boot reconnect.
 6. At least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input with no
    controller, HCI, USB or network loss.
-7. Default fan/performance startup and a bounded thermal load below the
-   conservative stop point.
+7. Default fan/performance startup, the per-boot 65 °C target correction and
+   readback, and a bounded thermal load below the conservative stop point.
 8. A separate cold boot with the FAT opt-out marker, proving that both
    frequency modules stay unloaded.
 9. Clean `sudo poweroff` with every unsupported sleep target still masked.

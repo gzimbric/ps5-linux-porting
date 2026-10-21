@@ -203,9 +203,9 @@ Included in the image 2 source:
 4. Frequency-driver policy. `ps5_cpufreq` and `ps5_gpufreq` stay manual-only.
    Run 21 reached 84.0 °C under load, including 30 five-second samples at or
    above 80 °C, and the drivers have no thermal-cooling integration.
-5. Fan policy. `ps5fan.service` is enabled by default and requests tested
-   maximum servo pattern `3`. It is a fixed bring-up setting, not a dynamic
-   temperature curve, and command acceptance does not provide RPM telemetry.
+5. Fan policy. `ps5fan.service` is enabled by default and sends legacy servo
+   pattern `3`. The request does not force or measure maximum RPM, is not a
+   dynamic temperature curve, and provides no RPM telemetry.
 
 Findings carried forward from image 2 and resolved live during image 3 work:
 
@@ -255,11 +255,14 @@ Image 3 advances these source changes together:
    fixes. NetworkManager disables scan MAC randomization, retains the IW620's
    permanent address and uses `wifi.powersave=2`; the firmware still comes
    from the console through the bounded loader.
-4. `ps5fan.service` first requests fixed maximum servo pattern `3`. Only after
-   that succeeds does the guarded performance service load GPU scaling and
-   then CPU scaling. `/boot/efi/disable-ps5-performance` is a persistent,
-   fail-closed opt-out. This is not a dynamic fan curve or a proved thermal
-   policy.
+4. The released `ps5fan.service` first sends legacy servo pattern `3`. Only
+   after that succeeds does the guarded performance service load GPU scaling
+   and then CPU scaling. The pattern request neither forces nor measures a
+   maximum RPM; Linux exposes no RPM/tach reading, and the tested CFI-1115B
+   retained an 86 °C autoservo target. The tester guide therefore applies and
+   verifies 65 °C after every boot, using a documented public range of
+   40-80 °C. `/boot/efi/disable-ps5-performance` is a persistent, fail-closed
+   performance-policy opt-out. This remains an unproved thermal policy.
 5. A fresh image opens Plasma first so networking can be configured before
    Steam's first Gaming Mode bootstrap. Later offline use requires Steam to
    have saved the account credentials and required local game state.

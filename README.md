@@ -36,7 +36,7 @@ set. Keep these artifact boundaries separate:
 | Local CachyOS Image 3 base | One exact unpublished raw image booted with HDMI and SSH. Its in-image Bluetooth path paired a wireless DualSense and exposed buttons, motion, and touchpad input. |
 | Image 3 Wi-Fi follow-up | A stable-MAC NetworkManager configuration resolved the Plasma menu failure on the running system; WPA3, DHCP, and HTTPS passed. This live change was not in the original raw image. |
 | Image 3 desktop round trip | Live source changes made Steam's **Switch to Desktop** action and the desktop shortcut back to Gaming Mode pass without compositor overlap. These changes were not in the original raw image. |
-| Fan and clock policy | Current source requests the fixed maximum fan setting before guarded GPU and CPU scaling. This is not a calibrated fan curve, and the default policy still needs an exact public-artifact thermal test. |
+| Fan and clock policy | The published Image 3 service sends legacy servo pattern `3` before guarded GPU and CPU scaling. It does not force or measure maximum RPM; on the tested CFI-1115B the exposed target remained 86 °C. The tester guide applies and verifies a 65 °C target after every boot. |
 | Public Image 3 prerelease | [Published for testing](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) from source `16795eb` by successful workflow `39521098451`. Its exact downloadable artifact has passed CI verification but has not yet been booted on hardware. |
 
 The local hardware image and the public CI image have different raw-image
@@ -110,6 +110,9 @@ limit.
 - A fresh Image 3 build starts in Plasma so networking can be configured. Its
   first Gaming Mode setup needs internet; Offline Mode is a later-use test
   after Steam has saved the required account and game state.
+- Published Image 3 needs the tester guide's 65 °C fan-target correction after
+  every boot. The documented public range is 40-80 °C, lower values cool more
+  aggressively, and Linux exposes no fan RPM or tachometer reading.
 - Never copy another image's prebuilt `btusb.ko`. Bluetooth modules must be
   rebuilt for the exact kernel.
 - The bounded Wi-Fi loader copies the console's own IW620 firmware to its USB.

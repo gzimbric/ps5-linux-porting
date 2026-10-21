@@ -17,10 +17,10 @@ built later with the Bluetooth and Wi-Fi load-order follow-ups. Its CI build,
 archive, raw image and boot files passed their software checks, but this exact
 image remains unbooted.
 
-Image 2 enables `ps5fan.service` by default. It requests the tested maximum
-fan servo pattern (`3`) used during bring-up. This is a fixed maximum request,
-not a dynamic fan curve. The CPU and GPU frequency drivers remain manual and
-must not be loaded for the first pass.
+Image 2 enables `ps5fan.service` by default. It sends the legacy fan servo
+pattern (`3`) used during bring-up. That request does not force or measure a
+maximum RPM, and it is not a dynamic fan curve. The CPU and GPU frequency
+drivers remain manual and must not be loaded for the first pass.
 
 The first public tests need to answer four questions:
 
@@ -294,7 +294,7 @@ the console becomes hot or unstable, save the available evidence and run
 
 | Feature | Image 2 behavior |
 |---|---|
-| Fan | `ps5fan.service` is enabled and requests fixed maximum servo pattern `3` at boot. It is not a dynamic curve. |
+| Fan | `ps5fan.service` is enabled and sends legacy servo pattern `3` at boot. It does not force or measure maximum RPM and is not a dynamic curve. |
 | Wi-Fi | Conditional. The bounded Wi-Fi loader copies the console's own firmware to the USB boot partition. `ps5-iw620-firmware.service` then copies an exact-size file into `/lib/firmware/nxp/` and explicitly loads `moal`. The image contains no IW620 firmware. |
 | Bluetooth | The kernel fix is built in and `btusb` should probe automatically. No patch, firmware copy or manual module load is required. Verify the result before changing the service state. |
 | CPU/GPU frequency control | Off by default. Both modules are installed but have no alias or modules-load entry. Use the opt-in procedure below only after completing the baseline. |
@@ -312,8 +312,8 @@ thermal equilibrium. For public testing, test **one module per cold boot**.
 Do not load both in the same boot, and do not enable either at startup.
 
 First finish every baseline check above. Confirm that neither module is loaded,
-that the fixed maximum fan request succeeded, and that amdgpu power management
-is disabled:
+that the legacy fan-pattern request was accepted, and that amdgpu power
+management is disabled. Request acceptance does not prove a fan speed:
 
 ```sh
 lsmod | grep -E '^(ps5_cpufreq|ps5_gpufreq)' || true

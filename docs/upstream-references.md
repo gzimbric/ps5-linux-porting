@@ -156,9 +156,13 @@ follow-ups. A live test showed that NetworkManager also needs
 `wifi.scan-rand-mac-address=no`, `wifi.cloned-mac-address=permanent` and
 `wifi.powersave=2` on IW620; with those settings, the normal Plasma menu passed
 WPA3 association, DHCP and HTTPS. Current source carries that exact policy.
-It requests fixed maximum fan pattern `3` before guarded GPU-then-CPU scaling
-at startup, with `/boot/efi/disable-ps5-performance` as a persistent opt-out,
-and unsupported Linux sleep targets are masked.
+The published Image 3 artifact sends legacy fan servo pattern `3` before
+guarded GPU-then-CPU scaling at startup. That request does not force or measure
+maximum RPM; Linux exposes no RPM/tach reading, and the tested CFI-1115B
+retained an 86 °C autoservo target. Its tester guide applies and verifies
+65 °C after every boot, within a documented public range of 40-80 °C.
+`/boot/efi/disable-ps5-performance` remains a persistent performance-policy
+opt-out, and unsupported Linux sleep targets are masked.
 
 For the session handoff, the working distinction is between `-steamos` and
 `-steamos3`. The image launches `steam -steamos -gamepadui`; this enables
