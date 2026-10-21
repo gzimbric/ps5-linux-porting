@@ -4,9 +4,11 @@ This page tracks follow-up work after the first successful Run 15 HDMI boot,
 the Run 16 Ubuntu control, the Run 17 Wi-Fi bring-up, the Run 18 DMA E820
 boot, the Run 19 CI Ubuntu boot, and the Run 21 CachyOS 7.3.0 boot. Keep the
 working boot chain unchanged while testing kernel fixes. A source-level defect
-is not evidence that it caused an earlier failed boot. Image 3 is the current
-source candidate, not a release or hardware result; its exact artifact fields
-and acceptance gates are in the
+is not evidence that it caused an earlier failed boot. One exact local image 3
+build has now booted and supplied bounded Wi-Fi, Bluetooth and desktop-switch
+results. A separate hosted draft completed successfully but remains unbooted
+and predates the fixes learned from the local run. The replacement release's
+exact artifact fields and acceptance gates are in the
 [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md).
 
 ## Run 15 CachyOS loader baseline
@@ -205,20 +207,28 @@ Included in the image 2 source:
    maximum servo pattern `3`. It is a fixed bring-up setting, not a dynamic
    temperature curve, and command acceptance does not provide RPM telemetry.
 
-Findings carried forward from image 2:
+Findings carried forward from image 2 and resolved live during image 3 work:
 
-1. Steam desktop switch. Steam's Switch to Desktop hung on its switching
-   screen because the image's `steamos-session-select` was not run, so the
-   next-session token stayed `gamescope`. Setting it to `plasma` by hand and
-   ending the tty1 session started KDE Plasma. Image 3 adds a narrow listener
-   for that handoff; the exact hosted artifact still has to prove that Switch
-   to Desktop and the way back to Gaming Mode both work from the controller.
+1. Steam desktop switch. Steam's Switch to Desktop first hung because the
+   image started `steam -gamepadui`, and the listener's system-bus call never
+   arrived. Setting the token to `plasma` and restarting tty1 by hand started
+   KDE Plasma. Relaunching Steam as `steam -steamos -gamepadui` then made the
+   built-in action pass: Steam's session integration chose its legacy selector
+   fallback, and the system journal recorded
+   `sudo /usr/bin/steamos-session-select plasma`. Gamescope exited and
+   Plasma/KWin started. Keep this minimal proven path and remove the unused
+   listener. A later remote selector test and the actual desktop shortcut both
+   returned cleanly to Gamescope/Steam, but the replacement hosted artifact
+   still has to reproduce both directions through the normal UI.
 2. Wi-Fi join from the KDE menu. Joining from the KDE network menu failed
    twice with NetworkManager saying the access point was not in the scan list,
    while `sudo nmcli --ask device wifi connect <SSID>` joined the same network.
-   Image 3 updates the IW620 patch stack and sets `wifi.powersave=2`, but
-   neither change is proof that the menu problem is fixed. Test the menu on a
-   fresh boot and retain `nmcli --ask` as the recovery path.
+   Live tracing showed NetworkManager's randomized IW620 scan address changing
+   while KDE retained an older access-point object. Disabling scan MAC
+   randomization, retaining the permanent address and keeping
+   `wifi.powersave=2` fixed the normal Plasma join; WPA3, DHCP and an HTTPS
+   request over Wi-Fi passed. The exact tested policy is now in source. Retest
+   it on the replacement artifact and retain `nmcli --ask` only as recovery.
 
 ### Image 3 source candidate
 
@@ -242,30 +252,54 @@ Image 3 advances these source changes together:
 3. The NXP driver base stays pinned at
    `a5fe4e194bf99315e349d81d77d6dfacec70757a`. The IW620 patch stack is
    pinned at `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX
-   fixes. NetworkManager uses `wifi.powersave=2`; the firmware still comes
+   fixes. NetworkManager disables scan MAC randomization, retains the IW620's
+   permanent address and uses `wifi.powersave=2`; the firmware still comes
    from the console through the bounded loader.
 4. `ps5fan.service` first requests fixed maximum servo pattern `3`. Only after
    that succeeds does the guarded performance service load GPU scaling and
    then CPU scaling. `/boot/efi/disable-ps5-performance` is a persistent,
    fail-closed opt-out. This is not a dynamic fan curve or a proved thermal
    policy.
-5. A constrained system-bus listener performs the Steam-to-Plasma handoff and
-   terminates only the expected `steam` session on `tty1`.
-6. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
+5. A fresh image opens Plasma first so networking can be configured before
+   Steam's first Gaming Mode bootstrap. Later offline use requires Steam to
+   have saved the account credentials and required local game state.
+6. Gamescope starts `steam -steamos -gamepadui`. `-steamos` enables Steam's
+   own legacy selector fallback without enabling the SteamOS 3 atomic-update
+   polling associated with `-steamos3`. This exact flag made the built-in
+   desktop switch pass live. The unused custom listener is removed.
+7. When switching back to Gamescope, the selector stops the owning user
+   `graphical-session.target`. This live remote-selector path stopped KDE in
+   0.086 seconds and started Gamescope/Steam with no overlapping compositor.
+   Source uses only that target stop, without a later process kill or
+   login-session termination. The actual desktop shortcut also passed using
+   the final 3,736-byte selector, SHA-256
+   `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1`:
+   its token changed at 5.709 seconds and 0.563 seconds later Gamescope was
+   running with no KWin or Plasma shell. The exact rebuilt artifact still needs
+   the same round-trip test.
+8. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
    `suspend-then-hibernate` targets are masked. Use a full power-off from
    Linux; GameOS Rest Mode remains only the loader carrier.
-7. Hosted CI owns the build, verification, compression, and upload of one
+9. Hosted CI owns the build, verification, compression, and upload of one
    `.img.xz`; the release must not be split into numbered parts.
 
-The image-3 source is pinned on image-repo `main` at
-`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, but there is no image-3 tag,
-hosted image artifact, archive hash, raw-image hash, `bzImage` hash, release,
-or hardware boot yet. Kernel-cache run `39505071885` is still in progress and
-the full image run has not started. Do not flash a local build or
-rename image 2. The exact hosted artifact must pass the cold-boot,
-Bluetooth/Wi-Fi coexistence, desktop-handoff, performance opt-out, integrity,
-and bounded-thermal gates in the image 3 tester guide before these items move
-out of the backlog.
+The exact local hardware-test image came from `f7d6fbd`, has raw SHA-256
+`5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`,
+and is not published. It booted with HDMI and SSH. Its in-image Bluetooth
+kernel/policy passed DualSense pairing and input; the Wi-Fi and Steam desktop
+results followed live changes later added to source.
+
+Hosted workflow `39510517216` succeeded from `1d581df`. Its one
+1,943,469,912-byte archive has SHA-256
+`8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9`,
+and its 12,582,912,000-byte raw image has SHA-256
+`82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314`.
+That draft is unbooted and predates the stable-MAC policy, Plasma-first token,
+`-steamos` launcher flag and final return selector. Build a replacement rather
+than publishing it.
+The replacement exact artifact must pass cold boot, Bluetooth/Wi-Fi soak,
+desktop return, offline-after-bootstrap, performance opt-out, integrity and
+bounded-thermal gates before these items move out of the backlog.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No
@@ -327,15 +361,19 @@ and `uhid`/`hid-playstation` without a custom pairing daemon or `hidp` preload. 
 digest `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`
 from `ublue-os/bazzite` revision
 `2fab72cbc9a3257d80c607e173f22527aea3b39b`. The Bazzite report proves
-pairing only for its firmware 13.60 image; the image 3 source still has no
-11.60 build or boot result.
+pairing only for its firmware 13.60 image. The exact local image 3 build now
+adds the 11.60 result: one internal controller registered and a wireless
+DualSense paired, bonded, trusted and connected. Controller buttons, motion
+sensors and the touchpad worked with no USB DualSense attached. A short
+concurrent Wi-Fi traffic and Bluetooth-input check also passed.
 
 For the next exact-artifact hardware test:
 
-1. Cold boot and require one `hci0`, no `0x2031` or `0x0c03` failures,
-   `power/control=on`, successful DualSense pairing, working Wi-Fi alongside
-   Bluetooth, and no later USB loss. Run beyond the roughly 51-minute point
-   where Run 21 lost the Bluetooth USB device.
+1. Repeat on the replacement hosted artifact and require one `hci0`, no
+   `0x2031` or `0x0c03` failures, `power/control=on`, successful DualSense
+   reconnect after a cold boot, working Wi-Fi alongside Bluetooth, and no
+   later USB loss. Run beyond the roughly 51-minute point where Run 21 lost
+   the Bluetooth USB device and continue for at least 60 minutes.
 
 ## Next controlled test: MTS Ethernet
 
@@ -477,10 +515,13 @@ CFI-1115B; it is not a result for other models. Run 21 shows that a local
 build of the CachyOS 7.3 image boots with the bounded Wi-Fi loader on that
 console, with a directly observed picture and Wi-Fi from the loader's
 firmware copy. It is not a result for either CI image, for Bluetooth, for
-video decode, for file integrity, or for gaming stability. Image 2 remains an
+video decode, for file integrity, or for gaming stability. Image 2 remains a
 published prerelease with no identity-verified hardware result: its CI
-artifacts are verified. Image 3 remains source only, with no tag, artifact,
-hash, release, or hardware result. The later watcher saw no
+artifacts are verified. Image 3 has a separate exact local hardware-test image
+and exact hosted draft. The local image booted and its Bluetooth path passed;
+the Wi-Fi-menu and desktop-switch passes followed live changes, so they are not
+properties of the original raw image. The hosted draft is unbooted and
+predates those fixes. Neither is the finished release. The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and
 it did no read-back or hash check. The game logger captured load and an

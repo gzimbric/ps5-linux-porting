@@ -13,16 +13,17 @@ forks use `main` as their default source branch.
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `c70358f57e5a9d481fcde676454f4919e4e403b4` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and public bounded-loader tester guidance |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `f7d6fbd9d630cddaceb83f3b861869d4453af8ca` | Canonical public image source with the image 3 source candidate, hosted one-file workflow and image 2 history; kernel-cache run `39505071885` is in progress, with no full image artifact or release yet |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `1d581dfce5ab89c3bd35a7fdad0514f5575f0723` | Last committed image 3 source used by successful hosted draft workflow `39510517216`; the unbooted draft predates the later stable-MAC, Plasma-first, `-steamos` launcher and return-selector fixes, which require a replacement build |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 public tester prerelease source; CI and release identities verified, with no identity-verified hardware boot recorded |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
-| [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4bce848dd098bf74fbafd0078463da3d9f0d7f80` | IW620 patch-stack revision pinned by the image 3 candidate, including its HE and TX follow-ups; the NXP driver base remains `a5fe4e1`; source only, not an image-3 hardware result |
+| [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4bce848dd098bf74fbafd0078463da3d9f0d7f80` | IW620 patch-stack revision in the local image 3 hardware test, including its HE and TX follow-ups; the NXP driver base remains `a5fe4e1`; association worked after the separate stable-MAC NetworkManager live fix |
 | [nxp-imx/mwifiex](https://github.com/nxp-imx/mwifiex) | `lf-6.18.2_1.0.0` | `a5fe4e194bf99315e349d81d77d6dfacec70757a` | NXP `mlan`/`moal` source patched for Run 17 |
 | [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1) | `meower` (default) | `36f173f39e5e76c00c4e366a7b909f33bc665ad5` | rmux's Linux 7.3 port of the PS5 patches and the PS5 CPU and GPU frequency drivers, used for the Run 21 kernel |
-| [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | Source of the exact `ps5-btusb-quirks-fix.patch` asset rebuilt by the image 3 candidate, asset SHA-256 `c01bdcc…`; its paired-DualSense result is on firmware 13.60, not proof on 11.60 |
+| [VivaLaVent/ps5-bazzite-deck](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3) | `v1.0.3` (tag) | `807d5bcaa834f574f6d927703ff95c1caffc96ba` | Source of the exact `ps5-btusb-quirks-fix.patch` asset rebuilt by image 3, asset SHA-256 `c01bdcc…`; its own paired-DualSense result is on firmware 13.60, while the separately rebuilt local image 3 has now paired a DualSense on 11.60 |
 | [ublue-os/bazzite](https://github.com/ublue-os/bazzite/tree/2fab72cbc9a3257d80c607e173f22527aea3b39b) | source revision | `2fab72cbc9a3257d80c607e173f22527aea3b39b` | Source of the Bazzite base at OCI digest `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`; its effective BlueZ policy is mirrored by image 3 |
+| [Valve Steam Offline Mode support](https://help.steampowered.com/en/faqs/view/0E18-319B-E34B-B2C8) | support article | checked 2026-10-20 | Boundary for testing offline use: first complete Steam setup and save the account/game state online, then test Offline Mode later; it does not make a fresh offline Gaming Mode bootstrap a supported path |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-dma-e820) | `firmware-11.60-dma-e820` | `98925a2561ad43769a7a7445a0bd957b24e84073` | Exact historical source of the bounded Wi-Fi ELF that booted in Run 21 |
 
 The local Linux research branch started from pLinux5-NG commit
@@ -122,16 +123,20 @@ has one 1,943,471,712-byte image archive whose identity, together with the
 12,582,912,000-byte raw image identity, was verified. No identity-verified
 hardware boot of image 2 is recorded.
 
-Image 3 is pinned on image-repo `main` at
-`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, but is not yet a tagged release.
-It keeps rmux's `36f173f` Linux 7.3 base and changes the package identity to
-`linux-ps5 7.3.0-3`. For Bluetooth it consumes the exact
+The local image 3 hardware build was assembled from
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`; the last hosted draft was built
+from `1d581dfce5ab89c3bd35a7fdad0514f5575f0723`. Neither is the finished
+release. Image 3 keeps rmux's `36f173f` Linux 7.3 base and uses package
+identity `linux-ps5 7.3.0-3`. For Bluetooth it consumes the exact
 `ps5-btusb-quirks-fix.patch` release asset attached to Bazzite Deck v1.0.3,
 verified at SHA-256
 `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`,
 then rebuilds that source in its own kernel. Bazzite's prebuilt `btusb.ko` is
 not part of this project and must not be copied into this image. The external
-13.60 pairing report is useful source evidence, not an 11.60 image-3 result.
+13.60 pairing report supplied the source lead. The exact local image 3 then
+supplied the 11.60 result: the internal controller registered and a wireless
+DualSense paired, bonded, trusted and connected, with gamepad, motion and
+touchpad input and no USB DualSense present.
 
 The matching userspace reference is the Bazzite base at OCI digest
 `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
@@ -141,22 +146,41 @@ Image 3 mirrors its effective Bluetooth settings:
 `Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
 `UserspaceHID=true`. It relies on the pairing agent supplied by KDE or
 `bluetoothctl` and the `uhid`/`hid-playstation` path; it neither installs a
-custom pairing daemon nor preloads `hidp`. This documents source parity only.
-The exact image still needs an 11.60 pairing and input test.
+custom pairing daemon nor preloads `hidp`. Cold-boot reconnect and a full
+Wi-Fi/Bluetooth coexistence soak remain pending.
 
 The same candidate pins `ps5-linux-mwifiex` at
 `4bce848dd098bf74fbafd0078463da3d9f0d7f80`, then applies the HE and TX
-follow-ups and sets NetworkManager `wifi.powersave=2`. It requests fixed
-maximum fan pattern `3` before guarded GPU-then-CPU scaling at startup, with
-`/boot/efi/disable-ps5-performance` as a persistent opt-out. A narrow listener
-handles the Steam-to-Plasma handoff, and unsupported Linux sleep targets are
-masked. Hosted CI is intended to build, verify, compress, and upload one
-`.img.xz` to a draft prerelease, but no image-3 tag, image artifact, hash,
-release, or hardware result exists yet. Kernel-cache run `39505071885` is
-still in progress and the full image run has not started. The candidate becomes
-testable only when the missing identities in
-the [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md) are filled
-from one exact hosted run.
+follow-ups. A live test showed that NetworkManager also needs
+`wifi.scan-rand-mac-address=no`, `wifi.cloned-mac-address=permanent` and
+`wifi.powersave=2` on IW620; with those settings, the normal Plasma menu passed
+WPA3 association, DHCP and HTTPS. Current source carries that exact policy.
+It requests fixed maximum fan pattern `3` before guarded GPU-then-CPU scaling
+at startup, with `/boot/efi/disable-ps5-performance` as a persistent opt-out,
+and unsupported Linux sleep targets are masked.
+
+For the session handoff, the working distinction is between `-steamos` and
+`-steamos3`. The image launches `steam -steamos -gamepadui`; this enables
+Steam's distro-neutral selector fallback without enabling SteamOS 3 atomic-
+update polling. On hardware, Steam deliberately ran
+`sudo /usr/bin/steamos-session-select plasma` through that fallback and
+switched from Gamescope to Plasma/KWin. The earlier system-bus listener is
+removed. A fresh image starts in Plasma so networking can be configured before
+the first online Gaming Mode bootstrap; Valve's Offline Mode guidance applies
+after credentials and local game state have been saved.
+
+Hosted workflow `39510517216` successfully built, verified, compressed and
+uploaded one draft `.img.xz` from `1d581df`. That 1,943,469,912-byte archive
+has SHA-256
+`8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9`;
+its 12,582,912,000-byte raw image has SHA-256
+`82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314`.
+It is unbooted and predates the later Wi-Fi, Plasma-first, launcher and
+return-selector changes, so it must be replaced rather than published. The
+separate local hardware image has raw SHA-256
+`5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`.
+The [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md) keeps these
+identities and evidence boundaries separate.
 
 The Run 21 image boots only with a bounded loader build, because its boot
 files are not the sizes the earlier 11.60 loaders accept. Those targets are

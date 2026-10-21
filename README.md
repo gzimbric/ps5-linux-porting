@@ -103,15 +103,16 @@ remain open. Follow the
 [CachyOS image 2 tester guide](docs/cachyos1160-k73-image-2-tester-guide.md)
 without substituting either half of the test pair.
 
-Image 3 is the current source candidate at `ps5-linux-image` `main` commit
-`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`, not a built or published release. It
-changes the package identity to `linux-ps5 7.3.0-3` and rebuilds the exact
+Image 3 has now been exercised as a local build, but it is not a finished
+public release. The exact local image from source
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca` booted on a CFI-1115B with HDMI
+and authenticated SSH. It uses `linux-ps5 7.3.0-3` and rebuilds the exact
 `ps5-btusb-quirks-fix.patch` attached to Bazzite Deck v1.0.3 (SHA-256
 `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`)
 inside this kernel; testers must never copy Bazzite's prebuilt `btusb.ko`.
 The NXP driver base remains pinned at `a5fe4e1`, with the IW620 patch stack at
-`4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX fixes,
-and NetworkManager gets `wifi.powersave=2`. The Bluetooth userspace policy now
+`4bce848dd098bf74fbafd0078463da3d9f0d7f80`, including the HE and TX fixes.
+The local image's Bluetooth userspace policy
 matches the working Bazzite path: `AlwaysPairable=true`, `PairableTimeout=0`,
 `ControllerMode=dual`, `Privacy=device`, `JustWorksRepairing=always`,
 `AutoEnable=true`, and `UserspaceHID=true`. It relies on the pairing agent
@@ -119,19 +120,42 @@ supplied by KDE or `bluetoothctl` and the `uhid`/`hid-playstation` path; it
 does not preload `hidp` or install a custom pairing daemon. The comparison base is Bazzite OCI digest
 `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
 built from `ublue-os/bazzite` revision
-`2fab72cbc9a3257d80c607e173f22527aea3b39b`. This remains source evidence,
-not an 11.60 pairing result. At startup, the fixed maximum fan
-request must succeed before a guarded GPU-then-CPU frequency policy runs by
-default; `/boot/efi/disable-ps5-performance` is the persistent opt-out. A
-narrow listener handles the Steam-to-Plasma handoff, and Linux sleep targets
-are masked. The hosted workflow is responsible for building, checking,
-compressing, and uploading one `.img.xz` to a draft prerelease. Kernel-cache
-run [`39505071885`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39505071885)
-is still in progress; the full image run has not started. None of those
-image-3 changes has an artifact hash, tag, release, or hardware result yet.
-See the [image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) for the
-release identity fields that must be filled before flashing begins and the
-hardware gates that follow.
+`2fab72cbc9a3257d80c607e173f22527aea3b39b`. On 11.60, the local image paired,
+bonded, trusted and connected a DualSense over the internal controller, with
+buttons, motion sensors and touchpad input and no USB DualSense present. A
+short concurrent Wi-Fi/Bluetooth check passed; soak and cold-boot reconnect
+remain open.
+
+The same hardware run isolated the KDE Wi-Fi failure to NetworkManager scan
+MAC randomization. Disabling it, retaining the IW620 permanent address and
+keeping `wifi.powersave=2` allowed the normal Plasma menu to complete WPA3,
+DHCP and HTTPS over Wi-Fi. Those settings are now in source. The fixed maximum
+fan request still precedes guarded GPU-then-CPU scaling, with
+`/boot/efi/disable-ps5-performance` as a persistent opt-out.
+
+The original image-3 desktop listener failed because Steam never sent the
+display-manager system-bus request it watched. Manual
+`steamos-session-select plasma` plus a tty1 restart worked. The minimal live
+fix was to launch `steam -steamos -gamepadui`: Steam's session integration
+intentionally used the legacy selector fallback and ran
+`sudo /usr/bin/steamos-session-select plasma`. The built-in button then opened
+Plasma and Gamescope exited. Current source keeps that proven flag, removes the
+unused listener and opens Plasma on first boot so networking can be configured
+before Steam's internet-dependent first Gaming Mode bootstrap. A later remote
+selector test stopped the owning user `graphical-session.target` and returned
+cleanly to Gamescope/Steam with no overlapping compositor. The actual desktop
+shortcut then completed the same return in 0.563 seconds with Gamescope
+running and no KWin or Plasma shell left. The replacement hosted artifact
+still needs to reproduce the round trip.
+
+Hosted workflow
+[`39510517216`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39510517216)
+completed successfully at source `1d581df`, but its draft image predates the
+Wi-Fi, Plasma-first, Steam launcher and return-selector fixes and has not been
+booted.
+It must not be published as the finished release. See the
+[image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) for the
+separate local and hosted identities, recovery steps and remaining gates.
 
 Each image release is one `.img.xz`; the build fails instead of publishing
 numbered parts if that file reaches 2 GiB. The
@@ -165,7 +189,8 @@ for how its commits map to the source hashes recorded in the evidence.
 | CI Ubuntu 24.04 image with the DMA E820 ELF | Pass in Run 19 with build 3; visible HDMI, authenticated SSH, intended e820 reservation, and the tester guide's checks, including a 12 GiB USB write and read-back check |
 | CachyOS 7.3.0 boot with the bounded loader | Pass in Run 21 with a local image build; visible HDMI, authenticated SSH, intended e820 reservation, and the kernel placed above it by KASLR; Bluetooth failed in that historical image |
 | CachyOS 7.3.0 image 2 tester prerelease | [Public prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-2), with source pinned at `cachyos1160-k73-image-2` / `346088a`; includes the Bluetooth and Wi-Fi load-order follow-ups, `linux-ps5 7.3.0-2`, fixed maximum fan pattern `3` at boot, and manual-only frequency drivers; workflow `39481460775` and the one image archive's exact size and SHA-256 are verified, but no identity-verified image 2 hardware boot is recorded; Bazzite v1.0.3 independently reports the same core Bluetooth fix on firmware 13.60 |
-| CachyOS 7.3.0 image 3 source candidate | Pinned on image-repo `main` at `f7d6fbd`, but not built, tagged, published, or hardware-tested; intended package `linux-ps5 7.3.0-3`, exact Bazzite v1.0.3 Bluetooth source patch rebuilt in-kernel, matching Bazzite BlueZ pairing and userspace-HID policy, NXP base `a5fe4e1` plus IW620 patch stack `4bce848`, `wifi.powersave=2`, guarded fan/GPU/CPU startup, narrow desktop handoff, masked Linux sleep, and one-file hosted CI; follow the [image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) only after it records exact artifact identities |
+| CachyOS 7.3.0 local image 3 test | Exact unpublished raw image `5a904e02…` from source `f7d6fbd`: HDMI and SSH passed; the internal DualSense paired and exposed input/motion/touchpad; a live stable-MAC NetworkManager fix made the normal Plasma Wi-Fi join pass with WPA3, DHCP and HTTPS; a short Wi-Fi/Bluetooth coexistence check passed. The original listener failed, but after launching `steam -steamos -gamepadui`, Steam's own legacy selector fallback made the built-in **Switch to Desktop** action pass. With the final 3,736-byte selector (`1d099eea…`), both a remote return and the actual desktop shortcut returned cleanly to Gamescope/Steam with no compositor overlap. The exact rebuilt artifact remains pending. |
+| CachyOS 7.3.0 hosted image 3 draft | Workflow `39510517216` succeeded at `1d581df` and produced one verified `.img.xz`, but that exact hosted artifact is unbooted and predates the later Wi-Fi, Plasma-first, `-steamos` launcher and return-selector fixes. A replacement build and exact-image acceptance run are required before publication. |
 | Onboard Wi-Fi via the loader's firmware dump | Pass in Run 21; the loader wrote the 11.60 firmware to the boot partition with the Run 17 hash, the driver started it, a 5 GHz WPA3 join by name worked, and an HTTPS download over Wi-Fi ran at about 192 Mbit/s; joining from the KDE menu failed |
 | Large install observation | Run 21 recorded 480 snapshots over about four hours, with free space moving from 213G to 159G and no new matching storage-error lines after the watcher's baseline; invalid diskstats fields made its throughput and total counters unusable, and this was not a read-back, hash, or Steam integrity pass |
 | GPU frequency driver (`ps5_gpufreq`) | Run 21 loaded it by hand; at idle the GPU held 400 MHz and `k10temp` fell from about 50 °C to about 36 °C. Later load telemetry reached 2.23 GHz and 84.0 °C, but did not establish gameplay, thermal equilibrium, or stability; image 2 keeps autoload disabled, while image 3's guarded default remains untested source |

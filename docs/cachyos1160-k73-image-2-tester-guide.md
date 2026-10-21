@@ -61,9 +61,10 @@ With a USB keyboard, the same recovery can be run locally: press
 
 If `steamos-session-select` reports that `/etc/ps5-use-tty-sessions` is
 missing, or the token does not read back as `plasma`, stop and save that exact
-output. Do not repeatedly restart tty1. Image 3 is intended to wire the Steam
-button to this already-tested handoff automatically; this section is the
-image-2 fallback.
+output. Do not repeatedly restart tty1. Image 3 later proved the minimal
+automatic path: launch `steam -steamos -gamepadui`, which makes Steam use its
+own legacy `sudo steamos-session-select plasma` fallback. Image 2 does not have
+that launcher flag, so this section remains its recovery path.
 
 ## Requirements
 

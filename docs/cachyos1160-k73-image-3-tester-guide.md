@@ -1,244 +1,246 @@
-# Testing the CachyOS image 3 source candidate on PS5 firmware 11.60
+# Testing CachyOS image 3 on PS5 firmware 11.60
 
-> **Not ready to flash.** Image 3 is a source candidate. There is no published
-> image-3 archive, archive hash, raw-image hash or `bzImage` hash yet, and none
-> of its new startup behavior has passed an exact-image console boot. Do not
-> relabel image 2 or a local build as image 3. This warning stays in place until
-> hosted CI produces one verified artifact and its identity is added here.
+> **Release still pending.** A local image 3 build has booted on one CFI-1115B,
+> and hosted CI has produced a separate draft artifact. The Wi-Fi menu fix,
+> Plasma-first startup and corrected Steam launcher and return-selector paths
+> were added after both images were assembled. Do not publish either older
+> artifact as the finished image 3 release. The next hosted build needs a new
+> identity and the remaining acceptance tests below.
 
-This document is the test plan for the next CachyOS prerelease. It describes
-what the current source is intended to do, not what hardware testing has
-already proved. The only identity-recorded hardware result for this CachyOS
-7.3 profile remains Run 21, which used an earlier local image and manual
-follow-up steps.
+This guide keeps three things separate:
 
-## Release identity
+1. the exact local image that was flashed and tested on October 20;
+2. the completed but unpublished hosted-CI artifact; and
+3. the newer source that contains the fixes found during that hardware run.
 
-Do not start public testing until every field below has an exact value from the
-same successful hosted-CI run.
+## Current identities
 
-| Item | Image 3 status |
+| Item | Status |
 |---|---|
-| Release/tag | Not published |
-| Source commit | `f7d6fbd9d630cddaceb83f3b861869d4453af8ca` on `main`; release tag pending |
-| Hosted-CI run | [Kernel-cache run `39505071885`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39505071885) in progress; full image run not started |
-| Compressed archive size and SHA-256 | Not available |
-| Raw image size and SHA-256 | Not available |
-| `bzImage` SHA-256 | Not available |
-| Exact hardware boot | Not attempted |
+| Local hardware-test image | Source `f7d6fbd9d630cddaceb83f3b861869d4453af8ca`; raw image 12,582,912,000 bytes; SHA-256 `5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`; not published |
+| Local boot files | `bzImage` `945a4f2a03c4771313e466dccfb8272e0345cf7d143516a36a0bc75b2b219d0a`; `initrd.img` `912600c22a203a744d4d44fcd4b5caacd86ea8b0c3ef8202ed9c0ff2ba146dd0` |
+| Final live-tested selector | 3,736-byte `steamos-session-select`; SHA-256 `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1`; a live follow-up, not part of either older image above |
+| Hosted draft | [Workflow `39510517216`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39510517216), source `1d581dfce5ab89c3bd35a7fdad0514f5575f0723`, completed successfully; draft only and not hardware-tested |
+| Hosted draft archive | 1,943,469,912-byte `ps5-cachyos1160-k73.img.xz`; SHA-256 `8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9` |
+| Hosted draft raw image | 12,582,912,000 bytes; SHA-256 `82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314` |
+| Finished public release | Not published; a replacement hosted build is required after the current fixes are committed |
 
-The final release must contain one `.img.xz`, not numbered parts. Build,
-assembly, verification, compression and upload belong on the hosted runner;
-testers should only download, verify and flash that single artifact.
+The local and hosted raw-image hashes differ, so a local result must not be
+reported as a test of the hosted draft. They do share the boot-file identities
+above. The hosted draft also predates the Wi-Fi, Plasma-first, Steam launcher
+and return-selector fixes, so it is not the release candidate testers should
+receive.
 
-## Intended image-3 behavior
+The finished release must contain one `.img.xz`, not numbered parts. Hosted CI
+owns image assembly, verification, compression and upload. A tester should only
+need to download, verify and flash that one archive.
 
-The source candidate keeps Gaming Mode as the default and changes these areas:
+## What the October 20 hardware run proved
 
-- **Desktop handoff:** a narrow system-bus listener accepts only the expected
-  display-manager `SwitchToUser` call for `doorstop` and a Plasma desktop. It
-  writes the next-session token atomically and terminates exactly one `steam`
-  session on `tty1`. It is intended to make Steam's **Switch to Desktop**
-  action perform the manual handoff used in Run 21.
-- **Linux sleep:** `sleep`, `suspend`, `hibernate`, `hybrid-sleep` and
-  `suspend-then-hibernate` targets are masked. GameOS Rest Mode is only the
-  carrier used by the loader before Linux starts. Once Linux is running, use a
-  full power-off.
-- **Wi-Fi:** the bounded loader still copies this console's own IW620 firmware
-  to the USB drive. The enabled firmware service installs it before explicitly
-  loading the pinned IW620 modules. NetworkManager uses `wifi.powersave=2`,
-  which disables Wi-Fi power saving for this bring-up image. The image itself
-  contains no console firmware.
-- **Bluetooth:** the kernel build applies the exact source patch attached to
-  [Bazzite Deck v1.0.3](https://github.com/VivaLaVent/ps5-bazzite-deck/releases/tag/v1.0.3),
-  `ps5-btusb-quirks-fix.patch`, SHA-256
-  `c01bdcc134f25a86825f2824d12a82da02db18e7b1940db722223b0c4611eed8`.
-  It is rebuilt as part of this image's pinned Linux 7.3 kernel. It does not
-  copy Bazzite's `btusb.ko`. The image also follows the working Bazzite BlueZ
-  path with `AlwaysPairable=true`, `PairableTimeout=0`,
-  `ControllerMode=dual`, `Privacy=device`, `JustWorksRepairing=always`,
-  `AutoEnable=true`, and `UserspaceHID=true`. It uses the pairing agent
-  supplied by KDE or `bluetoothctl` and the `uhid`/`hid-playstation` path;
-  there is no custom pairing daemon and no `hidp` preload. The comparison base is Bazzite OCI digest
-  `sha256:96301a1520b5bb63db95640896300c10ae3b1fcf8bf10681af154514395e1634`,
-  built from [`ublue-os/bazzite` revision `2fab72c`](https://github.com/ublue-os/bazzite/tree/2fab72cbc9a3257d80c607e173f22527aea3b39b).
-  Bazzite's 13.60 result supports this source combination but is not proof that
-  it works on this 11.60 image.
-- **Fan:** `ps5fan.service` requests fixed maximum servo pattern `3` at
-  startup, before the performance policy. This is not a dynamic fan curve,
-  and the console does not provide confirmed RPM feedback.
-- **CPU/GPU scaling:** after the fan service succeeds,
-  `ps5-performance.service` verifies `amdgpu dpm=0`, loads `ps5_gpufreq`
-  before `ps5_cpufreq`, checks the GPU `simple_ondemand` governor, selects CPU
-  `schedutil`, and keeps CPU boost off. A FAT-partition marker provides a
-  persistent opt-out.
+The exact local image listed above:
 
-Every item above is a source assertion until the exact hosted artifact passes
-the checks below.
+- booted Linux 7.3.0 with a directly observed HDMI picture and authenticated
+  wired SSH;
+- brought up the loader-supplied IW620 firmware and onboard Wi-Fi;
+- paired, bonded, trusted and connected a DualSense through the internal
+  Bluetooth controller, with no USB DualSense present;
+- exposed working gamepad buttons, motion sensors and touchpad input; and
+- kept Bluetooth input working during one short concurrent Wi-Fi traffic
+  check.
 
-## Hardware and loader requirements
+The first normal KDE Wi-Fi join failed because NetworkManager changed the
+IW620 scan address and KDE tried an access-point object that the next scan had
+already invalidated. A live configuration change fixed it: scan MAC
+randomization was disabled, the permanent address was retained and power
+saving stayed disabled. The normal Plasma menu then completed WPA3
+association, DHCP and an HTTPS request over Wi-Fi.
 
-- A regular retail PS5 on firmware 11.60, not PS5 Pro.
+The original **Switch to Desktop** integration did not pass. Its listener
+watched a display-manager D-Bus call that Steam never sent in this tty-based
+session. Manual selector plus a tty1 restart opened Plasma, proving that the
+tty handoff itself worked. The live launcher was then changed from
+`steam -gamepadui` to `steam -steamos -gamepadui`. With that flag Steam's
+session integration deliberately used its legacy selector fallback and ran
+`sudo /usr/bin/steamos-session-select plasma`. Gamescope exited and
+Plasma/KWin started. The built-in Steam button therefore passed through
+Steam's own legacy selector path.
+
+A later remote selector test returned from Plasma to Gamescope/Steam by
+stopping the owning user `graphical-session.target`; KDE exited in 0.086
+seconds and no overlapping compositor remained. The current source keeps that
+single target stop and performs no later process kill or login-session
+termination. The actual desktop shortcut then passed with the same final
+selector: its token changed from `plasma` to `gamescope` at 5.709 seconds, and
+0.563 seconds later Gamescope was running with no KWin or Plasma shell. Still
+pending: Bluetooth/Wi-Fi soak, controller reconnect after a cold boot, and a
+cold boot of a replacement hosted artifact that contains all of these live
+fixes.
+
+## Why official gaming images switch sessions differently
+
+SteamOS-style images normally ship a complete session stack around Steam,
+including their selector and display-manager integration. This CachyOS port
+deliberately uses a small tty1 launcher without SDDM. The original listener
+guessed one display-manager D-Bus request, but Steam never sent it in this
+environment.
+
+Starting Steam with `-steamos` enables Steam's own distro-neutral legacy
+fallback, which invokes the already working `steamos-session-select` helper.
+That exact route passed on the console. `-steamos3` is intentionally not used
+because it also enables SteamOS-specific atomic-update behavior that does not
+match a pacman-managed CachyOS image.
+
+## Behavior of the next build
+
+- **Plasma first.** A freshly flashed image opens CachyOS Plasma on its first
+  Linux boot. Configure networking there before launching Gaming Mode. When
+  the desktop session ends, the one-shot token changes to Gaming Mode for later
+  starts.
+- **Steam bootstrap.** The first Gaming Mode setup needs internet access. Valve
+  documents Offline Mode as a later-use feature that depends on saved account
+  credentials and local game data; see [Steam Offline Mode](https://help.steampowered.com/en/faqs/view/0E18-319B-E34B-B2C8).
+- **Desktop switching.** Gamescope launches `steam -steamos -gamepadui`.
+  `-steamos` enables Steam's distro-neutral session integration without the
+  SteamOS 3 atomic-update polling enabled by `-steamos3`. On this system Steam
+  then uses its legacy `sudo steamos-session-select plasma` fallback, which is
+  the path that passed live. The obsolete system-bus listener is not the
+  working mechanism. In the reverse direction, the selector stops the owning
+  user `graphical-session.target`; both a remote invocation and the actual
+  desktop shortcut passed live without compositor overlap.
+- **Wi-Fi.** `/etc/NetworkManager/conf.d/20-ps5-iw620.conf` disables scan MAC
+  randomization, keeps the permanent address and sets `wifi.powersave=2`.
+  The image does not contain console firmware; the bounded loader copies the
+  firmware from that console before the image loads `mlan` and `moal`.
+- **Bluetooth.** The image rebuilds the exact Bazzite Deck v1.0.3 IW620
+  `btusb` source correction in its own Linux 7.3 kernel and uses the audited
+  BlueZ policy. It does not copy another image's prebuilt `btusb.ko`.
+- **Thermals and clocks.** The fixed maximum fan request runs before guarded
+  GPU-then-CPU scaling. This is a bring-up policy, not a calibrated fan curve.
+  `/boot/efi/disable-ps5-performance` remains the persistent opt-out.
+- **Sleep.** Linux suspend and hibernate targets remain masked. Fully power off
+  Linux before another loader attempt; do not use Linux sleep or GameOS Rest
+  Mode after Linux has started.
+
+## Requirements
+
+- Regular retail PS5 on firmware 11.60, not PS5 Pro.
 - Automatic system-software updates disabled.
-- The 11.60 kernel exploit, leaving the ELF listener on TCP port 9021.
-- The bounded Wi-Fi loader from
-  [`firmware-11.60-dma-e820-bounded-run21`](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21):
-  `ps5-linux-loader-1160-dma-e820-bounded-wifi.elf`, SHA-256
+- The 11.60 exploit, leaving the ELF listener on TCP port 9021.
+- `ps5-linux-loader-1160-dma-e820-bounded-wifi.elf` from the
+  [`firmware-11.60-dma-e820-bounded-run21`](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21)
+  prerelease, SHA-256
   `e9fe6469943e97a635eccd3f674e55876b56cd1bbd69023eee3af4acea3a1b5f`.
-- A USB drive of at least 16 GB. Flashing erases the entire selected drive.
-- Wired Ethernet connected throughout the run, even while testing Wi-Fi.
-- HDMI, a USB keyboard and another computer on the same trusted LAN for SSH.
+- USB drive of at least 16 GB. Flashing erases the selected drive.
+- HDMI and a wired USB keyboard. Keep Ethernet available for recovery even
+  though the normal first-boot path should let you configure Wi-Fi in Plasma.
 - Only one Linux USB drive attached to the console.
 
-The final image-3 archive and its `SHA256SUMS` must come from the image-3
-release once it exists. Do not combine image-2 boot files, a Run 21 local
-image, or a third-party root filesystem with this test plan.
+The default account is `steam` / `steam` with passwordless `sudo`. Keep the
+console on a trusted local network and change the password after the baseline
+test.
 
-The default account is `steam` / `steam` and has passwordless `sudo`. Change
-the password immediately and keep the console on a trusted network.
+## Flash and boot
 
-## Before each attempt
+Verify the replacement release's published `SHA256SUMS` before flashing. Do
+not combine image-2 files, the local image hash above or a third-party root
+filesystem with this guide.
 
-Begin with the PS5 fully powered off, not suspended. Keep GameOS HDMI Device
-Link disabled and USB power in Rest Mode set to **Always**. Record:
-
-- console model and firmware, without its serial number;
-- image tag, archive hash and raw-image hash;
-- loader filename and hash;
-- USB model and PS5 port; and
-- whether `/boot/efi/disable-ps5-performance` is present.
-
-Run the exploit and send the bounded Wi-Fi ELF once. Confirm that the loader
-prints its bounded boot-file checks, a 498,108-byte firmware dump and:
+Start from a full PS5 power-off. Send the bounded Wi-Fi loader once, let GameOS
+enter Rest Mode, wait for solid orange and wake once with the controller. The
+loader should report bounded boot-file checks, a 498,108-byte Wi-Fi firmware
+dump and:
 
 ```text
 11.60 Sonic-style Linux wake chain armed
 ```
 
-Let GameOS enter Rest Mode, wait for a solid orange light, then wake it once
-with the controller's PS button. Record light, HDMI, DHCP and SSH timing. A
-white light with no picture may still be a headless Linux boot, so check DHCP
-and SSH before powering off.
+Check DHCP and SSH before treating a white light with no picture as a failed
+boot.
+
+On a fresh image, Plasma should appear first. Connect to the network from the
+normal Plasma menu. Do not start the first Gaming Mode session until the
+network is working.
 
 ## Identity and startup checks
 
-Before updating packages or changing a service, save the boot report and
-verify the new startup policy:
+Before updating packages or changing a service, save:
 
 ```sh
 uname -r
 pacman -Q linux-ps5
 sha256sum /boot/efi/bzImage
 cat /proc/cmdline
+cat /home/steam/.config/ps5-next-session
 systemctl --failed --no-pager
 systemctl is-enabled ps5fan.service ps5-performance.service \
-  ps5-iw620-firmware.service ps5-bt-quiet.service \
-  ps5-session-switch-listener.service
-systemctl status ps5fan.service ps5-performance.service \
-  ps5-iw620-firmware.service ps5-bt-quiet.service \
-  ps5-session-switch-listener.service --no-pager --full
+  ps5-iw620-firmware.service ps5-bt-quiet.service
 systemctl is-enabled sleep.target suspend.target hibernate.target \
   hybrid-sleep.target suspend-then-hibernate.target
 sudo /usr/local/sbin/ps5-boot-report
 ```
 
-The release table must provide the expected `bzImage` hash before this can be
-called an exact-image result. All five sleep targets should report `masked`.
-Gaming Mode should appear without a manual session-selection command.
+The first-session token should initially be `desktop`. After leaving Plasma it
+should become `gamescope`. All five sleep targets should report `masked`.
 
-If the fan or performance service fails, save its full status and journal.
-Do not work around it with manual module loads during that baseline boot.
+## First Gaming Mode start and Offline Mode
 
-## Fan and performance startup
+Start Gaming Mode only after Plasma shows a working internet connection. Allow
+Steam to complete its one-time bootstrap and sign in with saved credentials if
+you intend to use Offline Mode later. Do not use an unplugged Ethernet cable as
+the only offline test: disable every active connection and confirm Steam has
+already saved the needed account and game state.
 
-The default image-3 path deliberately starts both frequency drivers. Verify
-what actually happened:
+If Steam remains on an update/launch console for several minutes during the
+first start, reconnect Ethernet. That recovery does not make an offline first
+boot a pass. Return to Plasma using the recovery steps below and report that
+the first Gaming Mode bootstrap had no network.
 
-```sh
-systemctl status ps5fan.service ps5-performance.service --no-pager --full
-journalctl -b -u ps5fan.service -u ps5-performance.service --no-pager
-cat /sys/module/amdgpu/parameters/dpm
-lsmod | grep -E '^(ps5_cpufreq|ps5_gpufreq)'
-cat /sys/class/devfreq/ps5-gpufreq/governor
-cat /sys/class/devfreq/ps5-gpufreq/available_frequencies
-cat /sys/class/devfreq/ps5-gpufreq/cur_freq
-cat /sys/devices/system/cpu/cpufreq/policy0/scaling_driver
-cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
-cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies
-cat /sys/devices/system/cpu/cpufreq/boost
-sensors
-```
+## Switch to Desktop and recovery
 
-The intended state is `amdgpu dpm=0`, GPU `simple_ondemand` with 400 MHz and
-2230 MHz states, CPU `ps5-cpufreq` with 800 MHz and 3200 MHz states, CPU
-`schedutil`, and boost `0`. A successful fan command only proves that the
-request was sent; it does not prove an RPM or cooling response.
-
-Keep a second terminal on temperature and clocks during any load:
+After Steam is fully initialized, choose **Power → Switch to Desktop** once.
+Do not press it repeatedly. The tested path should use Steam's selector
+fallback and then hand tty1 to Plasma. Record:
 
 ```sh
-watch -n 2 'sensors; echo GPU; cat /sys/class/devfreq/ps5-gpufreq/cur_freq 2>/dev/null || true; echo CPU; cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq 2>/dev/null || true'
-```
-
-Treat 80 °C as a conservative test stop, not a claimed hardware limit. Stop
-earlier for a temperature that continues climbing, visual corruption, lost
-input or network, a hung system, or new SMU, MP1, amdgpu, BUG or Oops lines.
-Save logs and fully power off. Do not use `rmmod` as recovery; unloading these
-drivers does not restore the clocks.
-
-### Persistent performance opt-out
-
-To prevent both frequency drivers from loading on the next boot:
-
-```sh
-sudo touch /boot/efi/disable-ps5-performance
-sync
-sudo poweroff
-```
-
-The service checks the marker only at startup. Creating it after either driver
-has loaded does not undo that boot; fully power off. On the next run, confirm
-that `ps5-performance.service` reports the marker and neither module is loaded.
-
-To restore the default policy for a later cold boot:
-
-```sh
-sudo rm /boot/efi/disable-ps5-performance
-sync
-sudo poweroff
-```
-
-If `/boot/efi` is not mounted, the service is designed to fail closed rather
-than load the drivers without access to the opt-out marker.
-
-## Switch to Desktop
-
-Complete the baseline checks first. Then choose **Switch to Desktop** once in
-Steam and record the time until Plasma appears. Verify the constrained listener
-and next-session token:
-
-```sh
-systemctl status ps5-session-switch-listener.service --no-pager --full
-journalctl -b -u ps5-session-switch-listener.service --no-pager
+ps -eo pid,args | grep '[s]team -steamos -gamepadui'
+journalctl -b --no-pager | grep -E 'steamos-session-select|Switching to Desktop'
 cat /home/steam/.config/ps5-next-session
 ```
 
-The token should be `plasma`. If Steam remains on **Switching to Desktop**,
-do not trigger the button repeatedly. Recover over SSH:
+If Steam remains on **Switching to Desktop**, use a wired USB keyboard:
+
+1. Press `Ctrl`+`Alt`+`F2`. On a compact keyboard, also hold `Fn`. If tty2 does
+   not appear, try `Ctrl`+`Alt`+`F3`.
+2. Log in as `steam` with password `steam`.
+3. Run:
+
+   ```sh
+   sudo steamos-session-select plasma
+   sudo systemctl restart getty@tty1.service
+   ```
+
+4. Wait about ten seconds. If HDMI does not redraw, press
+   `Ctrl`+`Alt`+`F1` once.
+
+The same commands may be run over SSH. A successful manual recovery does not
+turn the automatic button test into a pass. There is no known reliable
+controller-only shortcut for this recovery.
+
+To return to Gaming Mode from a terminal:
 
 ```sh
-sudo steamos-session-select plasma
-cat /home/steam/.config/ps5-next-session
-sudo systemctl restart getty@tty1.service
+steamos-session-select gamescope
 ```
 
-Press `Ctrl`+`Alt`+`F1` once if HDMI does not redraw. Save the listener journal
-and report the automatic handoff as failed even if the manual recovery works.
+The live-tested selector stops the owning user `graphical-session.target`.
+That remote selector path made KDE exit and Gamescope/Steam start without an
+overlapping compositor. The actual desktop shortcut also passed: 0.563 seconds
+after the token changed, Gamescope was running and both KWin and Plasma shell
+were gone. The replacement artifact must still reproduce both directions.
 
 ## Wi-Fi
 
-Leave Ethernet connected. The bounded loader must supply the console's own
-firmware before the enabled service can load the driver:
+Check the image policy and driver before joining:
 
 ```sh
 cat /etc/NetworkManager/conf.d/20-ps5-iw620.conf
@@ -248,81 +250,53 @@ sudo dmesg | grep -Ei 'mlan|moal|WLAN FW is active|firmware'
 nmcli device status
 ```
 
-The NetworkManager file should contain `wifi.powersave=2`. Try the KDE network
-menu once. If it fails, record that result and use the known fallback:
+The file must contain:
+
+```ini
+[device]
+wifi.scan-rand-mac-address=no
+
+[connection]
+wifi.powersave=2
+wifi.cloned-mac-address=permanent
+```
+
+Join once through the normal Plasma menu. A pass requires association, DHCP
+and traffic explicitly bound to Wi-Fi. If the menu fails, collect
+NetworkManager's journal before trying a command-line workaround:
 
 ```sh
+journalctl -b -u NetworkManager --no-pager
 sudo nmcli --ask device wifi connect "<network name>"
 ```
 
-Never publish the SSID, BSSID or saved NetworkManager connection. Never upload
-the loader-extracted `pcieuartiw620_combo_v1.bin` from either the FAT or Linux
-filesystem.
+Never publish the SSID, BSSID, MAC address, saved NetworkManager profile or the
+loader-extracted firmware file.
 
 ## Bluetooth and DualSense
 
 Do not attach an external Bluetooth adapter and do not copy another image's
-`btusb.ko`. Before pairing, record:
+`btusb.ko`. Record the baseline:
 
 ```sh
 bluetoothctl list
 sudo btmgmt info
 lsusb -d 1286:2059
-lsusb -t
 for module in btusb uhid hid_playstation; do modinfo -F vermagic "$module"; done
 grep -E '^(AlwaysPairable|PairableTimeout|ControllerMode|Privacy|JustWorksRepairing|AutoEnable)=' /etc/bluetooth/main.conf
 grep -E '^UserspaceHID=' /etc/bluetooth/input.conf
-lsmod | grep -E '^(btusb|bluetooth|uhid|hid_playstation)' || true
-grep -Rxs 'hidp' /etc/modules-load.d /usr/lib/modules-load.d || true
 sudo dmesg | grep -Ei 'Bluetooth|btusb|hci[0-9]|1286|2059|opcode|xhci|usb.*disconnect|error -[0-9]+'
 ```
 
-The target is exactly one internal controller, a real nonzero address, no
-failed opcodes, no USB descriptor errors and no disconnect. If there is no
-controller, two controllers, a zero address, opcode `0x2031` or `0x0c03`,
-timeout `-110`, or a USB failure, stop. Save logs instead of repeatedly
-restarting services or copying a binary module. The policy lines should be
-exactly `AlwaysPairable=true`, `PairableTimeout=0`, `ControllerMode=dual`,
-`Privacy=device`, `JustWorksRepairing=always`, `AutoEnable=true`, and
-`UserspaceHID=true`. `btusb`, `uhid`, and `hid_playstation` should report the
-running kernel's vermagic; `uhid` and `hid_playstation` may not appear in
-`lsmod` until the controller connects. The `hidp` preload search should print
-nothing.
+In Plasma, open **System Settings → Bluetooth → Add New Device**, hold
+**Create + PS** until the controller flashes rapidly, then choose
+**DualSense Wireless Controller**. If pairing succeeds but the wizard reports
+a failed connection, close it, press **PS once** and allow the controller to
+initiate the reconnect.
 
-With one healthy controller, first try KDE: open **System Settings →
-Bluetooth**, choose **Add New Device**, hold **Create + PS** until the
-controller flashes rapidly, and select **DualSense Wireless Controller**.
-Wait through the brief repair/reconnect step before judging the result. If the
-pair completes but KDE reports that the connection failed, press **PS once**
-and allow the controller to initiate the reconnect.
-
-For a clean command-line test, close KDE's pairing wizard first. Remove only a
-clearly identified stale DualSense bond, put the controller back into pairing
-mode with **Create + PS**, then run:
-
-```text
-bluetoothctl
-power on
-agent on
-default-agent
-pairable on
-scan on
-# Wait for the DualSense address, then substitute it below.
-scan off
-pair XX:XX:XX:XX:XX:XX
-trust XX:XX:XX:XX:XX:XX
-connect XX:XX:XX:XX:XX:XX
-info XX:XX:XX:XX:XX:XX
-quit
-```
-
-If only `connect` fails after a successful pair and trust, press **PS once**
-instead of repeating the pairing loop; this tests the controller-initiated
-reconnect used by the working path. Pairing in Linux may replace the GameOS
-bond. USB-connect the controller and press PS in GameOS to pair it there again
-if needed.
-
-After the controller reconnects, verify the bond, transport and input device:
+Verify that the controller is paired, bonded, trusted and connected, that no
+USB DualSense is present, and that `hid-playstation` exposes the gamepad,
+motion and touchpad devices:
 
 ```sh
 bluetoothctl devices Paired
@@ -330,45 +304,86 @@ bluetoothctl devices Connected
 bluetoothctl info XX:XX:XX:XX:XX:XX
 lsmod | grep -E '^(btusb|bluetooth|uhid|hid_playstation)'
 grep -Ei -A8 'DualSense|Wireless Controller' /proc/bus/input/devices
-sudo /usr/local/sbin/ps5-boot-report
 ```
 
-Test buttons and sticks, then keep Bluetooth connected while Wi-Fi carries
-ordinary traffic for at least 60 minutes. At the end, confirm that the HCI and
-USB `1286:2059` device are still present.
+Linux pairing may replace the GameOS bond. Connect the controller by USB and
+press PS in GameOS to pair it there again if necessary.
 
-## Required prerelease gates
+## Fan, clocks and opt-out
 
-Image 3 remains a source candidate until the same exact hosted-CI artifact
-passes all of these on hardware:
+Verify the default policy before a load test:
 
-1. Three to five launches that each begin after a full console power-off,
-   reaching HDMI, Gaming Mode and SSH without boot-file changes.
-2. Automatic **Switch to Desktop** handoff, plus a deliberate return to Gaming
-   Mode if the UI provides it.
-3. One internal Bluetooth controller and successful DualSense pairing.
-4. Loader-supplied onboard Wi-Fi with `wifi.powersave=2` and a successful join.
-5. At least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input with no
-   controller loss, USB disconnect or kernel error.
-6. Default fan/performance startup and a bounded thermal load that remains
-   stable below the conservative stop point.
-7. A separate cold boot with `/boot/efi/disable-ps5-performance`, proving the
-   opt-out leaves both frequency modules unloaded.
-8. All sleep targets masked and clean shutdown through `sudo poweroff`.
+```sh
+systemctl status ps5fan.service ps5-performance.service --no-pager --full
+journalctl -b -u ps5fan.service -u ps5-performance.service --no-pager
+cat /sys/module/amdgpu/parameters/dpm
+lsmod | grep -E '^(ps5_cpufreq|ps5_gpufreq)'
+cat /sys/class/devfreq/ps5-gpufreq/governor
+cat /sys/class/devfreq/ps5-gpufreq/cur_freq
+cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+cat /sys/devices/system/cpu/cpufreq/boost
+sensors
+```
 
-Passing CI or the image verifier is software evidence only. One successful
-boot is not enough to publish these integrations as hardware-proven.
+The intended state is GPU `simple_ondemand`, CPU `schedutil` and CPU boost
+`0`. A successful fan command proves only that the request was sent; no RPM
+feedback or calibrated temperature curve is available.
+
+Treat 80 °C as a conservative test stop, not a claimed hardware limit. Stop
+earlier for a continuing rise, visual corruption, lost input or network, or a
+new SMU, MP1, amdgpu, BUG or Oops line. Do not unload the frequency modules as
+a rollback; that does not restore the clocks.
+
+To skip the performance policy on the next cold boot:
+
+```sh
+sudo touch /boot/efi/disable-ps5-performance
+sync
+sudo poweroff
+```
+
+To restore it for a later cold boot:
+
+```sh
+sudo rm /boot/efi/disable-ps5-performance
+sync
+sudo poweroff
+```
+
+## Remaining release gates
+
+The replacement hosted artifact is not ready for a public release until that
+same exact image passes:
+
+1. Three to five cold launches to Plasma, with HDMI and SSH.
+2. Wi-Fi joining from the Plasma menu with the stable-MAC configuration.
+3. First Gaming Mode bootstrap with internet, then a later start in configured
+   Steam Offline Mode without Ethernet or Wi-Fi.
+4. Reproduce the already observed full live round trip from the exact rebuilt
+   artifact: Steam **Switch to Desktop**, then the desktop shortcut back to
+   Gaming Mode, with no compositor overlap.
+5. Internal Bluetooth pairing plus DualSense buttons, sticks, motion and
+   touchpad input, followed by a cold-boot reconnect.
+6. At least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input with no
+   controller, HCI, USB or network loss.
+7. Default fan/performance startup and a bounded thermal load below the
+   conservative stop point.
+8. A separate cold boot with the FAT opt-out marker, proving that both
+   frequency modules stay unloaded.
+9. Clean `sudo poweroff` with every unsupported sleep target still masked.
+
+Passing CI or the image verifier is software evidence only. The short
+Wi-Fi/Bluetooth coexistence check already completed is encouraging, but it is
+not the required soak.
 
 ## Reports and privacy
 
-Before sharing logs, remove IP addresses, MAC addresses, SSIDs, BSSIDs, host
-names, serial numbers, UUIDs, usernames and local paths. Keep the original
-private copy so the redaction does not destroy evidence.
-
 Include the exact image and loader hashes, PS5 model and firmware, USB port,
-attempt number, light/HDMI/SSH timings, service status, desktop handoff result,
-Bluetooth pairing and 60-minute result, Wi-Fi join result, temperatures, and
-every change made after baseline. Clearly label failures and workarounds.
+attempt number, light/HDMI/SSH timing, first-session result, Wi-Fi join,
+desktop handoff, Bluetooth input, reconnect and soak results, temperatures,
+and every change made after baseline.
 
-Do not upload console firmware, keys, private dumps, a FAT-partition image or
-either copy of `pcieuartiw620_combo_v1.bin`.
+Before sharing logs, remove IP addresses, MAC addresses, SSIDs, BSSIDs, serial
+numbers, UUIDs, personal usernames and local paths. Do not upload console
+firmware, keys, private dumps, a FAT-partition image or either copy of
+`pcieuartiw620_combo_v1.bin`.

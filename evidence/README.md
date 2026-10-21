@@ -41,3 +41,11 @@ instruction executed.
   artifacts or still-unbooted hardware state into Run 21 results.
   Public tests of that exact CI artifact belong under the separate
   [CachyOS image 2 tester guide](../docs/cachyos1160-k73-image-2-tester-guide.md).
+- `11.60-cachyos-image3-local.md` records the October 20 local image 3 boot,
+  internal-Bluetooth DualSense pairing and input, the live stable-MAC fix that
+  made the Plasma Wi-Fi menu pass, and the live `-steamos` launcher change that
+  made Steam's built-in desktop switch pass. It also records the final
+  selector identity and the successful desktop-shortcut return to Gamescope.
+  It keeps those live changes separate from the original local raw image and
+  from the unbooted hosted draft. Follow-up testing belongs under the
+  [CachyOS image 3 tester guide](../docs/cachyos1160-k73-image-3-tester-guide.md).
