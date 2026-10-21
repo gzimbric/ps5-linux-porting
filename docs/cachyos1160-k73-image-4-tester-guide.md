@@ -139,7 +139,7 @@ The package must report `linux-ps5 7.3.0-4`. Record the time from wake to white
 light, HDMI, Plasma, DHCP and SSH. A white light alone is not a complete boot
 result.
 
-The next-image source is intended to start in Plasma, keep all unsupported
+The Image 4 source is intended to start in Plasma, keep all unsupported
 sleep targets masked, prevent the unused networkd wait-online unit from
 delaying boot, include the narrow NetworkManager PolicyKit rule, and apply a
 65 C fan target before the clock policy. Verify those behaviors on the exact

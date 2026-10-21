@@ -105,7 +105,8 @@ the returned Plasma session.
 
 The published fan helper still left the autoservo target at 86 C. The per-boot
 hotfix below changed the readback to 65 C in this session, but the persistent
-fix on `main` is not in the published image. With that hotfix active, a
+fix is only in the unbooted [Image 4](cachyos1160-k73-image-4-tester-guide.md),
+not in the published Image 3 hash. With that hotfix active, a
 20-second, 16-worker CPU load held the CPU near 3.19 GHz, peaked at 47 C and
 returned to 37 C three seconds after the load ended. The short bounded check
 passed, but it does not establish thermal equilibrium or long-duration
@@ -255,8 +256,9 @@ systemctl --failed --no-pager
 
 NetworkManager should report `active`, and the failed-unit list should be
 empty. The live fix removed the stale enablement without interrupting SSH. The
-current next-image source masks the unit before first boot so the base preset
-cannot enable it; this cleanup is not in the published Image 3 hash.
+source for [Image 4](cachyos1160-k73-image-4-tester-guide.md) masks the unit
+before first boot so the base preset cannot enable it, but Image 4 has not been
+booted yet. This cleanup is not in the published Image 3 hash.
 
 ## First Gaming Mode start and Offline Mode
 
@@ -416,8 +418,9 @@ authorization checks from the running `plasmashell` and `kded6` processes also
 passed. Its IW620 interface was named `wlp64s0f7`; the command above discovers
 the local name instead of assuming it. No new NetworkManager authorization
 failure appeared. This file is a live hotfix and is not present in the
-published Image 3 hash. The current next-image source includes the same narrow
-action allowlist.
+published Image 3 hash. The source for
+[Image 4](cachyos1160-k73-image-4-tester-guide.md) includes the same narrow
+action allowlist, but Image 4 has not been booted yet.
 
 ## Bluetooth and DualSense
 

@@ -153,7 +153,8 @@ limit.
 - The bounded Wi-Fi loader copies the console's own IW620 firmware to its USB.
   Never redistribute that firmware file. The Image 4 MediaTek path instead
   uses the bounded non-Wi-Fi loader and packaged MediaTek firmware;
-  follow its test plan rather than swapping loaders between chipset paths.
+  follow the [Image 4 tester guide](docs/cachyos1160-k73-image-4-tester-guide.md)
+  rather than swapping loaders between chipset paths.
 - Ubuntu starts with `ps5` / `ubuntu`; CachyOS uses `steam` / `steam`. Change
   the password immediately and keep the console on a trusted local network.
 

@@ -11,7 +11,10 @@ the later fixes. One identity-verified boot of that exact raw image has now
 passed HDMI, wired SSH, Plasma Wi-Fi, internal-Bluetooth DualSense input,
 startup scaling and both session directions. The public release's artifact
 identities and remaining acceptance gates are in the
-[image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md).
+[image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md). Image 4, one
+image for both IW620 and MediaTek consoles, is now a public tester prerelease.
+CI verified it, but it has not been booted; see
+[Image 4 public prerelease](#image-4-public-prerelease).
 
 ## Run 15 CachyOS loader baseline
 
@@ -267,8 +270,8 @@ Image 3 advances these source changes together:
    verifies 65 °C after every boot, using a documented public range of
    40-80 °C. `/boot/efi/disable-ps5-performance` is a persistent, fail-closed
    performance-policy opt-out. A 20-second CPU load passed after applying the
-   65 °C hotfix to the published image, but the persistent next-image policy,
-   thermal equilibrium and long-duration stability remain unproved.
+   65 °C hotfix to the published image, but the persistent policy now in
+   Image 4, thermal equilibrium and long-duration stability remain unproved.
 5. A fresh image opens Plasma first so networking can be configured before
    Steam's first Gaming Mode bootstrap. Later offline use requires Steam to
    have saved the account credentials and required local game state.
@@ -321,17 +324,17 @@ authentication and produced **System policy prevents control of network
 connections**. A targeted live rule allowing nine explicit NetworkManager
 actions for the `steam` account made authorization checks from `plasmashell`
 and `kded6` pass, restored an unprivileged Wi-Fi rescan and produced no new
-authorization failure. The current next-image source includes that rule; keep
-the published Image 3 hotfix in the tester guide because it is not part of the
-current release hash.
+authorization failure. Image 4 was built from source that includes that rule,
+but it has not been booted. Keep the published Image 3 hotfix in the tester
+guide because it is not part of the Image 3 hash.
 
 The base also left `systemd-networkd-wait-online.service` enabled even though
 NetworkManager owns the network. It timed out after two minutes and was the
 only failed unit; Wi-Fi, Ethernet and SSH remained working. Disabling the
 unused waiter and resetting its failed state left NetworkManager active, SSH
-connected and no failed units. The current next-image source masks the unit
-before first boot so the base preset cannot enable it; keep the published-image
-cleanup in the tester guide. This was not an IW620 or Ethernet failure.
+connected and no failed units. The Image 4 source masks the unit before first
+boot so the base preset cannot enable it; keep the Image 3 cleanup in its
+tester guide. This was not an IW620 or Ethernet failure.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No
@@ -351,6 +354,44 @@ telemetry, not a thermal-equilibrium or stability result.
 Suspend is not supported on this boot path. Run 21 held a `systemd-inhibit`
 lock while testing; image 3 masks the Linux sleep targets in source, pending
 exact-artifact validation.
+
+### Image 4 public prerelease
+
+[Image 4](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-4)
+is a public tester prerelease built from `ps5-linux-image` `main` at
+`e82cefa` by workflow `39536824124`. It is one `linux-ps5 7.3.0-4` image for
+both Wi-Fi variants: the exact-ID-gated IW620 path, with firmware from the
+bounded Wi-Fi loader, and an experimental MediaTek MT7921 (`14c3:7961`) path
+through in-tree `mt7921e` with `disable_aspm=1`. Its one archive is
+1,942,499,200 bytes with SHA-256
+`bc83fc06b78c4b1f34498fc4f9657bcf84483ee5c3268e48047ad844dd8b7380`; the
+12,582,912,000-byte raw image has SHA-256
+`b8346c5d8c34e643926f7c6a5d58c0017b0de8b18f944dcf7869a31759e971d5`. CI passed
+the image verifier, the bounded-loader limits and the single-file check. Its
+source also carries the 65 °C fan target, the NetworkManager Polkit rule and
+the wait-online mask described above.
+
+Image 4 has not been booted. MediaTek Wi-Fi has passed source and structural
+checks only, and MediaTek Bluetooth is unknown. Image 3 remains the newest
+CachyOS artifact with an identity-verified hardware boot. The exact build
+record is in the [Image 4 CI evidence](../evidence/11.60-cachyos-image4-ci.md).
+
+Next tests, one at a time:
+
+1. Cold-boot the exact Image 4 artifact on the IW620 CFI-1115B with
+   `ps5-linux-loader-1160-dma-e820-bounded-wifi.elf`, then run the Wi-Fi,
+   IW620 Bluetooth, session, fan-target and clock checks on it.
+2. Collect MediaTek tester reports that use
+   `ps5-linux-loader-1160-dma-e820-bounded.elf` on a fresh flash. That loader
+   has not been booted either, so the first MediaTek report also tests it.
+   Each report needs the observed PCI ID and the complete first-probe log.
+3. Treat MediaTek Bluetooth as discovery until its hardware identity and
+   driver path are known.
+
+Both loaders are in the
+[`firmware-11.60-dma-e820-bounded-run21` prerelease](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21).
+The steps and report fields are in the
+[Image 4 tester guide](cachyos1160-k73-image-4-tester-guide.md).
 
 ### Bluetooth follow-up
 
@@ -559,7 +600,9 @@ and one exact-image boot has now passed HDMI, wired SSH, Plasma Wi-Fi,
 internal-Bluetooth DualSense input, startup scaling and both session directions.
 It also passed a short bounded CPU load after the per-boot fan hotfix. It
 remains a prerelease with repeatability, cold reconnect, soak and longer
-thermal/stability testing still open.
+thermal/stability testing still open. Image 4 is a published prerelease with
+CI verification only. It has no hardware result, and Image 3's results do not
+carry over to it.
 The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and
