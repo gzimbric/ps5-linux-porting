@@ -255,8 +255,8 @@ systemctl --failed --no-pager
 
 NetworkManager should report `active`, and the failed-unit list should be
 empty. The live fix removed the stale enablement without interrupting SSH. The
-current next-image source removes it during the build; this cleanup is not in
-the published Image 3 hash.
+current next-image source masks the unit before first boot so the base preset
+cannot enable it; this cleanup is not in the published Image 3 hash.
 
 ## First Gaming Mode start and Offline Mode
 

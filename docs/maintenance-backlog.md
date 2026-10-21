@@ -329,9 +329,9 @@ The base also left `systemd-networkd-wait-online.service` enabled even though
 NetworkManager owns the network. It timed out after two minutes and was the
 only failed unit; Wi-Fi, Ethernet and SSH remained working. Disabling the
 unused waiter and resetting its failed state left NetworkManager active, SSH
-connected and no failed units. The current next-image source removes that
-enablement; keep the published-image cleanup in the tester guide. This was not
-an IW620 or Ethernet failure.
+connected and no failed units. The current next-image source masks the unit
+before first boot so the base preset cannot enable it; keep the published-image
+cleanup in the tester guide. This was not an IW620 or Ethernet failure.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No

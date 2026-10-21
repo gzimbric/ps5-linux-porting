@@ -1036,6 +1036,41 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(data["ubuntu_ci_dma_run"]["run"], 19)
         self.assertEqual(data["latest_tested_run"], "run21-cachyos-k73-bounded-wifi-pass")
 
+    def test_manifest_records_public_image3_hardware_result(self):
+        data = load_pinned_manifest()
+        run21 = data["cachyos_k73_run"]
+        image3 = run21["ci_build_3_public_prerelease"]
+        self.assertEqual(
+            image3["source_commit"],
+            "16795eb85830dc32f712e44e9e0da28f7874b317",
+        )
+        self.assertTrue(image3["booted"])
+        self.assertFalse(image3["hardware_result_transfers_from_local_image"])
+        hardware = image3["hardware_test"]
+        self.assertEqual(hardware["boot_count"], 1)
+        self.assertTrue(hardware["identity"]["whole_device_readback_sha256_match"])
+        self.assertTrue(hardware["boot"]["physical_hdmi"])
+        self.assertTrue(hardware["wifi"]["gui_join"])
+        self.assertTrue(hardware["bluetooth"]["dualsense_paired"])
+        self.assertFalse(hardware["bluetooth"]["cold_boot_reconnect_tested"])
+        self.assertTrue(hardware["sessions"]["plasma_to_gaming_mode"])
+        self.assertTrue(hardware["sessions"]["gaming_mode_to_plasma"])
+        self.assertFalse(hardware["fan"]["live_hotfix_in_release"])
+        self.assertFalse(
+            hardware["bounded_cpu_load"]["thermal_equilibrium_tested"])
+
+        followup = run21["current_image3_source_followup"]
+        self.assertEqual(
+            followup["source_commit"],
+            "d9c4b31f30193e60e79723d4543b2a85941c315a",
+        )
+        self.assertEqual(
+            followup["release_source_commit"], image3["source_commit"])
+        self.assertTrue(followup["hosted_artifact_hardware_tested"])
+        self.assertTrue(followup["networkmanager_polkit_hardware_tested_live"])
+        self.assertTrue(followup["networkd_wait_online_masked_before_first_boot"])
+        self.assertFalse(followup["current_source_artifact_hardware_tested"])
+
     def test_run21_summary_separates_image2_changes_from_unresolved_behavior(self):
         summary = (ROOT / "evidence" / "11.60-summary.txt").read_text()
         self.assertNotIn("cachyos_k73_run.fix_for_ci_build_2_", summary)
