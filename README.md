@@ -13,8 +13,8 @@ data on the Linux USB drive.
 
 | Goal | Link |
 |---|---|
-| Test the current CachyOS Image 3 prerelease | [Download Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) and follow the [Image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) |
-| Prepare for the next unified CachyOS image | Read the [unreleased Image 4 test plan](docs/cachyos1160-k73-image-4-tester-guide.md); there is no Image 4 download yet |
+| Test the unified CachyOS Image 4 prerelease | [Download Image 4](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-4) and follow the [Image 4 tester guide](docs/cachyos1160-k73-image-4-tester-guide.md); the exact image is CI-verified but not yet hardware-booted |
+| Use the latest hardware-booted CachyOS image | [Download Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) and follow the [Image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) |
 | Boot the hardware-tested Ubuntu pair | [Ubuntu 24.04 tester guide](docs/ubuntu2404-tester-guide.md) |
 | Test the older public CachyOS prerelease | [Image 2 tester guide](docs/cachyos1160-k73-image-2-tester-guide.md) |
 | Read the complete 11.60 result | [Firmware 11.60 status](docs/11.60-status.md) |
@@ -90,26 +90,28 @@ boot and live follow-ups.
 - [Image 3 CI, release and exact-image hardware evidence](evidence/11.60-cachyos-image3-ci.md)
 - [Local Image 3 hardware evidence](evidence/11.60-cachyos-image3-local.md)
 
-### Next unified CachyOS Image 4 (unreleased)
+### Unified CachyOS Image 4 tester prerelease
 
-Current image-builder source prepares one `linux-ps5 7.3.0-4` image for both
-Wi-Fi hardware paths. It keeps the proven Marvell IW620 path and adds
-experimental MediaTek MT7921 support through the in-tree `mt7921e` driver.
-This is one image, not separate Marvell and MediaTek editions. The loader still
-depends on the console's hardware:
+Image 4 is one `linux-ps5 7.3.0-4` image for both Wi-Fi hardware paths. It
+keeps the proven Marvell IW620 path and adds experimental MediaTek MT7921
+support through the in-tree `mt7921e` driver. This is one image, not separate
+Marvell and MediaTek editions. The loader still depends on the console's
+hardware:
 
 - IW620 consoles use `ps5-linux-loader-1160-dma-e820-bounded-wifi.elf`, which
   copies that console's own IW620 firmware to the USB drive.
 - MediaTek consoles use `ps5-linux-loader-1160-dma-e820-bounded.elf`, because
   their required firmware is already packaged in the image.
 
-No exact unified Image 4 artifact has been booted yet. MediaTek Wi-Fi has
-passed source and structural checks, not a hardware test, and the MediaTek
-Bluetooth path is unknown. Image 3 remains the current public download until a
-specific Image 4 artifact completes CI, is published, and gets its own hardware
-record.
+The exact Image 4 artifact was built from `e82cefa` by successful hosted run
+`39536824124`. CI verified the image, bounded-loader limits and single-file
+archive, but no hardware boot has been recorded. MediaTek Wi-Fi has passed
+source and structural checks, not a console test, and the MediaTek Bluetooth
+path is unknown. Image 3 remains the newest CachyOS artifact with an
+identity-verified hardware boot.
 
-- [Unreleased Image 4 test plan](docs/cachyos1160-k73-image-4-tester-guide.md)
+- [CachyOS Image 4 public tester prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-4)
+- [Image 4 tester guide and exact artifact identity](docs/cachyos1160-k73-image-4-tester-guide.md)
 - [Bounded 11.60 loader prerelease](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21)
 
 Image releases are published as one `.img.xz`. The build fails instead of
@@ -149,8 +151,8 @@ limit.
 - Never copy another image's prebuilt `btusb.ko`. Bluetooth modules must be
   rebuilt for the exact kernel.
 - The bounded Wi-Fi loader copies the console's own IW620 firmware to its USB.
-  Never redistribute that firmware file. The upcoming Image 4 MediaTek path
-  instead uses the bounded non-Wi-Fi loader and packaged MediaTek firmware;
+  Never redistribute that firmware file. The Image 4 MediaTek path instead
+  uses the bounded non-Wi-Fi loader and packaged MediaTek firmware;
   follow its test plan rather than swapping loaders between chipset paths.
 - Ubuntu starts with `ps5` / `ubuntu`; CachyOS uses `steam` / `steam`. Change
   the password immediately and keep the console on a trusted local network.
@@ -161,6 +163,7 @@ limit.
 |---|---|
 | Full current result and evidence limits | [Firmware 11.60 status](docs/11.60-status.md) |
 | Image 3 public CI artifact | [Image 3 CI, release and exact-image hardware evidence](evidence/11.60-cachyos-image3-ci.md) |
+| Image 4 unified CI artifact | [Image 4 CI, release and unbooted hardware boundary](evidence/11.60-cachyos-image4-ci.md) |
 | Image 3 local boot and live follow-ups | [Image 3 local evidence](evidence/11.60-cachyos-image3-local.md) |
 | Historical CachyOS Linux 7.3 run | [Run 21 evidence](evidence/11.60-cachyos-k73-run-21.md) |
 | Ubuntu CI image hardware boot | [Run 19 evidence](evidence/11.60-ubuntu-ci-run-19.md) |

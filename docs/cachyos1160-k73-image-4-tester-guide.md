@@ -1,15 +1,11 @@
-# Upcoming CachyOS image 4 test plan for PS5 firmware 11.60
+# CachyOS Image 4 tester guide for PS5 firmware 11.60
 
-> **Unreleased test plan; no Image 4 download exists yet.** Current source
-> prepares one unified image with `linux-ps5 7.3.0-4`, but that exact image has
-> not been booted on a PS5. Do not report Image 3 results as Image 4 results.
-> The public, hardware-tested download remains
-> [Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3)
-> with its separate [tester guide](cachyos1160-k73-image-3-tester-guide.md).
-
-This document is ready for the first unified-image tests once CI publishes a
-specific artifact. Before anyone flashes it, replace the pending identity
-fields below with the release's actual commit, workflow, sizes and hashes.
+> **Image 4 is a public tester prerelease, not a hardware-validated release.**
+> CI built and structurally verified the exact unified image linked below, but
+> it has not been booted on a PS5. MediaTek Wi-Fi is still experimental and
+> MediaTek Bluetooth is unknown. Do not report Image 3 results as Image 4
+> results. [Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3)
+> remains the latest download with an identity-verified hardware boot.
 
 ## Scope and current evidence
 
@@ -19,7 +15,7 @@ separate MediaTek edition.
 | Area | Image 4 status before its first hardware run |
 |---|---|
 | Kernel package | `linux-ps5 7.3.0-4` in current source |
-| Exact unified artifact | Not published or booted; CI and release identity pending |
+| Exact unified artifact | Hosted CI build and structural verifier passed; public tester prerelease exists; no hardware boot recorded |
 | Marvell IW620 Wi-Fi | Existing exact-ID-gated path retained; Image 3 proved the older artifact, not Image 4 |
 | MediaTek MT7921 Wi-Fi | In-tree `mt7921e`, packaged firmware and `disable_aspm=1` path structurally validated; not hardware-tested on firmware 11.60 |
 | IW620 Bluetooth | The known Image 3 path is retained, but the new artifact still needs regression testing |
@@ -29,24 +25,28 @@ Passing a source check, kernel build or image verifier is not a console boot.
 The first Image 4 report must identify the exact downloadable artifact and the
 chipset path used.
 
-## Fill in the artifact identity before testing
+## Exact artifact identity
 
-Do not test a file described only as "latest" or "Image 4." Record these
-values from the reviewed release:
+Do not test a file described only as "latest" or "Image 4." Use this exact
+release and record it with every result:
 
 | Item | Required value |
 |---|---|
-| Release tag and URL | Pending |
-| Source commit | Pending |
-| Successful workflow run | Pending |
-| Archive filename, byte size and SHA-256 | Pending |
-| Expanded raw-image byte size and SHA-256 | Pending |
-| `bzImage` byte size and SHA-256 | Pending |
-| `initrd.img` byte size and SHA-256 | Pending |
-| `cmdline.txt`, `vram.txt` and `kexec.sh` SHA-256 | Pending |
-| Root-change manifest SHA-256 | Pending |
+| Release tag and URL | [`cachyos1160-k73-image-4`](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-4) |
+| Source commit | `e82cefaac9f4c166b4b961ea64597bb5a2a1d1e3` on `main` |
+| Successful workflow run | [`39536824124`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39536824124) |
+| Archive filename, byte size and SHA-256 | `ps5-cachyos1160-k73.img.xz`; 1,942,499,200 bytes; `bc83fc06b78c4b1f34498fc4f9657bcf84483ee5c3268e48047ad844dd8b7380` |
+| Expanded raw-image byte size and SHA-256 | 12,582,912,000 bytes; `b8346c5d8c34e643926f7c6a5d58c0017b0de8b18f944dcf7869a31759e971d5` |
+| `bzImage` byte size and SHA-256 | 11,613,184 bytes; `19293156bfabdb1d347991dafdbe5eb927828d7cb7d3453cac2b3389d2bfeb8b` |
+| `initrd.img` byte size and SHA-256 | 51,902,154 bytes; `03f4fce8d79178922fbd03ed02cb9ce220f5db58b19435b68567236f694ddef9` |
+| `cmdline.txt` byte size and SHA-256 | 118 bytes; `aec7a85e9ebcf36e4bdaeb89242b898e17817acd40c16db57a3bb9c3117b1da8` |
+| `vram.txt` byte size and SHA-256 | 11 bytes; `bc4642feb06a4cc6d10d5865e321efaad7ab3f3f1d5d025151b79978164310a0` |
+| `kexec.sh` byte size and SHA-256 | 136 bytes; `0f26e09911a8a2bc9912d7c77fee6ac09ccd18a820086cb103be92de081b6c52` |
+| Root-change manifest | `cachyos1160-k73-root-changes.txt`; 7,704 bytes; `3e3efd4d3510b250aabc167a2e1fb49e50db4ec4023d5ec0563260193f67f380` |
+| `SHA256SUMS` SHA-256 | `95a0e050f7a69e5bcdff8bc26babcd7f5e8eda33e70cb7b0e4b04c78ab3114a2` |
 
-The release should contain one `.img.xz`, not numbered pieces. Verify
+The release contains one `.img.xz`, not numbered pieces. GitHub's recorded
+digest for that asset matches the archive line in `SHA256SUMS`. Verify
 `SHA256SUMS` before flashing, then verify the archive and expanded image
 against that same release. Keep the downloaded archive until the flashed-drive
 readback has been recorded.
@@ -78,7 +78,7 @@ or upload `pcieuartiw620_combo_v1.bin`.
 - Regular retail PS5 on firmware 11.60, not PS5 Pro.
 - Automatic system-software updates disabled.
 - The 11.60 exploit with the ELF listener on TCP port 9021.
-- The reviewed Image 4 archive and checksum files once published.
+- The reviewed Image 4 archive and checksum files linked above.
 - The loader selected from the chipset table above and verified locally.
 - USB drive of at least 16 GB. Flashing erases the selected drive.
 - HDMI and a wired USB keyboard.
@@ -91,8 +91,8 @@ baseline test.
 
 ## Flash and first boot
 
-Once the release exists, use the verification commands printed in its notes.
-At minimum, check the manifest and archive in the same directory:
+Use the verification commands printed in the release notes. At minimum, check
+the manifest and archive in the same directory:
 
 ```sh
 shasum -a 256 -c --ignore-missing SHA256SUMS

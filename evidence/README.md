@@ -57,3 +57,7 @@ instruction executed.
   image, including HDMI, wired SSH, Plasma Wi-Fi, internal-Bluetooth DualSense
   input, startup scaling, both session directions and a short bounded CPU load,
   while keeping the remaining prerelease gates explicit.
+- `11.60-cachyos-image4-ci.md` records the unified Image 4 hosted build, exact
+  release and boot-file identities, guarded reuse of its already-built kernel
+  bundle, successful structural checks, and the boundary between those CI
+  results and the still-pending IW620 and MediaTek hardware tests.
