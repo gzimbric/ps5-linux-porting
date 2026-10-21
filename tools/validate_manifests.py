@@ -803,7 +803,7 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: Run 21 must not replace the Run 15 release baseline")
         upstream = k73.get("upstream_kernel_work", {})
         if (not isinstance(upstream, dict) or
-                upstream.get("author") != "Armandas Kvietkus (rmux)" or
+                upstream.get("author") != "rmux" or
                 upstream.get("repository") != "https://github.com/rmuxnet/ps5-linux-patches-1"):
             errors.append(f"{path}: Run 21 must credit rmux for the 7.3 port and frequency drivers")
         kernel = k73.get("kernel", {})

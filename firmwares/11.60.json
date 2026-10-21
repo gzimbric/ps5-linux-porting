@@ -790,7 +790,7 @@
     "independent_hardware_reproduction": false,
     "release_loader_baseline": false,
     "upstream_kernel_work": {
-      "author": "Armandas Kvietkus (rmux)",
+      "author": "rmux",
       "repository": "https://github.com/rmuxnet/ps5-linux-patches-1",
       "patch": "linux.patch",
       "commit": "36f173f39e5e76c00c4e366a7b909f33bc665ad5",
@@ -1628,7 +1628,7 @@
     "Run 19 ran the tester guide checks as written, including the optional 3 x 4 GiB write and read-back check, which passed with no storage error lines. It used the same console and USB drive as Run 18 and had no A/B control, so it does not show that the reservation fixes the tester errors.",
     "Run 19 found two image defects for the backlog: the hostname is the CI build container ID, and ps5-ssh-host-keys.service causes an ordering cycle with ssh.socket that systemd breaks by dropping the sockets.target job. SSH still worked.",
     "The dma_e820_build record describes Run 18 only; its physical_display_observed and ubuntu_ci_image_tested values are Run 18 results. Run 19 (ubuntu_ci_dma_run) booted the DMA build with the CI Ubuntu image and a directly observed picture.",
-    "Run 21 is the first boot of Linux 7.3.0 and of the bounded Wi-Fi loader on this console. The kernel is mainline v7.3 with the 7.3 port of the PS5 patches by rmux (Armandas Kvietkus), https://github.com/rmuxnet/ps5-linux-patches-1 at 36f173f, which also brings rmux's PS5 CPU and GPU frequency drivers. The planned Runs 21 (CachyOS 7.3) and 22 (Wi-Fi) were merged into this run, and Run 20 was deferred.",
+    "Run 21 is the first boot of Linux 7.3.0 and of the bounded Wi-Fi loader on this console. The kernel is mainline v7.3 with the 7.3 port of the PS5 patches by rmux, https://github.com/rmuxnet/ps5-linux-patches-1 at 36f173f, which also brings rmux's PS5 CPU and GPU frequency drivers. The planned Runs 21 (CachyOS 7.3) and 22 (Wi-Fi) were merged into this run, and Run 20 was deferred.",
     "Run 21 booted a local build of the cachyos-1160-k73 image branch from before the review fixes, not a CI build. CI build cachyos1160-k73-image-1 completed successfully afterwards and is held in a draft release; it has not been booted and is superseded by image 2.",
     "CachyOS image 2 is source-pinned by tag cachyos1160-k73-image-2 at 346088a48f66eb956dafdec9de5085e73b2d44a5. It uses rmux's 36f173f Linux 7.3 patch as published, then applies a separate hash-pinned IW620 Bluetooth quirk-ordering follow-up; it also puts the firmware copy before the explicit Wi-Fi driver load, packages linux-ps5 7.3.0-2 with KBUILD_BUILD_VERSION=2, keeps the frequency drivers manual, and enables ps5fan.service with fixed maximum servo pattern 3 rather than a dynamic temperature curve. Workflow 39481460775 completed successfully. Its public tester prerelease contains one 1,943,471,712-byte ps5-cachyos1160-k73.img.xz with SHA-256 8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a; it expands to the 12,582,912,000-byte raw image with SHA-256 3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d. Those are verified build and release facts, not hardware results, and image 2 has not been booted.",
     "Steam's Switch to Desktop and joining Wi-Fi from the KDE menu remain unresolved after the image 2 source changes. Releases use one .img.xz and fail instead of publishing numbered parts if the compressed image reaches 2 GiB.",

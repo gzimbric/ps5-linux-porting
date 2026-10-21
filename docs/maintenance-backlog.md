@@ -153,9 +153,8 @@ The other warnings seen in Run 19 are listed in the evidence.
 Run 21 booted a local build of the CachyOS 7.3 image (`ps5-linux-image`
 branch `cachyos-1160-k73`) with the bounded Wi-Fi loader build from
 `gzimbric/ps5-linux-loader` commit `98925a2`. The kernel is Linux v7.3 with
-the 7.3 port of the PS5 patches and the CPU and GPU frequency drivers by rmux
-(Armandas Kvietkus), from
-[rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1)
+the 7.3 port of the PS5 patches and the CPU and GPU frequency drivers by rmux,
+from [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1)
 at `36f173f`. The picture, SSH, the DMA map, and onboard Wi-Fi with the
 loader's firmware copy all worked. The result and its limits are in the
 [Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md).

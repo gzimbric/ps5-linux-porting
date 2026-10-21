@@ -426,7 +426,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             root = Path(temp)
             (root / "README.md").write_text(
-                "The 7.3 port and frequency drivers are by rmux (Armandas Kvietkus), "
+                "The 7.3 port and frequency drivers are by rmux, "
                 "https://github.com/rmuxnet/ps5-linux-patches-1.\n"
             )
             self.assertEqual(check_public_tree(root), [])
@@ -896,8 +896,7 @@ class ToolTests(unittest.TestCase):
         run21 = data["cachyos_k73_run"]
         self.assertEqual(run21["run"], 21)
         self.assertEqual(run21["kernel"]["version"], "7.3.0")
-        self.assertEqual(run21["upstream_kernel_work"]["author"],
-                         "Armandas Kvietkus (rmux)")
+        self.assertEqual(run21["upstream_kernel_work"]["author"], "rmux")
         self.assertEqual(run21["upstream_kernel_work"]["repository"],
                          "https://github.com/rmuxnet/ps5-linux-patches-1")
         self.assertTrue(run21["kernel"]["patch_commit"].startswith("36f173f"))

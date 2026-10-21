@@ -85,8 +85,7 @@ distributed. See `PORTING_1160.md` on `main` for build details.
 
 ## Linux 7.3 patch set
 
-The Linux 7.3.0 kernel used from Run 21 on is built from the work of rmux
-(Armandas Kvietkus):
+The Linux 7.3.0 kernel used from Run 21 on is built from the work of rmux:
 [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1),
 pinned at commit `36f173f39e5e76c00c4e366a7b909f33bc665ad5`. It ports the
 ps5-linux PS5 patches to Linux 7.3 and adds rmux's PS5 CPU frequency
