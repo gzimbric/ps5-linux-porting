@@ -47,5 +47,11 @@ instruction executed.
   made Steam's built-in desktop switch pass. It also records the final
   selector identity and the successful desktop-shortcut return to Gamescope.
   It keeps those live changes separate from the original local raw image and
-  from the unbooted hosted draft. Follow-up testing belongs under the
+  from the exact public CI artifact, which has not been hardware-booted.
+  Follow-up testing belongs under the
   [CachyOS image 3 tester guide](../docs/cachyos1160-k73-image-3-tester-guide.md).
+- `11.60-cachyos-image3-ci.md` records the public Image 3 prerelease, successful
+  hosted workflow, source/tag target, archive and expanded-image identities,
+  metadata digests, boot-file identities and final session-file identities.
+  It is CI/release evidence only; the exact downloadable image has not yet
+  booted on hardware.

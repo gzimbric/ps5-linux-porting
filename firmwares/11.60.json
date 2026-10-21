@@ -996,42 +996,78 @@
         "change_present_in_original_raw_image": false
       },
       "pending": [
-        "repeat the live Wi-Fi and Steam launcher fixes from an exact replacement hosted artifact",
-        "repeat the live Plasma-to-Gaming-Mode desktop-shortcut return on the exact replacement artifact",
+        "repeat the live Wi-Fi and Steam launcher fixes from the exact public prerelease artifact",
+        "repeat the live Plasma-to-Gaming-Mode desktop-shortcut return on the exact public prerelease artifact",
         "Bluetooth reconnect after a cold boot",
         "at least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input"
       ]
     },
-    "ci_build_3_draft": {
+    "ci_build_3_public_prerelease": {
       "release_tag": "cachyos1160-k73-image-3",
-      "source_commit": "1d581dfce5ab89c3bd35a7fdad0514f5575f0723",
-      "workflow_run": 39510517216,
+      "release_url": "https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3",
+      "source_commit": "16795eb85830dc32f712e44e9e0da28f7874b317",
+      "tag_target": "16795eb85830dc32f712e44e9e0da28f7874b317",
+      "workflow_run": 39521098451,
       "workflow_conclusion": "success",
-      "draft_release_created": true,
-      "release_is_draft": true,
+      "ci_result_verified": true,
+      "published_at": "2026-10-21T00:48:20Z",
+      "release_policy": "public-prerelease-for-hardware-testing",
+      "release_is_draft": false,
       "release_is_prerelease": true,
-      "published_for_testing": false,
+      "published_for_testing": true,
       "booted": false,
       "archive": {
         "name": "ps5-cachyos1160-k73.img.xz",
-        "size": 1943469912,
-        "sha256": "8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9"
+        "size": 1943937164,
+        "sha256": "9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c"
       },
       "raw_image": {
         "name": "ps5-cachyos1160-k73.img",
         "size": 12582912000,
-        "sha256": "82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314"
+        "sha256": "25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8"
       },
-      "superseded_before_publication": true,
-      "missing_later_source_changes": [
-        "stable permanent-MAC NetworkManager policy",
-        "Plasma-first session token",
-        "steam -steamos -gamepadui launcher",
-        "removal of the unused desktop-switch listener",
-        "graphical-session.target Plasma-to-Gamescope return selector"
-      ]
+      "release_assets": {
+        "sha256sums": {
+          "name": "SHA256SUMS",
+          "sha256": "e1136c4734d97a0a5eecb97e82a497b660acb10b803796bca5cefc5dd6dec21e"
+        },
+        "build_info": {
+          "name": "build-info.txt",
+          "sha256": "2a1a561731358101e85c42d271856616586ebdc3f0e5ff891904209ca03a1067"
+        },
+        "root_changes": {
+          "name": "cachyos1160-k73-root-changes.txt",
+          "sha256": "eacd76bc1e031b9b7a26f1e45604549924b47b1682ae55f82a33f34cebcd7a4d"
+        }
+      },
+      "boot_files": {
+        "bzimage": {
+          "size": 11613184,
+          "sha256": "945a4f2a03c4771313e466dccfb8272e0345cf7d143516a36a0bc75b2b219d0a"
+        },
+        "initrd": {
+          "size": 51899412,
+          "sha256": "912600c22a203a744d4d44fcd4b5caacd86ea8b0c3ef8202ed9c0ff2ba146dd0"
+        }
+      },
+      "session_files": {
+        "launcher": {
+          "name": "gamescope-session-ps5",
+          "size": 1866,
+          "sha256": "d68c1f3a9014dd2db00681b5434f6e951bc6d4ebdebc48ec77fc154dbf2fc687"
+        },
+        "selector": {
+          "name": "steamos-session-select",
+          "size": 3736,
+          "sha256": "1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1"
+        }
+      },
+      "contains_live_followup_source_changes": true,
+      "hardware_result_transfers_from_local_image": false
     },
     "current_image3_source_followup": {
+      "source_commit": "16795eb85830dc32f712e44e9e0da28f7874b317",
+      "release_tag": "cachyos1160-k73-image-3",
       "first_session": "plasma",
       "first_gaming_mode_bootstrap_requires_internet": true,
       "later_offline_mode_requires_saved_credentials_and_local_state": true,
@@ -1042,8 +1078,9 @@
       "desktop_shortcut_round_trip_tested_live": true,
       "old_system_bus_listener_present": false,
       "networkmanager_settings_hardware_tested_live": true,
-      "replacement_hosted_artifact_built": false,
-      "replacement_hosted_artifact_hardware_tested": false
+      "hosted_artifact_built": true,
+      "hosted_artifact_published": true,
+      "hosted_artifact_hardware_tested": false
     },
     "loader": {
       "name": "ps5-linux-loader-1160-dma-e820-bounded-wifi.elf",
@@ -1487,7 +1524,7 @@
   "latest_authenticated_working_run": 21,
   "latest_tested_run": "run21-cachyos-k73-bounded-wifi-pass",
   "last_observed_marker": "October 20 local image 3 hardware test: directly observed HDMI and authenticated SSH, internal-Bluetooth DualSense pairing and input, a live stable-MAC Plasma Wi-Fi join with DHCP and HTTPS, and a full live Steam-to-Plasma-to-Gaming-Mode round trip with no compositor overlap; the Wi-Fi and session changes were not present in the original raw image",
-  "current_boundary": "Run 15 remains the loader/display baseline; Runs 16-19 and 21 retain their historical scope. An exact unpublished local image 3 booted with HDMI and SSH, paired a wireless DualSense through the internal controller, and exposed gamepad, motion and touchpad input. Live follow-ups fixed the Plasma Wi-Fi menu with a stable permanent-MAC policy and fixed Steam Switch to Desktop by launching steam -steamos -gamepadui so Steam used its own legacy selector fallback. The final selector stopped graphical-session.target; both a remote return and the actual desktop shortcut returned cleanly to Gamescope/Steam without compositor overlap. A separate hosted image 3 draft completed successfully at 1d581df but is unbooted and predates those fixes. A replacement hosted artifact, offline-after-bootstrap behavior, Bluetooth cold-boot reconnect, a 60-minute Wi-Fi/Bluetooth soak, other consoles, video decode, integrity, bounded thermal stability, repeatability, and the minimal display subset remain uncharacterized.",
+  "current_boundary": "Run 15 remains the loader/display baseline; Runs 16-19 and 21 retain their historical scope. An exact unpublished local image 3 booted with HDMI and SSH, paired a wireless DualSense through the internal controller, and exposed gamepad, motion and touchpad input. Live follow-ups fixed the Plasma Wi-Fi menu with a stable permanent-MAC policy and fixed Steam Switch to Desktop by launching steam -steamos -gamepadui so Steam used its own legacy selector fallback. The final selector stopped graphical-session.target; both a remote return and the actual desktop shortcut returned cleanly to Gamescope/Steam without compositor overlap. Hosted workflow 39521098451 built and published the separate image 3 prerelease from 16795eb with those fixes, but that exact raw image is unbooted. Its hardware boot, offline-after-bootstrap behavior, Bluetooth cold-boot reconnect, a 60-minute Wi-Fi/Bluetooth soak, other consoles, video decode, integrity, bounded thermal stability, repeatability, and the minimal display subset remain uncharacterized.",
   "notes": [
     "Linux booted with authenticated SSH in Runs 10, 12, 14, 15, 16, 17, 18, 19, and 21; startup_64 and the preceding transition stages are inferred from authenticated userspace rather than direct instruction markers.",
     "Run 15 PRE5/OP29 with the runtime clear disabled produced directly observed physical display output and authenticated Linux/SSH in the same cycle; it is the current hardware-verified baseline.",
@@ -1509,12 +1546,12 @@
     "Run 21 booted a local build of the cachyos-1160-k73 image branch from before the review fixes, not a CI build. CI build cachyos1160-k73-image-1 completed successfully afterwards and is held in a draft release; it has not been booted and is superseded by image 2.",
     "CachyOS image 2 is source-pinned by tag cachyos1160-k73-image-2 at 346088a48f66eb956dafdec9de5085e73b2d44a5. It uses rmux's 36f173f Linux 7.3 patch as published, then applies a separate hash-pinned IW620 Bluetooth quirk-ordering follow-up; it also puts the firmware copy before the explicit Wi-Fi driver load, packages linux-ps5 7.3.0-2 with KBUILD_BUILD_VERSION=2, keeps the frequency drivers manual, and enables ps5fan.service with fixed maximum servo pattern 3 rather than a dynamic temperature curve. Workflow 39481460775 completed successfully. Its public tester prerelease contains one 1,943,471,712-byte ps5-cachyos1160-k73.img.xz with SHA-256 8b785243f79a32a4155cc1e39bed01d580e25ca514e88abbfed1a8a8157a281a; it expands to the 12,582,912,000-byte raw image with SHA-256 3798c7dba96412c5301eb201d8bf8aa4edd1b2f80a743dfd7b90b2a79222c62d. Those are verified build and release facts, not hardware results, and image 2 has not been booted.",
     "Steam's Switch to Desktop and joining Wi-Fi from the KDE menu remain unresolved after the image 2 source changes. Releases use one .img.xz and fail instead of publishing numbered parts if the compressed image reaches 2 GiB.",
-    "An exact local image 3 from source f7d6fbd booted with directly observed HDMI and authenticated SSH. Its raw SHA-256 is 5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4; it is not published and is not the hosted draft.",
+    "An exact local image 3 from source f7d6fbd booted with directly observed HDMI and authenticated SSH. Its raw SHA-256 is 5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4; it is not published and is not the public CI artifact.",
     "On the local image 3, the internal Bluetooth controller registered and a wireless DualSense paired, bonded, trusted and connected. Buttons, motion sensors and touchpad input worked with no USB DualSense present. One short concurrent Wi-Fi/Bluetooth check passed; cold-boot reconnect and soak remain pending.",
     "The local image 3 initially reproduced the Plasma Wi-Fi access-point-not-in-scan-list failure. Disabling NetworkManager scan MAC randomization, retaining the IW620 permanent address and keeping wifi.powersave=2 made the normal Plasma menu pass WPA3 association, DHCP and HTTPS. This was a live change, not a property of the original raw image.",
     "The original image 3 desktop listener received no matching system-bus call. Manual selector plus tty1 getty restart opened Plasma. Relaunching as steam -steamos -gamepadui made Steam intentionally use its legacy selector fallback; sudo /usr/bin/steamos-session-select plasma was observed, Gamescope exited and Plasma/KWin started.",
-    "A later remote selector invocation stopped the owning user graphical-session.target in 0.086 seconds. KDE exited and Gamescope/Steam started with no overlapping compositor. Current source uses only that target stop and no later process kill or login-session termination. The actual desktop shortcut also passed with the final 3,736-byte selector (SHA-256 1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1): the token changed at 5.709 seconds and 0.563 seconds later Gamescope was running with no KWin or Plasma shell. The exact replacement artifact still has to reproduce the round trip.",
-    "Hosted workflow 39510517216 succeeded at 1d581df. Its 1,943,469,912-byte archive SHA-256 is 8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9 and its 12,582,912,000-byte raw SHA-256 is 82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314. The draft is unbooted and predates the stable-MAC, Plasma-first, -steamos launcher and return-selector changes, so it must be replaced before publication.",
+    "A later remote selector invocation stopped the owning user graphical-session.target in 0.086 seconds. KDE exited and Gamescope/Steam started with no overlapping compositor. Current source uses only that target stop and no later process kill or login-session termination. The actual desktop shortcut also passed with the final 3,736-byte selector (SHA-256 1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1): the token changed at 5.709 seconds and 0.563 seconds later Gamescope was running with no KWin or Plasma shell. The exact public artifact still has to reproduce the round trip.",
+    "Hosted workflow 39521098451 succeeded at 16795eb85830dc32f712e44e9e0da28f7874b317 and published the cachyos1160-k73-image-3 prerelease at 2026-10-21T00:48:20Z. Its 1,943,937,164-byte archive SHA-256 is 9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c and its 12,582,912,000-byte raw SHA-256 is 25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8. It contains the stable-MAC, Plasma-first, -steamos launcher and final return-selector changes, but the exact artifact is unbooted.",
     "The Run 21 loader (firmware-11.60-dma-e820 at 98925a2, target linux-1160-dma-e820-bounded-wifi) checks the boot files against bounds instead of exact sizes, prints its refusals, and dumps the 11.60 IW620 firmware. The Run 15 and Run 18 loaders refuse these boot files. In Run 21 it dumped the 498,108-byte firmware for the first time on 11.60, and the wake copy stayed inside the proven window.",
     "In Run 21 the e820 table matched Runs 18 and 19, and KASLR put the kernel code at physical 0x26ec00000, far above the reserved range. MemTotal was 14,788,356 kB.",
     "In Run 21 the Wi-Fi driver first probed before the firmware was in place, then the image's firmware service reloaded it and the 17.130.3.p47 firmware came up. Joining from the KDE menu failed twice; joining by name with nmcli worked, on 5 GHz with WPA3, and a 50 MB HTTPS download over Wi-Fi ran at about 192 Mbit/s.",

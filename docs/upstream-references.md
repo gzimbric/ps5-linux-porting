@@ -1,6 +1,6 @@
 # Upstream references
 
-The following revisions were checked through 2026-10-20. Historical branches
+The following revisions were checked through 2026-10-21. Historical branches
 remain listed where they identify an exact tested artifact, but the active
 forks use `main` as their default source branch.
 
@@ -13,9 +13,10 @@ forks use `main` as their default source branch.
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `c70358f57e5a9d481fcde676454f4919e4e403b4` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and public bounded-loader tester guidance |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `1d581dfce5ab89c3bd35a7fdad0514f5575f0723` | Last committed image 3 source used by successful hosted draft workflow `39510517216`; the unbooted draft predates the later stable-MAC, Plasma-first, `-steamos` launcher and return-selector fixes, which require a replacement build |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `b63f37221ff0f7382a540e595c918ec84c482267` | Current default-branch head; it retains the Image 3 runtime source, adds safe draft refresh and published-release protection, and documents the public prerelease. The exact Image 3 release source remains the tag entry below. |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 public tester prerelease source; CI and release identities verified, with no identity-verified hardware boot recorded |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-3) | `cachyos1160-k73-image-3` (tag) | `16795eb85830dc32f712e44e9e0da28f7874b317` | Exact source of the Image 3 public tester prerelease; CI/release identities verified, with no hardware boot of the exact artifact recorded |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4bce848dd098bf74fbafd0078463da3d9f0d7f80` | IW620 patch-stack revision in the local image 3 hardware test, including its HE and TX follow-ups; the NXP driver base remains `a5fe4e1`; association worked after the separate stable-MAC NetworkManager live fix |
@@ -124,9 +125,9 @@ has one 1,943,471,712-byte image archive whose identity, together with the
 hardware boot of image 2 is recorded.
 
 The local image 3 hardware build was assembled from
-`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`; the last hosted draft was built
-from `1d581dfce5ab89c3bd35a7fdad0514f5575f0723`. Neither is the finished
-release. Image 3 keeps rmux's `36f173f` Linux 7.3 base and uses package
+`f7d6fbd9d630cddaceb83f3b861869d4453af8ca`. The public prerelease was built
+from `16795eb85830dc32f712e44e9e0da28f7874b317`; its exact artifact remains
+unbooted. Image 3 keeps rmux's `36f173f` Linux 7.3 base and uses package
 identity `linux-ps5 7.3.0-3`. For Bluetooth it consumes the exact
 `ps5-btusb-quirks-fix.patch` release asset attached to Bazzite Deck v1.0.3,
 verified at SHA-256
@@ -169,15 +170,17 @@ removed. A fresh image starts in Plasma so networking can be configured before
 the first online Gaming Mode bootstrap; Valve's Offline Mode guidance applies
 after credentials and local game state have been saved.
 
-Hosted workflow `39510517216` successfully built, verified, compressed and
-uploaded one draft `.img.xz` from `1d581df`. That 1,943,469,912-byte archive
-has SHA-256
-`8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9`;
+Hosted workflow `39521098451` successfully built, verified, compressed and
+uploaded one `.img.xz` from `16795eb`. The
+[`cachyos1160-k73-image-3` public prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3)
+was published at `2026-10-21T00:48:20Z`. Its 1,943,937,164-byte archive has
+SHA-256
+`9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c`;
 its 12,582,912,000-byte raw image has SHA-256
-`82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314`.
-It is unbooted and predates the later Wi-Fi, Plasma-first, launcher and
-return-selector changes, so it must be replaced rather than published. The
-separate local hardware image has raw SHA-256
+`25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8`.
+It contains the later Wi-Fi, Plasma-first, launcher and return-selector changes,
+but the exact artifact is unbooted. The separate local hardware image has raw
+SHA-256
 `5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`.
 The [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md) keeps these
 identities and evidence boundaries separate.
@@ -190,7 +193,7 @@ It and the unbooted non-Wi-Fi A/B build are in the
 [`firmware-11.60-dma-e820-bounded-run21` tester prerelease](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21).
 See the historical
 [image 2 tester guide](cachyos1160-k73-image-2-tester-guide.md), the current
-[image 3 source-candidate guide](cachyos1160-k73-image-3-tester-guide.md), and
+[image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md), and
 [Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md) for their separate
 scope and evidence limits.
 

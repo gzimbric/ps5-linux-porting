@@ -1,39 +1,39 @@
 # Testing CachyOS image 3 on PS5 firmware 11.60
 
-> **Release still pending.** A local image 3 build has booted on one CFI-1115B,
-> and hosted CI has produced a separate draft artifact. The Wi-Fi menu fix,
-> Plasma-first startup and corrected Steam launcher and return-selector paths
-> were added after both images were assembled. Do not publish either older
-> artifact as the finished image 3 release. The next hosted build needs a new
-> identity and the remaining acceptance tests below.
+> **Public prerelease; exact hardware boot pending.** Image 3 is available from
+> the [`cachyos1160-k73-image-3` release](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3).
+> CI built and verified that exact archive, but no hardware boot of its expanded
+> raw image has been recorded yet. Treat every first test as bring-up, keep
+> Ethernet available and report the exact hashes below.
 
 This guide keeps three things separate:
 
 1. the exact local image that was flashed and tested on October 20;
-2. the completed but unpublished hosted-CI artifact; and
-3. the newer source that contains the fixes found during that hardware run.
+2. the Wi-Fi and session changes tested live on that running system; and
+3. the public CI artifact that contains those changes but has not been booted.
 
 ## Current identities
 
 | Item | Status |
 |---|---|
 | Local hardware-test image | Source `f7d6fbd9d630cddaceb83f3b861869d4453af8ca`; raw image 12,582,912,000 bytes; SHA-256 `5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`; not published |
-| Local boot files | `bzImage` `945a4f2a03c4771313e466dccfb8272e0345cf7d143516a36a0bc75b2b219d0a`; `initrd.img` `912600c22a203a744d4d44fcd4b5caacd86ea8b0c3ef8202ed9c0ff2ba146dd0` |
-| Final live-tested selector | 3,736-byte `steamos-session-select`; SHA-256 `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1`; a live follow-up, not part of either older image above |
-| Hosted draft | [Workflow `39510517216`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39510517216), source `1d581dfce5ab89c3bd35a7fdad0514f5575f0723`, completed successfully; draft only and not hardware-tested |
-| Hosted draft archive | 1,943,469,912-byte `ps5-cachyos1160-k73.img.xz`; SHA-256 `8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9` |
-| Hosted draft raw image | 12,582,912,000 bytes; SHA-256 `82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314` |
-| Finished public release | Not published; a replacement hosted build is required after the current fixes are committed |
+| Final live-tested session files | 1,866-byte `gamescope-session-ps5`, SHA-256 `d68c1f3a9014dd2db00681b5434f6e951bc6d4ebdebc48ec77fc154dbf2fc687`; 3,736-byte `steamos-session-select`, SHA-256 `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1` |
+| Public prerelease | [`cachyos1160-k73-image-3`](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3), published `2026-10-21T00:48:20Z`; prerelease, not a draft; exact artifact not hardware-booted |
+| CI source | Tag target `16795eb85830dc32f712e44e9e0da28f7874b317`; successful [workflow `39521098451`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39521098451) |
+| Public archive | 1,943,937,164-byte `ps5-cachyos1160-k73.img.xz`; SHA-256 `9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c` |
+| Expanded public image | 12,582,912,000 bytes; SHA-256 `25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8` |
+| Shared local/public boot files | 11,613,184-byte `bzImage`, SHA-256 `945a4f2a03c4771313e466dccfb8272e0345cf7d143516a36a0bc75b2b219d0a`; 51,899,412-byte `initrd.img`, SHA-256 `912600c22a203a744d4d44fcd4b5caacd86ea8b0c3ef8202ed9c0ff2ba146dd0` |
+| Release metadata | `SHA256SUMS` SHA-256 `e1136c4734d97a0a5eecb97e82a497b660acb10b803796bca5cefc5dd6dec21e`; `build-info.txt` SHA-256 `2a1a561731358101e85c42d271856616586ebdc3f0e5ff891904209ca03a1067`; `cachyos1160-k73-root-changes.txt` SHA-256 `eacd76bc1e031b9b7a26f1e45604549924b47b1682ae55f82a33f34cebcd7a4d` |
 
-The local and hosted raw-image hashes differ, so a local result must not be
-reported as a test of the hosted draft. They do share the boot-file identities
-above. The hosted draft also predates the Wi-Fi, Plasma-first, Steam launcher
-and return-selector fixes, so it is not the release candidate testers should
-receive.
+The local and public raw-image hashes differ, so the October 20 result must not
+be reported as a test of the downloadable prerelease. They share the boot-file
+identities above, and the public image contains the final session-file
+identities, but only a boot of raw image SHA-256 `25a0ef68…` can close the
+public-artifact hardware gate.
 
-The finished release must contain one `.img.xz`, not numbered parts. Hosted CI
-owns image assembly, verification, compression and upload. A tester should only
-need to download, verify and flash that one archive.
+The release contains one `.img.xz`, not numbered parts. Hosted CI owns image
+assembly, verification, compression and upload. A tester only needs to
+download, verify and flash that archive.
 
 ## What the October 20 hardware run proved
 
@@ -73,7 +73,7 @@ termination. The actual desktop shortcut then passed with the same final
 selector: its token changed from `plasma` to `gamescope` at 5.709 seconds, and
 0.563 seconds later Gamescope was running with no KWin or Plasma shell. Still
 pending: Bluetooth/Wi-Fi soak, controller reconnect after a cold boot, and a
-cold boot of a replacement hosted artifact that contains all of these live
+cold boot of the exact public artifact that contains all of these live
 fixes.
 
 ## Why official gaming images switch sessions differently
@@ -90,7 +90,7 @@ That exact route passed on the console. `-steamos3` is intentionally not used
 because it also enables SteamOS-specific atomic-update behavior that does not
 match a pacman-managed CachyOS image.
 
-## Behavior of the next build
+## Behavior of the public prerelease
 
 - **Plasma first.** A freshly flashed image opens CachyOS Plasma on its first
   Linux boot. Configure networking there before launching Gaming Mode. When
@@ -141,8 +141,22 @@ test.
 
 ## Flash and boot
 
-Verify the replacement release's published `SHA256SUMS` before flashing. Do
-not combine image-2 files, the local image hash above or a third-party root
+Download `ps5-cachyos1160-k73.img.xz` and `SHA256SUMS` from the
+[public Image 3 prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3).
+Verify the checksum manifest itself, then verify the archive:
+
+```sh
+shasum -a 256 SHA256SUMS
+shasum -a 256 -c --ignore-missing SHA256SUMS
+```
+
+The first command must print
+`e1136c4734d97a0a5eecb97e82a497b660acb10b803796bca5cefc5dd6dec21e`.
+The archive check must print `OK`; its expected SHA-256 is
+`9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c`.
+After expansion, the raw image must be 12,582,912,000 bytes with SHA-256
+`25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8`.
+Do not combine image-2 files, the local image hash above or a third-party root
 filesystem with this guide.
 
 Start from a full PS5 power-off. Send the bounded Wi-Fi loader once, let GameOS
@@ -199,7 +213,7 @@ the first Gaming Mode bootstrap had no network.
 
 After Steam is fully initialized, choose **Power → Switch to Desktop** once.
 Do not press it repeatedly. The tested path should use Steam's selector
-fallback and then hand tty1 to Plasma. Record:
+fallback and then hand tty1 to Plasma.
 
 Give the transition time to finish while Steam and Gamescope exit and Plasma
 starts. One clean measured pass took about 2.4 seconds; an earlier transition
@@ -207,6 +221,8 @@ that needed additional cleanup took about 27 seconds. Those are observations,
 not a promised timeout, and a first transition may take longer. Do not click
 again or power-cycle merely because **Switching to Desktop** remains visible
 for several seconds.
+
+Record:
 
 ```sh
 ps -eo pid,args | grep '[s]team -steamos -gamepadui'
@@ -243,7 +259,7 @@ The live-tested selector stops the owning user `graphical-session.target`.
 That remote selector path made KDE exit and Gamescope/Steam start without an
 overlapping compositor. The actual desktop shortcut also passed: 0.563 seconds
 after the token changed, Gamescope was running and both KWin and Plasma shell
-were gone. The replacement artifact must still reproduce both directions.
+were gone. The exact public artifact must still reproduce both directions.
 
 ## Wi-Fi
 
@@ -357,16 +373,16 @@ sync
 sudo poweroff
 ```
 
-## Remaining release gates
+## Remaining prerelease acceptance gates
 
-The replacement hosted artifact is not ready for a public release until that
-same exact image passes:
+The prerelease is public for testing, but it must not be promoted as a
+hardware-tested release until that same exact image passes:
 
 1. Three to five cold launches to Plasma, with HDMI and SSH.
 2. Wi-Fi joining from the Plasma menu with the stable-MAC configuration.
 3. First Gaming Mode bootstrap with internet, then a later start in configured
    Steam Offline Mode without Ethernet or Wi-Fi.
-4. Reproduce the already observed full live round trip from the exact rebuilt
+4. Reproduce the already observed full live round trip from the exact public
    artifact: Steam **Switch to Desktop**, then the desktop shortcut back to
    Gaming Mode, with no compositor overlap.
 5. Internal Bluetooth pairing plus DualSense buttons, sticks, motion and

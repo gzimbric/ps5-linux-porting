@@ -13,7 +13,7 @@ data on the Linux USB drive.
 
 | Goal | Link |
 |---|---|
-| Follow the current CachyOS Image 3 work | [Image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) — no finished public Image 3 release exists yet |
+| Test the current CachyOS Image 3 prerelease | [Download Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) and follow the [Image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) |
 | Boot the hardware-tested Ubuntu pair | [Ubuntu 24.04 tester guide](docs/ubuntu2404-tester-guide.md) |
 | Test the older public CachyOS prerelease | [Image 2 tester guide](docs/cachyos1160-k73-image-2-tester-guide.md) |
 | Read the complete 11.60 result | [Firmware 11.60 status](docs/11.60-status.md) |
@@ -36,17 +36,17 @@ set. Keep these artifact boundaries separate:
 | Local CachyOS Image 3 base | One exact unpublished raw image booted with HDMI and SSH. Its in-image Bluetooth path paired a wireless DualSense and exposed buttons, motion, and touchpad input. |
 | Image 3 Wi-Fi follow-up | A stable-MAC NetworkManager configuration resolved the Plasma menu failure on the running system; WPA3, DHCP, and HTTPS passed. This live change was not in the original raw image. |
 | Image 3 desktop round trip | Live source changes made Steam's **Switch to Desktop** action and the desktop shortcut back to Gaming Mode pass without compositor overlap. These changes were not in the original raw image. |
-| Fan and clock policy | Current source requests the fixed maximum fan setting before guarded GPU and CPU scaling. This is not a calibrated fan curve, and the default policy still needs an exact rebuilt-artifact thermal test. |
-| Finished Image 3 release | Not available. A replacement hosted image must be built and pass the full acceptance run before publication. |
+| Fan and clock policy | Current source requests the fixed maximum fan setting before guarded GPU and CPU scaling. This is not a calibrated fan curve, and the default policy still needs an exact public-artifact thermal test. |
+| Public Image 3 prerelease | [Published for testing](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) from source `16795eb` by successful workflow `39521098451`. Its exact downloadable artifact has passed CI verification but has not yet been booted on hardware. |
 
-The successful hosted draft from
-[workflow `39510517216`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39510517216)
-is unbooted and predates the Wi-Fi, Plasma-first, Steam launcher, and return
-selector fixes. Do not publish or test it as the finished Image 3 release.
+The local hardware image and the public CI image have different raw-image
+hashes. The local boot and live Wi-Fi/session results therefore must not be
+reported as tests of the downloadable prerelease, even though their `bzImage`
+and `initrd.img` identities match.
 
 Still pending for Image 3:
 
-- a cold boot of one exact replacement hosted artifact;
+- a cold boot of the exact public prerelease artifact;
 - repeated boots and broader console coverage;
 - DualSense reconnect after a cold boot;
 - at least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input;
@@ -77,10 +77,14 @@ issues; the guide includes recovery steps.
 
 ### CachyOS Image 3
 
-There is no finished Image 3 download yet. The local hardware result and later
-live fixes are documented separately from the obsolete hosted draft.
+Image 3 is public as a tester prerelease. CI built and verified the one-file
+archive, but that exact artifact has not yet been hardware-booted. Keep its
+build record separate from the earlier local boot and live follow-up results.
 
+- [CachyOS Image 3 public prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3)
+- [Bounded 11.60 loader](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21)
 - [Image 3 tester guide and acceptance gates](docs/cachyos1160-k73-image-3-tester-guide.md)
+- [Image 3 CI and release evidence](evidence/11.60-cachyos-image3-ci.md)
 - [Local Image 3 hardware evidence](evidence/11.60-cachyos-image3-local.md)
 
 Image releases are published as one `.img.xz`. The build fails instead of
@@ -118,6 +122,7 @@ limit.
 | Topic | Document |
 |---|---|
 | Full current result and evidence limits | [Firmware 11.60 status](docs/11.60-status.md) |
+| Image 3 public CI artifact | [Image 3 CI and release evidence](evidence/11.60-cachyos-image3-ci.md) |
 | Image 3 local boot and live follow-ups | [Image 3 local evidence](evidence/11.60-cachyos-image3-local.md) |
 | Historical CachyOS Linux 7.3 run | [Run 21 evidence](evidence/11.60-cachyos-k73-run-21.md) |
 | Ubuntu CI image hardware boot | [Run 19 evidence](evidence/11.60-ubuntu-ci-run-19.md) |

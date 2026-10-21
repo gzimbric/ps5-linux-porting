@@ -6,9 +6,9 @@ boot, the Run 19 CI Ubuntu boot, and the Run 21 CachyOS 7.3.0 boot. Keep the
 working boot chain unchanged while testing kernel fixes. A source-level defect
 is not evidence that it caused an earlier failed boot. One exact local image 3
 build has now booted and supplied bounded Wi-Fi, Bluetooth and desktop-switch
-results. A separate hosted draft completed successfully but remains unbooted
-and predates the fixes learned from the local run. The replacement release's
-exact artifact fields and acceptance gates are in the
+results. Hosted CI has now published a separate Image 3 prerelease that contains
+the later fixes, but its exact raw image remains unbooted. The public release's
+artifact identities and remaining acceptance gates are in the
 [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md).
 
 ## Run 15 CachyOS loader baseline
@@ -166,7 +166,7 @@ fixes made after the local build. Its workflow completed successfully and
 created a draft release after Run 21, but that image has not been booted and
 is superseded by image 2.
 
-Image 2 is the public tester prerelease tagged `cachyos1160-k73-image-2` at commit
+Image 2 is the older public tester prerelease tagged `cachyos1160-k73-image-2` at commit
 `346088a48f66eb956dafdec9de5085e73b2d44a5`. Workflow run `39481460775`
 completed successfully. The prerelease's one image archive is
 `ps5-cachyos1160-k73.img.xz`, 1,943,471,712 bytes, SHA-256
@@ -218,7 +218,7 @@ Findings carried forward from image 2 and resolved live during image 3 work:
    `sudo /usr/bin/steamos-session-select plasma`. Gamescope exited and
    Plasma/KWin started. Keep this minimal proven path and remove the unused
    listener. A later remote selector test and the actual desktop shortcut both
-   returned cleanly to Gamescope/Steam, but the replacement hosted artifact
+   returned cleanly to Gamescope/Steam, but the exact public artifact
    still has to reproduce both directions through the normal UI.
 2. Wi-Fi join from the KDE menu. Joining from the KDE network menu failed
    twice with NetworkManager saying the access point was not in the scan list,
@@ -228,9 +228,9 @@ Findings carried forward from image 2 and resolved live during image 3 work:
    randomization, retaining the permanent address and keeping
    `wifi.powersave=2` fixed the normal Plasma join; WPA3, DHCP and an HTTPS
    request over Wi-Fi passed. The exact tested policy is now in source. Retest
-   it on the replacement artifact and retain `nmcli --ask` only as recovery.
+   it on the public artifact and retain `nmcli --ask` only as recovery.
 
-### Image 3 source candidate
+### Image 3 public prerelease
 
 Image 3 advances these source changes together:
 
@@ -275,7 +275,7 @@ Image 3 advances these source changes together:
    the final 3,736-byte selector, SHA-256
    `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1`:
    its token changed at 5.709 seconds and 0.563 seconds later Gamescope was
-   running with no KWin or Plasma shell. The exact rebuilt artifact still needs
+   running with no KWin or Plasma shell. The exact public artifact still needs
    the same round-trip test.
 8. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
    `suspend-then-hibernate` targets are masked. Use a full power-off from
@@ -289,15 +289,15 @@ and is not published. It booted with HDMI and SSH. Its in-image Bluetooth
 kernel/policy passed DualSense pairing and input; the Wi-Fi and Steam desktop
 results followed live changes later added to source.
 
-Hosted workflow `39510517216` succeeded from `1d581df`. Its one
-1,943,469,912-byte archive has SHA-256
-`8cdbe317334ec8f2a53adad7c59d580ddf5711cdda03c15b642de6347fa8a1a9`,
+Hosted workflow `39521098451` succeeded from
+`16795eb85830dc32f712e44e9e0da28f7874b317`. The public prerelease's one
+1,943,937,164-byte archive has SHA-256
+`9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c`,
 and its 12,582,912,000-byte raw image has SHA-256
-`82088537470f698b01aa198319b205d347de928fbe3acd3c7a49a9a8acf0e314`.
-That draft is unbooted and predates the stable-MAC policy, Plasma-first token,
-`-steamos` launcher flag and final return selector. Build a replacement rather
-than publishing it.
-The replacement exact artifact must pass cold boot, Bluetooth/Wi-Fi soak,
+`25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8`.
+It contains the stable-MAC policy, Plasma-first token, `-steamos` launcher flag
+and final return selector, but that exact artifact is unbooted.
+The public exact artifact must pass cold boot, Bluetooth/Wi-Fi soak,
 desktop return, offline-after-bootstrap, performance opt-out, integrity and
 bounded-thermal gates before these items move out of the backlog.
 
@@ -369,7 +369,7 @@ concurrent Wi-Fi traffic and Bluetooth-input check also passed.
 
 For the next exact-artifact hardware test:
 
-1. Repeat on the replacement hosted artifact and require one `hci0`, no
+1. Repeat on the public prerelease artifact and require one `hci0`, no
    `0x2031` or `0x0c03` failures, `power/control=on`, successful DualSense
    reconnect after a cold boot, working Wi-Fi alongside Bluetooth, and no
    later USB loss. Run beyond the roughly 51-minute point where Run 21 lost
@@ -518,10 +518,11 @@ firmware copy. It is not a result for either CI image, for Bluetooth, for
 video decode, for file integrity, or for gaming stability. Image 2 remains a
 published prerelease with no identity-verified hardware result: its CI
 artifacts are verified. Image 3 has a separate exact local hardware-test image
-and exact hosted draft. The local image booted and its Bluetooth path passed;
+and exact public CI artifact. The local image booted and its Bluetooth path passed;
 the Wi-Fi-menu and desktop-switch passes followed live changes, so they are not
-properties of the original raw image. The hosted draft is unbooted and
-predates those fixes. Neither is the finished release. The later watcher saw no
+properties of the original raw image. The public artifact contains those fixes
+but is unbooted, so it has build/release evidence rather than a hardware result.
+The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and
 it did no read-back or hash check. The game logger captured load and an
