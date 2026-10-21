@@ -1,16 +1,17 @@
 # Testing CachyOS image 3 on PS5 firmware 11.60
 
-> **Public prerelease; exact hardware boot pending.** Image 3 is available from
+> **Public prerelease; one exact-image boot completed.** Image 3 is available from
 > the [`cachyos1160-k73-image-3` release](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3).
-> CI built and verified that exact archive, but no hardware boot of its expanded
-> raw image has been recorded yet. Treat every first test as bring-up, keep
-> Ethernet available and report the exact hashes below.
+> CI built and verified that exact archive, and its expanded raw image has now
+> passed one identity-verified cold boot on a CFI-1115B running firmware 11.60.
+> It remains a prerelease. Keep Ethernet available and report the exact hashes
+> below.
 
 This guide keeps three things separate:
 
 1. the exact local image that was flashed and tested on October 20;
 2. the Wi-Fi and session changes tested live on that running system; and
-3. the public CI artifact that contains those changes but has not been booted.
+3. the public CI artifact, which now has its own exact-image hardware result.
 
 ## Current identities
 
@@ -18,18 +19,17 @@ This guide keeps three things separate:
 |---|---|
 | Local hardware-test image | Source `f7d6fbd9d630cddaceb83f3b861869d4453af8ca`; raw image 12,582,912,000 bytes; SHA-256 `5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`; not published |
 | Final live-tested session files | 1,866-byte `gamescope-session-ps5`, SHA-256 `d68c1f3a9014dd2db00681b5434f6e951bc6d4ebdebc48ec77fc154dbf2fc687`; 3,736-byte `steamos-session-select`, SHA-256 `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1` |
-| Public prerelease | [`cachyos1160-k73-image-3`](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3), published `2026-10-21T00:48:20Z`; prerelease, not a draft; exact artifact not hardware-booted |
+| Public prerelease | [`cachyos1160-k73-image-3`](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3), published `2026-10-21T00:48:20Z`; prerelease, not a draft; one identity-verified cold boot completed |
 | CI source | Tag target `16795eb85830dc32f712e44e9e0da28f7874b317`; successful [workflow `39521098451`](https://github.com/gzimbric/ps5-linux-image/actions/runs/39521098451) |
 | Public archive | 1,943,937,164-byte `ps5-cachyos1160-k73.img.xz`; SHA-256 `9e224aeb607ba050dd520ce32d50989d27013f7da2889ce7ed1ce247fea71e3c` |
 | Expanded public image | 12,582,912,000 bytes; SHA-256 `25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8` |
 | Shared local/public boot files | 11,613,184-byte `bzImage`, SHA-256 `945a4f2a03c4771313e466dccfb8272e0345cf7d143516a36a0bc75b2b219d0a`; 51,899,412-byte `initrd.img`, SHA-256 `912600c22a203a744d4d44fcd4b5caacd86ea8b0c3ef8202ed9c0ff2ba146dd0` |
 | Release metadata | `SHA256SUMS` SHA-256 `e1136c4734d97a0a5eecb97e82a497b660acb10b803796bca5cefc5dd6dec21e`; `build-info.txt` SHA-256 `2a1a561731358101e85c42d271856616586ebdc3f0e5ff891904209ca03a1067`; `cachyos1160-k73-root-changes.txt` SHA-256 `eacd76bc1e031b9b7a26f1e45604549924b47b1682ae55f82a33f34cebcd7a4d` |
 
-The local and public raw-image hashes differ, so the October 20 result must not
-be reported as a test of the downloadable prerelease. They share the boot-file
-identities above, and the public image contains the final session-file
-identities, but only a boot of raw image SHA-256 `25a0ef68…` can close the
-public-artifact hardware gate.
+The local and public raw-image hashes differ, so the October 20 local result
+must not be reported as a test of the downloadable prerelease. The public image
+now has a separate boot of raw SHA-256 `25a0ef68…`; that result is summarized
+below. The two records remain separate.
 
 The release contains one `.img.xz`, not numbered parts. Hosted CI owns image
 assembly, verification, compression and upload. A tester only needs to
@@ -72,9 +72,45 @@ single target stop and performs no later process kill or login-session
 termination. The actual desktop shortcut then passed with the same final
 selector: its token changed from `plasma` to `gamescope` at 5.709 seconds, and
 0.563 seconds later Gamescope was running with no KWin or Plasma shell. Still
-pending: Bluetooth/Wi-Fi soak, controller reconnect after a cold boot, and a
-cold boot of the exact public artifact that contains all of these live
-fixes.
+pending: Bluetooth/Wi-Fi soak and controller reconnect after a cold boot.
+
+## What the exact public artifact proved
+
+One cold launch of raw image SHA-256 `25a0ef68…` passed on the CFI-1115B. The
+flashed-device readback matched that hash, and the running console matched all
+five published FAT boot-file identities. Linux 7.3.0 reached visible HDMI and
+authenticated wired SSH, the root filesystem expanded to 230.6 GiB on the test
+drive, systemd reached a running state, and the startup clock policy selected
+GPU `simple_ondemand`, CPU `schedutil` and CPU boost off. The unused
+`systemd-networkd-wait-online` unit later timed out and was the only failed
+unit; disabling it and clearing the failed state left NetworkManager active,
+SSH connected and no failed units.
+
+The console-supplied IW620 firmware loaded, the adapter scanned, and a Plasma
+GUI join received DHCP. Two checks sent 3/3 and 2/2 successful pings explicitly
+through Wi-Fi. The internal Bluetooth controller came up powered; a DualSense
+was discovered, paired, bonded, trusted, automatically reconnected and remained
+connected after capture. `hid-playstation` exposed its controller, motion and
+touchpad devices, and raw input events were observed.
+
+Plasma → Gaming Mode passed. The first launch visibly downloaded and installed
+a 503,789 KB Steam client update from the tty before the SteamOS interface
+appeared. That temporary tty view was the expected first-launch update path; it
+cleared when Steam finished and was not an image or display failure. Gaming
+Mode → Plasma also passed visually; KWin and plasmashell were
+present within about one second, with no compositor overlap. After that return,
+KDE displayed **System policy prevents control of network connections**. The
+published image needs the targeted Polkit hotfix below for network control from
+the returned Plasma session.
+
+The published fan helper still left the autoservo target at 86 C. The per-boot
+hotfix below changed the readback to 65 C in this session, but the persistent
+fix on `main` is not in the published image. With that hotfix active, a
+20-second, 16-worker CPU load held the CPU near 3.19 GHz, peaked at 47 C and
+returned to 37 C three seconds after the load ended. The short bounded check
+passed, but it does not establish thermal equilibrium or long-duration
+stability. This single boot also does not cover cold reconnect or a coexistence
+soak.
 
 ## Why official gaming images switch sessions differently
 
@@ -200,6 +236,28 @@ sudo /usr/local/sbin/ps5-boot-report
 The first-session token should initially be `desktop`. After leaving Plasma it
 should become `gamescope`. All five sleep targets should report `masked`.
 
+### Remove the stale wait-online service
+
+Published Image 3 leaves `systemd-networkd-wait-online.service` enabled even
+though NetworkManager owns the network. It can time out after two minutes and
+become the only failed unit while Wi-Fi, Ethernet and SSH continue working.
+That timeout is a packaging cleanup issue, not a network failure.
+
+On the published image, disable the unused waiter and clear its recorded
+failure:
+
+```sh
+sudo systemctl disable systemd-networkd-wait-online.service
+sudo systemctl reset-failed systemd-networkd-wait-online.service
+systemctl is-active NetworkManager.service
+systemctl --failed --no-pager
+```
+
+NetworkManager should report `active`, and the failed-unit list should be
+empty. The live fix removed the stale enablement without interrupting SSH. The
+current next-image source removes it during the build; this cleanup is not in
+the published Image 3 hash.
+
 ## First Gaming Mode start and Offline Mode
 
 Start Gaming Mode only after Plasma shows a working internet connection. Allow
@@ -263,7 +321,8 @@ The live-tested selector stops the owning user `graphical-session.target`.
 That remote selector path made KDE exit and Gamescope/Steam start without an
 overlapping compositor. The actual desktop shortcut also passed: 0.563 seconds
 after the token changed, Gamescope was running and both KWin and Plasma shell
-were gone. The exact public artifact must still reproduce both directions.
+were gone. The exact public artifact has now reproduced both directions as
+well, including a visual return from Gaming Mode to Plasma.
 
 ## Wi-Fi
 
@@ -299,6 +358,66 @@ sudo nmcli --ask device wifi connect "<network name>"
 
 Never publish the SSID, BSSID, MAC address, saved NetworkManager profile or the
 loader-extracted firmware file.
+
+### Network control after switching sessions
+
+Published Image 3 can show **System policy prevents control of network
+connections** after Gaming Mode returns to Plasma. The tty-based launcher keeps
+KDE helpers under the per-user systemd manager. In the observed boot, Polkit
+evaluated the returned helper processes outside the active seat and required
+authentication even though Plasma and NetworkManager were both running. This
+is a published-image authorization bug, not a failed session handoff.
+
+For the published Image 3 only, install this targeted rule for the image's
+dedicated `steam` account:
+
+```sh
+sudo install -d -m 0755 /etc/polkit-1/rules.d
+sudo tee /etc/polkit-1/rules.d/49-ps5-networkmanager.rules >/dev/null <<'EOF'
+polkit.addRule(function(action, subject) {
+    if (subject.user != "steam") {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    var allowed = [
+        "org.freedesktop.NetworkManager.enable-disable-connectivity-check",
+        "org.freedesktop.NetworkManager.enable-disable-network",
+        "org.freedesktop.NetworkManager.enable-disable-wifi",
+        "org.freedesktop.NetworkManager.network-control",
+        "org.freedesktop.NetworkManager.settings.modify.own",
+        "org.freedesktop.NetworkManager.settings.modify.system",
+        "org.freedesktop.NetworkManager.wifi.scan",
+        "org.freedesktop.NetworkManager.wifi.share.open",
+        "org.freedesktop.NetworkManager.wifi.share.protected"
+    ];
+
+    if (allowed.indexOf(action.id) >= 0) {
+        return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});
+EOF
+sudo chmod 0644 /etc/polkit-1/rules.d/49-ps5-networkmanager.rules
+sudo chown root:root /etc/polkit-1/rules.d/49-ps5-networkmanager.rules
+```
+
+Polkit reloads rules automatically. Verify the fix without `sudo`:
+
+```sh
+WIFI_IFACE="$(LC_ALL=C nmcli -t -f DEVICE,TYPE device status |
+  awk -F: '$2 == "wifi" { print $1; exit }')"
+test -n "$WIFI_IFACE" || { echo "No Wi-Fi interface found" >&2; exit 1; }
+nmcli --wait 15 device wifi rescan ifname "$WIFI_IFACE"
+```
+
+The exact-artifact test passed this check after the rule was installed, and
+authorization checks from the running `plasmashell` and `kded6` processes also
+passed. Its IW620 interface was named `wlp64s0f7`; the command above discovers
+the local name instead of assuming it. No new NetworkManager authorization
+failure appeared. This file is a live hotfix and is not present in the
+published Image 3 hash. The current next-image source includes the same narrow
+action allowlist.
 
 ## Bluetooth and DualSense
 
@@ -408,25 +527,21 @@ sudo poweroff
 
 ## Remaining prerelease acceptance gates
 
-The prerelease is public for testing, but it must not be promoted as a
-hardware-tested release until that same exact image passes:
+The exact public image has passed one cold boot, GUI Wi-Fi, internal-Bluetooth
+input, both session directions and a short bounded CPU load. It remains a
+prerelease until it also passes:
 
-1. Three to five cold launches to Plasma, with HDMI and SSH.
-2. Wi-Fi joining from the Plasma menu with the stable-MAC configuration.
-3. First Gaming Mode bootstrap with internet, then a later start in configured
-   Steam Offline Mode without Ethernet or Wi-Fi.
-4. Reproduce the already observed full live round trip from the exact public
-   artifact: Steam **Switch to Desktop**, then the desktop shortcut back to
-   Gaming Mode, with no compositor overlap.
-5. Internal Bluetooth pairing plus DualSense buttons, sticks, motion and
-   touchpad input, followed by a cold-boot reconnect.
-6. At least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input with no
+1. Two to four additional cold launches to Plasma, with HDMI and SSH.
+2. Automatic Wi-Fi and DualSense reconnect after a cold boot.
+3. A later start in configured Steam Offline Mode without Ethernet or Wi-Fi.
+4. At least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input with no
    controller, HCI, USB or network loss.
-7. Default fan/performance startup, the per-boot 65 °C target correction and
-   readback, and a bounded thermal load below the conservative stop point.
-8. A separate cold boot with the FAT opt-out marker, proving that both
+5. A longer controlled load with the per-boot 65 °C target, long enough to
+   assess thermal equilibrium and stability below the conservative stop point.
+6. A separate cold boot with the FAT opt-out marker, proving that both
    frequency modules stay unloaded.
-9. Clean `sudo poweroff` with every unsupported sleep target still masked.
+7. Storage-integrity, video-decode and broader console/display coverage.
+8. Clean `sudo poweroff` with every unsupported sleep target still masked.
 
 Passing CI or the image verifier is software evidence only. The short
 Wi-Fi/Bluetooth coexistence check already completed is encouraging, but it is

@@ -36,22 +36,21 @@ set. Keep these artifact boundaries separate:
 | Local CachyOS Image 3 base | One exact unpublished raw image booted with HDMI and SSH. Its in-image Bluetooth path paired a wireless DualSense and exposed buttons, motion, and touchpad input. |
 | Image 3 Wi-Fi follow-up | A stable-MAC NetworkManager configuration resolved the Plasma menu failure on the running system; WPA3, DHCP, and HTTPS passed. This live change was not in the original raw image. |
 | Image 3 desktop round trip | Live source changes made Steam's **Switch to Desktop** action and the desktop shortcut back to Gaming Mode pass without compositor overlap. These changes were not in the original raw image. |
-| Fan and clock policy | The published Image 3 service sends legacy servo pattern `3` before guarded GPU and CPU scaling. It does not force or measure maximum RPM; on the tested CFI-1115B the exposed target remained 86 °C. The tester guide applies and verifies a 65 °C target after every boot. |
-| Public Image 3 prerelease | [Published for testing](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) from source `16795eb` by successful workflow `39521098451`. Its exact downloadable artifact has passed CI verification but has not yet been booted on hardware. |
+| Fan and clock policy | The published Image 3 service sends legacy servo pattern `3` before guarded GPU and CPU scaling. It does not force or measure maximum RPM; on the tested CFI-1115B the exposed target remained 86 °C. The tester guide applies and verifies a 65 °C target after every boot. With that hotfix active, a short bounded CPU load passed. |
+| Public Image 3 prerelease | [Published for testing](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) from source `16795eb` by successful workflow `39521098451`. Its exact downloadable artifact has now completed one identity-verified cold boot with HDMI, wired SSH, Plasma Wi-Fi, internal-Bluetooth DualSense input, both session directions and a 20-second bounded CPU load. |
 
 The local hardware image and the public CI image have different raw-image
-hashes. The local boot and live Wi-Fi/session results therefore must not be
-reported as tests of the downloadable prerelease, even though their `bzImage`
-and `initrd.img` identities match.
+hashes. Their results remain separate. The downloadable prerelease now has its
+own exact-image hardware result; the earlier local boot and live follow-ups are
+still supporting evidence rather than substitutes for it.
 
 Still pending for Image 3:
 
-- a cold boot of the exact public prerelease artifact;
-- repeated boots and broader console coverage;
-- DualSense reconnect after a cold boot;
+- two to four more cold boots and broader console coverage;
+- Wi-Fi and DualSense reconnect after a cold boot;
 - at least 60 minutes of concurrent Wi-Fi traffic and Bluetooth input;
-- first Gaming Mode setup online, followed by a later Offline Mode test;
-- bounded thermal validation of the default fan and scaling policy; and
+- a later Steam Offline Mode test after the successful online bootstrap;
+- a longer controlled load to assess thermal equilibrium and stability; and
 - the performance opt-out, storage integrity, video decode, and longer
   stability checks in the tester guide.
 
@@ -78,13 +77,16 @@ issues; the guide includes recovery steps.
 ### CachyOS Image 3
 
 Image 3 is public as a tester prerelease. CI built and verified the one-file
-archive, but that exact artifact has not yet been hardware-booted. Keep its
-build record separate from the earlier local boot and live follow-up results.
+archive, and that exact artifact has now completed one identity-verified cold
+boot on the CFI-1115B. It remains a prerelease while repeated boots, cold
+reconnect, coexistence soak, longer thermal/stability testing and the other
+acceptance gates remain open. Keep its result separate from the earlier local
+boot and live follow-ups.
 
 - [CachyOS Image 3 public prerelease](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3)
 - [Bounded 11.60 loader](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-dma-e820-bounded-run21)
 - [Image 3 tester guide and acceptance gates](docs/cachyos1160-k73-image-3-tester-guide.md)
-- [Image 3 CI and release evidence](evidence/11.60-cachyos-image3-ci.md)
+- [Image 3 CI, release and exact-image hardware evidence](evidence/11.60-cachyos-image3-ci.md)
 - [Local Image 3 hardware evidence](evidence/11.60-cachyos-image3-local.md)
 
 Image releases are published as one `.img.xz`. The build fails instead of
@@ -107,6 +109,14 @@ limit.
   took about 2.4 seconds, while an earlier transition that needed additional
   cleanup took about 27 seconds. Do not click repeatedly or power-cycle just
   because the transition takes several seconds.
+- Published Image 3 can show **System policy prevents control of network
+  connections** after returning to Plasma. The tester guide includes the
+  targeted `steam`/NetworkManager Polkit hotfix; it is not part of the published
+  image hash.
+- Published Image 3 also leaves `systemd-networkd-wait-online` enabled even
+  though NetworkManager owns the network. Its two-minute timeout does not mean
+  Wi-Fi or Ethernet failed. The tester guide disables the unused waiter and
+  clears its failed state; that cleanup is not part of the published hash.
 - A fresh Image 3 build starts in Plasma so networking can be configured. Its
   first Gaming Mode setup needs internet; Offline Mode is a later-use test
   after Steam has saved the required account and game state.
@@ -125,7 +135,7 @@ limit.
 | Topic | Document |
 |---|---|
 | Full current result and evidence limits | [Firmware 11.60 status](docs/11.60-status.md) |
-| Image 3 public CI artifact | [Image 3 CI and release evidence](evidence/11.60-cachyos-image3-ci.md) |
+| Image 3 public CI artifact | [Image 3 CI, release and exact-image hardware evidence](evidence/11.60-cachyos-image3-ci.md) |
 | Image 3 local boot and live follow-ups | [Image 3 local evidence](evidence/11.60-cachyos-image3-local.md) |
 | Historical CachyOS Linux 7.3 run | [Run 21 evidence](evidence/11.60-cachyos-k73-run-21.md) |
 | Ubuntu CI image hardware boot | [Run 19 evidence](evidence/11.60-ubuntu-ci-run-19.md) |

@@ -47,11 +47,13 @@ instruction executed.
   made Steam's built-in desktop switch pass. It also records the final
   selector identity and the successful desktop-shortcut return to Gamescope.
   It keeps those live changes separate from the original local raw image and
-  from the exact public CI artifact, which has not been hardware-booted.
+  from the exact public CI artifact, which now has its own hardware record.
   Follow-up testing belongs under the
   [CachyOS image 3 tester guide](../docs/cachyos1160-k73-image-3-tester-guide.md).
 - `11.60-cachyos-image3-ci.md` records the public Image 3 prerelease, successful
   hosted workflow, source/tag target, archive and expanded-image identities,
-  metadata digests, boot-file identities and final session-file identities.
-  It is CI/release evidence only; the exact downloadable image has not yet
-  booted on hardware.
+  metadata digests, boot-file identities and final session-file identities. It
+  also records the first identity-verified boot of that exact downloadable
+  image, including HDMI, wired SSH, Plasma Wi-Fi, internal-Bluetooth DualSense
+  input, startup scaling, both session directions and a short bounded CPU load,
+  while keeping the remaining prerelease gates explicit.

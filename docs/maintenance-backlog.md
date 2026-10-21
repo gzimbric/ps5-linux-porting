@@ -7,8 +7,10 @@ working boot chain unchanged while testing kernel fixes. A source-level defect
 is not evidence that it caused an earlier failed boot. One exact local image 3
 build has now booted and supplied bounded Wi-Fi, Bluetooth and desktop-switch
 results. Hosted CI has now published a separate Image 3 prerelease that contains
-the later fixes, but its exact raw image remains unbooted. The public release's
-artifact identities and remaining acceptance gates are in the
+the later fixes. One identity-verified boot of that exact raw image has now
+passed HDMI, wired SSH, Plasma Wi-Fi, internal-Bluetooth DualSense input,
+startup scaling and both session directions. The public release's artifact
+identities and remaining acceptance gates are in the
 [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md).
 
 ## Run 15 CachyOS loader baseline
@@ -218,8 +220,9 @@ Findings carried forward from image 2 and resolved live during image 3 work:
    `sudo /usr/bin/steamos-session-select plasma`. Gamescope exited and
    Plasma/KWin started. Keep this minimal proven path and remove the unused
    listener. A later remote selector test and the actual desktop shortcut both
-   returned cleanly to Gamescope/Steam, but the exact public artifact
-   still has to reproduce both directions through the normal UI.
+   returned cleanly to Gamescope/Steam. The exact public artifact later
+   reproduced both directions through the normal UI without compositor
+   overlap.
 2. Wi-Fi join from the KDE menu. Joining from the KDE network menu failed
    twice with NetworkManager saying the access point was not in the scan list,
    while `sudo nmcli --ask device wifi connect <SSID>` joined the same network.
@@ -227,8 +230,9 @@ Findings carried forward from image 2 and resolved live during image 3 work:
    while KDE retained an older access-point object. Disabling scan MAC
    randomization, retaining the permanent address and keeping
    `wifi.powersave=2` fixed the normal Plasma join; WPA3, DHCP and an HTTPS
-   request over Wi-Fi passed. The exact tested policy is now in source. Retest
-   it on the public artifact and retain `nmcli --ask` only as recovery.
+   request over Wi-Fi passed. The exact tested policy is now in source. The
+   public artifact then passed a Plasma GUI join, DHCP and traffic bound to the
+   Wi-Fi interface; retain `nmcli --ask` only as recovery.
 
 ### Image 3 public prerelease
 
@@ -262,7 +266,9 @@ Image 3 advances these source changes together:
    retained an 86 °C autoservo target. The tester guide therefore applies and
    verifies 65 °C after every boot, using a documented public range of
    40-80 °C. `/boot/efi/disable-ps5-performance` is a persistent, fail-closed
-   performance-policy opt-out. This remains an unproved thermal policy.
+   performance-policy opt-out. A 20-second CPU load passed after applying the
+   65 °C hotfix to the published image, but the persistent next-image policy,
+   thermal equilibrium and long-duration stability remain unproved.
 5. A fresh image opens Plasma first so networking can be configured before
    Steam's first Gaming Mode bootstrap. Later offline use requires Steam to
    have saved the account credentials and required local game state.
@@ -278,8 +284,8 @@ Image 3 advances these source changes together:
    the final 3,736-byte selector, SHA-256
    `1d099eeacc19bbf575e5a636fc81087a46f72af64390172e437372b493bde1c1`:
    its token changed at 5.709 seconds and 0.563 seconds later Gamescope was
-   running with no KWin or Plasma shell. The exact public artifact still needs
-   the same round-trip test.
+   running with no KWin or Plasma shell. The exact public artifact later passed
+   both directions visually, with no compositor overlap.
 8. Linux `sleep`, `suspend`, `hibernate`, `hybrid-sleep`, and
    `suspend-then-hibernate` targets are masked. Use a full power-off from
    Linux; GameOS Rest Mode remains only the loader carrier.
@@ -299,10 +305,33 @@ Hosted workflow `39521098451` succeeded from
 and its 12,582,912,000-byte raw image has SHA-256
 `25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8`.
 It contains the stable-MAC policy, Plasma-first token, `-steamos` launcher flag
-and final return selector, but that exact artifact is unbooted.
-The public exact artifact must pass cold boot, Bluetooth/Wi-Fi soak,
-desktop return, offline-after-bootstrap, performance opt-out, integrity and
-bounded-thermal gates before these items move out of the backlog.
+and final return selector. One exact-image cold boot has now passed HDMI, wired
+SSH, Plasma Wi-Fi, internal-Bluetooth DualSense input, startup scaling and both
+session directions. Two to four more cold boots, cold reconnect,
+Bluetooth/Wi-Fi soak, offline-after-bootstrap, performance opt-out, integrity,
+video decode and longer thermal/stability gates remain in the backlog. A
+20-second, 16-worker CPU load with the per-boot 65 °C fan hotfix already passed:
+the CPU stayed near 3.19 GHz, peaked at 47 °C and returned to 37 °C three
+seconds after the load ended. It did not establish thermal equilibrium.
+
+The first exact-image return from Gaming Mode also exposed a Polkit boundary:
+KDE's NetworkManager helpers run under the per-user systemd manager, and Polkit
+evaluated the returned processes outside the active seat. It required
+authentication and produced **System policy prevents control of network
+connections**. A targeted live rule allowing nine explicit NetworkManager
+actions for the `steam` account made authorization checks from `plasmashell`
+and `kded6` pass, restored an unprivileged Wi-Fi rescan and produced no new
+authorization failure. The current next-image source includes that rule; keep
+the published Image 3 hotfix in the tester guide because it is not part of the
+current release hash.
+
+The base also left `systemd-networkd-wait-online.service` enabled even though
+NetworkManager owns the network. It timed out after two minutes and was the
+only failed unit; Wi-Fi, Ethernet and SSH remained working. Disabling the
+unused waiter and resetting its failed state left NetworkManager active, SSH
+connected and no failed units. The current next-image source removes that
+enablement; keep the published-image cleanup in the tester guide. This was not
+an IW620 or Ethernet failure.
 
 Steam completed the install. Its content log recorded 53,229,366,208
 downloaded bytes, staged-file verification, 347 committed files, and `No
@@ -372,11 +401,13 @@ concurrent Wi-Fi traffic and Bluetooth-input check also passed.
 
 For the next exact-artifact hardware test:
 
-1. Repeat on the public prerelease artifact and require one `hci0`, no
-   `0x2031` or `0x0c03` failures, `power/control=on`, successful DualSense
-   reconnect after a cold boot, working Wi-Fi alongside Bluetooth, and no
-   later USB loss. Run beyond the roughly 51-minute point where Run 21 lost
-   the Bluetooth USB device and continue for at least 60 minutes.
+1. Repeat from a cold boot. The first public-artifact run produced one powered
+   `hci0`, paired and reconnected a DualSense, exposed controller/motion/touchpad
+   input and kept it connected after capture. Now require automatic reconnect
+   after the cold boot, working Wi-Fi alongside Bluetooth, no `0x2031` or
+   `0x0c03` failure, and no later USB loss. Run beyond the roughly 51-minute
+   point where Run 21 lost the Bluetooth USB device and continue for at least
+   60 minutes.
 
 ## Next controlled test: MTS Ethernet
 
@@ -524,7 +555,11 @@ artifacts are verified. Image 3 has a separate exact local hardware-test image
 and exact public CI artifact. The local image booted and its Bluetooth path passed;
 the Wi-Fi-menu and desktop-switch passes followed live changes, so they are not
 properties of the original raw image. The public artifact contains those fixes
-but is unbooted, so it has build/release evidence rather than a hardware result.
+and one exact-image boot has now passed HDMI, wired SSH, Plasma Wi-Fi,
+internal-Bluetooth DualSense input, startup scaling and both session directions.
+It also passed a short bounded CPU load after the per-boot fan hotfix. It
+remains a prerelease with repeatability, cold reconnect, soak and longer
+thermal/stability testing still open.
 The later watcher saw no
 new matching storage-error lines after its baseline, but its rate and total
 counters are invalid and

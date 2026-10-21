@@ -13,10 +13,10 @@ forks use `main` as their default source branch.
 | [gzimbric/Byepervisor-Reborn](https://github.com/gzimbric/Byepervisor-Reborn) | `main` | `a1536c4e8c88536e7d7b676270603326efba098e` | Hardware-validated 11.60 bypass fork |
 | [gzimbric/ps5-hv-bypass-porting](https://github.com/gzimbric/ps5-hv-bypass-porting) | `main` | `0a7f263d5cc4bb91984d0b00d68daaa0561a4542` | Bypass porting methods and evidence rules |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader) | `main` | `c70358f57e5a9d481fcde676454f4919e4e403b4` | Canonical 11.60 loader source, including the Run 15 baseline, DMA E820 and public bounded-loader tester guidance |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `b63f37221ff0f7382a540e595c918ec84c482267` | Current default-branch head; it retains the Image 3 runtime source, adds safe draft refresh and published-release protection, and documents the public prerelease. The exact Image 3 release source remains the tag entry below. |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image) | `main` | `0c56db486ebc3b86f2193f5ecc96d50fe3ca5f71` | Current next-image source reviewed here. It retains the Image 3 runtime path, adds the read-back-verified 65 C fan policy and narrow NetworkManager Polkit allowlist, and removes the stale networkd wait-online enablement. The exact Image 3 release source remains the tag entry below. |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/ubuntu2404-1160-build-3) | `ubuntu2404-1160-build-3` (tag) | `ec8cd4e6d67d7dafb9bcee483fb34846eac549ca` | Exact source of the Ubuntu build 3 image that booted in Run 19 |
 | [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-2) | `cachyos1160-k73-image-2` (tag) | `346088a48f66eb956dafdec9de5085e73b2d44a5` | Exact CachyOS 7.3 image 2 public tester prerelease source; CI and release identities verified, with no identity-verified hardware boot recorded |
-| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-3) | `cachyos1160-k73-image-3` (tag) | `16795eb85830dc32f712e44e9e0da28f7874b317` | Exact source of the Image 3 public tester prerelease; CI/release identities verified, with no hardware boot of the exact artifact recorded |
+| [gzimbric/ps5-linux-image](https://github.com/gzimbric/ps5-linux-image/tree/cachyos1160-k73-image-3) | `cachyos1160-k73-image-3` (tag) | `16795eb85830dc32f712e44e9e0da28f7874b317` | Exact source of the Image 3 public tester prerelease; CI/release identities verified, followed by one identity-verified exact-image boot on the CFI-1115B |
 | [gzimbric/ps5-linux-loader](https://github.com/gzimbric/ps5-linux-loader/tree/firmware-11.60-sonic-display) | `firmware-11.60-sonic-display` | `69657e6127db2ff9cc9ac2ad5e5aaebaa8019daf` | Historical Run 15 source provenance with the hash-pinned release check |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4aff9085530a3cdf7d5fbb124c006cc299ac3605` | PS5 IW620 driver patches used in Run 17 |
 | [ps5-linux/ps5-linux-mwifiex](https://github.com/ps5-linux/ps5-linux-mwifiex) | `main` | `4bce848dd098bf74fbafd0078463da3d9f0d7f80` | IW620 patch-stack revision in the local image 3 hardware test, including its HE and TX follow-ups; the NXP driver base remains `a5fe4e1`; association worked after the separate stable-MAC NetworkManager live fix |
@@ -126,8 +126,10 @@ hardware boot of image 2 is recorded.
 
 The local image 3 hardware build was assembled from
 `f7d6fbd9d630cddaceb83f3b861869d4453af8ca`. The public prerelease was built
-from `16795eb85830dc32f712e44e9e0da28f7874b317`; its exact artifact remains
-unbooted. Image 3 keeps rmux's `36f173f` Linux 7.3 base and uses package
+from `16795eb85830dc32f712e44e9e0da28f7874b317`; one identity-verified boot of
+its exact artifact has now passed HDMI, wired SSH, Plasma Wi-Fi,
+internal-Bluetooth DualSense input, startup scaling and both session directions.
+Image 3 keeps rmux's `36f173f` Linux 7.3 base and uses package
 identity `linux-ps5 7.3.0-3`. For Bluetooth it consumes the exact
 `ps5-btusb-quirks-fix.patch` release asset attached to Bazzite Deck v1.0.3,
 verified at SHA-256
@@ -183,7 +185,8 @@ SHA-256
 its 12,582,912,000-byte raw image has SHA-256
 `25a0ef68a85dbe6d976b5a97faaa323b64c4efbe1b220003772f25a264eb34a8`.
 It contains the later Wi-Fi, Plasma-first, launcher and return-selector changes,
-but the exact artifact is unbooted. The separate local hardware image has raw
+and one exact-image hardware test has passed those paths. The separate local
+hardware image has raw
 SHA-256
 `5a904e02f6a2908be91054b7b73ebf6f891fece0edc1a88f2f9d60264d7556d4`.
 The [image 3 tester guide](cachyos1160-k73-image-3-tester-guide.md) keeps these
