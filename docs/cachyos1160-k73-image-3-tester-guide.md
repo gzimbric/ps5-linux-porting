@@ -201,6 +201,13 @@ After Steam is fully initialized, choose **Power → Switch to Desktop** once.
 Do not press it repeatedly. The tested path should use Steam's selector
 fallback and then hand tty1 to Plasma. Record:
 
+Give the transition time to finish while Steam and Gamescope exit and Plasma
+starts. One clean measured pass took about 2.4 seconds; an earlier transition
+that needed additional cleanup took about 27 seconds. Those are observations,
+not a promised timeout, and a first transition may take longer. Do not click
+again or power-cycle merely because **Switching to Desktop** remains visible
+for several seconds.
+
 ```sh
 ps -eo pid,args | grep '[s]team -steamos -gamepadui'
 journalctl -b --no-pager | grep -E 'steamos-session-select|Switching to Desktop'
