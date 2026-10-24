@@ -16,6 +16,30 @@ image for both IW620 and MediaTek consoles, is now a public tester prerelease.
 CI verified it, but it has not been booted; see
 [Image 4 public prerelease](#image-4-public-prerelease).
 
+PS5 Pro work has since reached Linux Test 3. A drive flashed from the exact
+Ubuntu 24.04/Linux 7.3 Image 3 release and then given the required manual
+command-line edit reached a 1920x1080 desktop on one Pro from two cold boots;
+SSH, Wi-Fi and USB input with autosuspend disabled passed. The bounded result
+and remaining work are in the [Pro Test 3 guide](ps5-pro-1160-test3.md).
+
+## PS5 Pro Linux Test 3 follow-up
+
+Keep the proven Test 3 loader/display path and Ubuntu Image 3 pair fixed while
+working through these boundaries:
+
+1. Replace the global `usbcore.autosuspend=-1` workaround with a narrow kernel
+   fix for the Pro USB controllers, then repeat input and storage tests.
+2. Bring up the Pro Bluetooth controller without destabilizing Wi-Fi or USB.
+3. Add Pro-specific clock and thermal telemetry only after the hardware path is
+   understood; do not load the regular-console frequency modules on Pro.
+4. Test another Pro and display, display power/input cycling, a text-console
+   round trip and a longer idle period.
+5. Run games or sustained GPU load only after temperature visibility and a
+   safe recovery plan exist.
+6. Finish, build and hardware-test the boot-report timeout mitigation together
+   with the default autosuspend change. Neither is in released Image 3, and
+   the current mitigation remains unbuilt and untested.
+
 ## Run 15 CachyOS loader baseline
 
 | File | Size | SHA-256 |
@@ -153,9 +177,8 @@ The other warnings seen in Run 19 are listed in the evidence.
 Run 21 booted a local build of the CachyOS 7.3 image (`ps5-linux-image`
 branch `cachyos-1160-k73`) with the bounded Wi-Fi loader build from
 `gzimbric/ps5-linux-loader` commit `98925a2`. The kernel is Linux v7.3 with
-the 7.3 port of the PS5 patches and the CPU and GPU frequency drivers by rmux
-(Armandas Kvietkus), from
-[rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1)
+the 7.3 port of the PS5 patches and the CPU and GPU frequency drivers by rmux,
+from [rmuxnet/ps5-linux-patches-1](https://github.com/rmuxnet/ps5-linux-patches-1)
 at `36f173f`. The picture, SSH, the DMA map, and onboard Wi-Fi with the
 loader's firmware copy all worked. The result and its limits are in the
 [Run 21 evidence](../evidence/11.60-cachyos-k73-run-21.md).

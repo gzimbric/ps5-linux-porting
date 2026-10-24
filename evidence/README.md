@@ -8,7 +8,9 @@ Each summary distinguishes direct observations from conclusions. A missing
 post-crash marker is reported as an unknown boundary, not proof that the next
 instruction executed.
 
-- `11.60-summary.txt` is the compact machine-readable snapshot.
+- `11.60-summary.txt` is the compact machine-readable snapshot. Its current
+  header includes the bounded PS5 Pro Linux Test 3 result; the numbered run
+  records below remain the regular-console history.
 - `11.60-sonic-display-runs.md` records the Run 10 through Run 15
   display bring-up matrix, source and artifact identities, physical USB
   verification scope, and observation limits.

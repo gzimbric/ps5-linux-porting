@@ -1,8 +1,13 @@
-# Testing the 11.60 DMA build with the CI Ubuntu image
+# Legacy regular-console Ubuntu 24.04/Linux 7.1.7 test
 
-This page is for people with a retail PS5 on firmware 11.60 who want to test
-one combination: the DMA E820 build of the 11.60 loader with the Ubuntu 24.04
-image built by GitHub CI.
+> This guide preserves the hardware-tested Run 19 pair for regular PS5
+> consoles. It does not cover PS5 Pro or the newer Ubuntu 24.04/Linux 7.3
+> Image 3. For a Pro on firmware 11.60, use
+> [PS5 Pro Linux Test 3](ps5-pro-1160-test3.md).
+
+This page is for people with a regular retail PS5 on firmware 11.60 who want
+to preserve or reproduce one historical combination: the DMA E820 build of
+the 11.60 loader with the Ubuntu 24.04/Linux 7.1.7 image built by GitHub CI.
 
 CachyOS image 2 on Linux 7.3.0 is now a public tester prerelease, pinned at
 `cachyos1160-k73-image-2` / `346088a`. Its successful CI run and exact release

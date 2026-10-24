@@ -48,14 +48,18 @@ def validate(path: Path) -> list[str]:
     for key in ("schema_version", "firmware", "console_model", "status",
                 "linux_booted", "upstream_base", "bypass", "checkpoints",
                 "bounded_loader_diagnostics", "sonic_display_diagnostics",
+                "ps5_pro_linux_test3",
                 "ubuntu_control", "ubuntu_wifi", "dma_e820_build",
                 "ubuntu_ci_dma_run", "cachyos_k73_run", "boot_media", "artifacts",
-                "latest_authenticated_working_run", "latest_tested_run",
+                "latest_authenticated_working_run",
+                "latest_authenticated_working_run_scope", "latest_tested_run",
                 "last_observed_marker", "current_boundary"):
         if key not in data:
             errors.append(f"{path}: missing {key}")
 
     checkpoints = data.get("checkpoints", {})
+    if data.get("console_model") != "regular-and-pro":
+        errors.append(f"{path}: console_model must include regular and Pro results")
     missing = REQUIRED_CHECKPOINTS - set(checkpoints)
     if missing:
         errors.append(f"{path}: missing checkpoints {sorted(missing)}")
@@ -72,6 +76,71 @@ def validate(path: Path) -> list[str]:
         errors.append(f"{path}: Run 15 must record the display table in the containing path")
     if checkpoints.get("individual_mp3_and_table_returns_observed") is not False:
         errors.append(f"{path}: individual MP3/table return scope is overstated")
+
+    pro = data.get("ps5_pro_linux_test3")
+    if not isinstance(pro, dict):
+        errors.append(f"{path}: ps5_pro_linux_test3 is not an object")
+    else:
+        expected = {
+            "hardware_test_date": "2026-10-24",
+            "loader_release_tag": "firmware-11.60-pro-linux-test-3",
+            "loader_release_url": (
+                "https://github.com/gzimbric/ps5-linux-loader/releases/tag/"
+                "firmware-11.60-pro-linux-test-3"
+            ),
+            "loader_asset_name": "ps5-linux-loader-1160-dma-e820-bounded.elf",
+            "loader_asset_size": 189816,
+            "loader_asset_sha256": (
+                "3ab6609fb36edec23d3964215690563cb92071a0831f00608d977d9d7be7ce0b"
+            ),
+            "image_release_tag": "ubuntu2404-k73-image-3",
+            "image_release_url": (
+                "https://github.com/gzimbric/ps5-linux-image/releases/tag/"
+                "ubuntu2404-k73-image-3"
+            ),
+            "image_asset_name": "ps5-ubuntu2404-k73.img.xz",
+            "image_asset_size": 1726066320,
+            "image_asset_sha256": (
+                "9f038b316be5595b5b1629a86470cd7b955cf977741e022d9e1135898746de04"
+            ),
+            "release_asset_rebuilt": False,
+            "boot_partition_cmdline_edited": True,
+            "console_count": 1,
+            "cold_boots_with_visible_hdmi": 2,
+            "display_resolution": "1920x1080",
+            "kernel_memory_total_kib": 16220248,
+            "kernel_memory_available_at_boot_kib": 14189596,
+            "pro_low_memory_storage_stress_tested": False,
+            "authenticated_wired_ssh": True,
+            "onboard_wifi_working": True,
+            "usb_input_working_with_autosuspend_disabled": True,
+            "required_kernel_option": "usbcore.autosuspend=-1",
+            "bluetooth_working": False,
+            "pro_frequency_control_tested": False,
+            "gpu_temperature_available": False,
+            "vulkan_smoke_test_program": "vkcube-wayland",
+            "vulkan_smoke_test_seconds": 30,
+            "vulkan_smoke_test_completed": True,
+            "vulkan_smoke_test_new_kernel_messages": 0,
+            "vulkan_smoke_test_tctl_c": 44.8,
+            "sustained_gpu_load_tested": False,
+            "games_tested": False,
+            "boot_report_service_passed": False,
+            "regular_console_hardware_tested_with_this_image": False,
+        }
+        for key, value in expected.items():
+            if pro.get(key) != value:
+                errors.append(f"{path}: unexpected PS5 Pro Test 3 {key}")
+        for key in ("loader_source_commit", "image_source_commit"):
+            value = pro.get(key, "")
+            if not isinstance(value, str) or not GIT_COMMIT.fullmatch(value):
+                errors.append(f"{path}: invalid PS5 Pro Test 3 {key}")
+        if pro.get("loader_source_commit") != (
+                "aff37e0f83dc09106fb4196221b3d7a52928031a"):
+            errors.append(f"{path}: unexpected PS5 Pro Test 3 loader source")
+        if pro.get("image_source_commit") != (
+                "27e49914b41f2143354f1579353af6c1ffc2ada9"):
+            errors.append(f"{path}: unexpected PS5 Pro Test 3 image source")
 
     bounded = data.get("bounded_loader_diagnostics")
     if not isinstance(bounded, dict):
@@ -803,7 +872,7 @@ def validate(path: Path) -> list[str]:
             errors.append(f"{path}: Run 21 must not replace the Run 15 release baseline")
         upstream = k73.get("upstream_kernel_work", {})
         if (not isinstance(upstream, dict) or
-                upstream.get("author") != "Armandas Kvietkus (rmux)" or
+                upstream.get("author") != "rmux" or
                 upstream.get("repository") != "https://github.com/rmuxnet/ps5-linux-patches-1"):
             errors.append(f"{path}: Run 21 must credit rmux for the 7.3 port and frequency drivers")
         kernel = k73.get("kernel", {})
@@ -1211,8 +1280,11 @@ def validate(path: Path) -> list[str]:
                 errors.append(f"{path}: Run 21 {field} is overstated")
         if data.get("latest_authenticated_working_run") != 21:
             errors.append(f"{path}: latest authenticated working run must be 21")
-        if data.get("latest_tested_run") != "run21-cachyos-k73-bounded-wifi-pass":
-            errors.append(f"{path}: latest tested run must be Run 21")
+        if data.get("latest_authenticated_working_run_scope") != (
+                "numbered-regular-console-run-only"):
+            errors.append(f"{path}: latest numbered-run scope is ambiguous")
+        if data.get("latest_tested_run") != "ps5-pro-linux-test3-pass":
+            errors.append(f"{path}: latest tested result must be PS5 Pro Test 3")
 
     boot_media = data.get("boot_media")
     if not isinstance(boot_media, dict):

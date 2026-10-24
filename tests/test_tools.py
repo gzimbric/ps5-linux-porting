@@ -70,6 +70,39 @@ class ToolTests(unittest.TestCase):
         self.assertFalse(bounded["stage2a"]["executed"])
         self.assertTrue(data["linux_booted"])
         self.assertTrue(data["checkpoints"]["authenticated_linux_userspace"])
+        pro = data["ps5_pro_linux_test3"]
+        self.assertEqual(pro["console_count"], 1)
+        self.assertEqual(pro["cold_boots_with_visible_hdmi"], 2)
+        self.assertEqual(pro["display_resolution"], "1920x1080")
+        self.assertEqual(pro["kernel_memory_total_kib"], 16220248)
+        self.assertEqual(pro["kernel_memory_available_at_boot_kib"], 14189596)
+        self.assertFalse(pro["pro_low_memory_storage_stress_tested"])
+        self.assertTrue(pro["authenticated_wired_ssh"])
+        self.assertTrue(pro["onboard_wifi_working"])
+        self.assertTrue(pro["usb_input_working_with_autosuspend_disabled"])
+        self.assertEqual(pro["loader_asset_name"],
+                         "ps5-linux-loader-1160-dma-e820-bounded.elf")
+        self.assertEqual(pro["loader_asset_size"], 189816)
+        self.assertEqual(
+            pro["loader_asset_sha256"],
+            "3ab6609fb36edec23d3964215690563cb92071a0831f00608d977d9d7be7ce0b",
+        )
+        self.assertEqual(pro["image_asset_name"], "ps5-ubuntu2404-k73.img.xz")
+        self.assertEqual(pro["image_asset_size"], 1726066320)
+        self.assertEqual(
+            pro["image_asset_sha256"],
+            "9f038b316be5595b5b1629a86470cd7b955cf977741e022d9e1135898746de04",
+        )
+        self.assertFalse(pro["bluetooth_working"])
+        self.assertFalse(pro["pro_frequency_control_tested"])
+        self.assertFalse(pro["gpu_temperature_available"])
+        self.assertEqual(pro["vulkan_smoke_test_program"], "vkcube-wayland")
+        self.assertEqual(pro["vulkan_smoke_test_seconds"], 30)
+        self.assertTrue(pro["vulkan_smoke_test_completed"])
+        self.assertEqual(pro["vulkan_smoke_test_new_kernel_messages"], 0)
+        self.assertEqual(pro["vulkan_smoke_test_tctl_c"], 44.8)
+        self.assertFalse(pro["sustained_gpu_load_tested"])
+        self.assertFalse(pro["games_tested"])
         display = data["sonic_display_diagnostics"]
         self.assertEqual(
             display["last_tested_source_commit"],
@@ -426,7 +459,7 @@ class ToolTests(unittest.TestCase):
         with TemporaryDirectory() as temp:
             root = Path(temp)
             (root / "README.md").write_text(
-                "The 7.3 port and frequency drivers are by rmux (Armandas Kvietkus), "
+                "The 7.3 port and frequency drivers are by rmux, "
                 "https://github.com/rmuxnet/ps5-linux-patches-1.\n"
             )
             self.assertEqual(check_public_tree(root), [])
@@ -888,16 +921,48 @@ class ToolTests(unittest.TestCase):
             data = load_pinned_manifest()
             data["latest_tested_run"] = "run19-ubuntu-ci-dma-e820-pass"
             path.write_text(json.dumps(data))
-            self.assertTrue(any("latest tested run must be Run 21" in error
+            self.assertTrue(any("latest tested result must be PS5 Pro Test 3" in error
                                 for error in validate(path)))
+
+    def test_manifest_rejects_overstated_ps5_pro_test3_scope(self):
+        for field in ("bluetooth_working", "pro_frequency_control_tested",
+                      "gpu_temperature_available", "games_tested",
+                      "sustained_gpu_load_tested",
+                      "pro_low_memory_storage_stress_tested",
+                      "boot_report_service_passed",
+                      "regular_console_hardware_tested_with_this_image"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ps5_pro_linux_test3"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(
+                    f"unexpected PS5 Pro Test 3 {field}" in error
+                    for error in validate(path)
+                ))
+
+    def test_manifest_rejects_ps5_pro_test3_artifact_identity_drift(self):
+        for field, value in (
+                ("loader_asset_size", 189815),
+                ("loader_asset_sha256", "0" * 64),
+                ("image_asset_size", 1726066319),
+                ("image_asset_sha256", "0" * 64)):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ps5_pro_linux_test3"][field] = value
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(
+                    f"unexpected PS5 Pro Test 3 {field}" in error
+                    for error in validate(path)
+                ))
 
     def test_manifest_records_run21_cachyos_k73(self):
         data = load_pinned_manifest()
         run21 = data["cachyos_k73_run"]
         self.assertEqual(run21["run"], 21)
         self.assertEqual(run21["kernel"]["version"], "7.3.0")
-        self.assertEqual(run21["upstream_kernel_work"]["author"],
-                         "Armandas Kvietkus (rmux)")
+        self.assertEqual(run21["upstream_kernel_work"]["author"], "rmux")
         self.assertEqual(run21["upstream_kernel_work"]["repository"],
                          "https://github.com/rmuxnet/ps5-linux-patches-1")
         self.assertTrue(run21["kernel"]["patch_commit"].startswith("36f173f"))
@@ -1034,7 +1099,11 @@ class ToolTests(unittest.TestCase):
             data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
         self.assertEqual(data["dma_e820_build"]["run"], 18)
         self.assertEqual(data["ubuntu_ci_dma_run"]["run"], 19)
-        self.assertEqual(data["latest_tested_run"], "run21-cachyos-k73-bounded-wifi-pass")
+        self.assertEqual(
+            data["latest_authenticated_working_run_scope"],
+            "numbered-regular-console-run-only",
+        )
+        self.assertEqual(data["latest_tested_run"], "ps5-pro-linux-test3-pass")
 
     def test_manifest_records_public_image3_hardware_result(self):
         data = load_pinned_manifest()
