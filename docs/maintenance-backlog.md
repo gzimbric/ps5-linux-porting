@@ -16,6 +16,30 @@ image for both IW620 and MediaTek consoles, is now a public tester prerelease.
 CI verified it, but it has not been booted; see
 [Image 4 public prerelease](#image-4-public-prerelease).
 
+PS5 Pro work has since reached Linux Test 3. With the unchanged Ubuntu
+24.04/Linux 7.3 Image 3 and the required manual command-line edit, one Pro
+reached a 1920x1080 desktop from two cold boots; SSH, Wi-Fi and USB input with
+autosuspend disabled passed. The bounded result and remaining work are in the
+[Pro Test 3 guide](ps5-pro-1160-test3.md).
+
+## PS5 Pro Linux Test 3 follow-up
+
+Keep the proven Test 3 loader/display path and Ubuntu Image 3 pair fixed while
+working through these boundaries:
+
+1. Replace the global `usbcore.autosuspend=-1` workaround with a narrow kernel
+   fix for the Pro USB controllers, then repeat input and storage tests.
+2. Bring up the Pro Bluetooth controller without destabilizing Wi-Fi or USB.
+3. Add Pro-specific clock and thermal telemetry only after the hardware path is
+   understood; do not load the regular-console frequency modules on Pro.
+4. Test another Pro and display, display power/input cycling, a text-console
+   round trip and a longer idle period.
+5. Run games or sustained GPU load only after temperature visibility and a
+   safe recovery plan exist.
+6. Build and hardware-test a later image containing the boot-report timeout
+   and default autosuspend changes. Those source fixes are not in released
+   Image 3.
+
 ## Run 15 CachyOS loader baseline
 
 | File | Size | SHA-256 |

@@ -1,17 +1,30 @@
 firmware=11.60
-model=regular
-date=2026-10-21
+model=regular-and-pro
+date=2026-10-24
 overall=linux-booted-physical-display-verified
 linux_booted=true
-linux_boot_evidence=authenticated-wired-ssh-runs-10-12-14-15-16-17-18-19-and-21-and-public-image3-exact-artifact
+linux_boot_evidence=authenticated-wired-ssh-runs-10-12-14-15-16-17-18-19-and-21-public-cachyos-image3-and-pro-linux-test3
 visible_hdmi=true
-visible_hdmi_evidence=direct-operator-observation-runs-15-16-19-and-21-and-public-image3-exact-artifact
+visible_hdmi_evidence=direct-operator-observation-runs-15-16-19-and-21-public-cachyos-image3-and-pro-linux-test3
 last_authenticated_working_run=21
 last_authenticated_working_run_scope=numbered-run-only
-last_tested_run=run21-cachyos-k73-bounded-wifi-pass
-last_tested_run_scope=numbered-run-only
-latest_authenticated_hardware_result=public-image3-exact-artifact-pass
-latest_followup=public-image3-first-exact-boot-wifi-bluetooth-session-pass
+last_tested_run=ps5-pro-linux-test3-pass
+last_tested_run_scope=one-pro-two-cold-boots
+latest_authenticated_hardware_result=ps5-pro-linux-test3-pass
+latest_followup=pro-test3-second-cold-boot-display-ssh-wifi-usb-pass
+
+ps5_pro_test3.console_count=1
+ps5_pro_test3.cold_boots_with_visible_hdmi=2
+ps5_pro_test3.display_resolution=1920x1080
+ps5_pro_test3.authenticated_wired_ssh=true
+ps5_pro_test3.onboard_wifi_working=true
+ps5_pro_test3.usb_input_with_usbcore_autosuspend_minus1=true
+ps5_pro_test3.bluetooth_working=false
+ps5_pro_test3.frequency_control_tested=false
+ps5_pro_test3.gpu_temperature_available=false
+ps5_pro_test3.games_tested=false
+ps5_pro_test3.released_image_unchanged=true
+ps5_pro_test3.regular_console_hardware_tested_with_image=false
 
 bypass.error=0
 bypass.self=1
@@ -50,12 +63,12 @@ identity_cr3_transition=inferred-pass-from-authenticated-userspace
 shellcode_hv_entry=inferred-pass-from-authenticated-userspace
 linux_startup_64=inferred-pass-from-authenticated-userspace
 
-last_marker=public-image3-exact-artifact-hdmi-ssh-wifi-bluetooth-and-two-way-session-pass
+last_marker=ps5-pro-test3-two-cold-boots-1080p-ssh-wifi-usb-pass
 latest_diagnostic_console_result=run-21-pass-cachyos-k73-bounded-wifi-physical-display-authenticated-ssh-white
 latest_diagnostic_console_result_scope=numbered-run-only
 latest_exact_artifact_result=public-image3-hdmi-ssh-wifi-bluetooth-session-and-short-cpu-load-pass
 historical_takeover_console_result=unresponsive-or-crash
-current_boundary=run-15-loader-baseline-plus-historical-runs-16-through-21-local-image3-results-and-one-exact-public-image3-boot-repeatability-soak-and-longer-thermal-stability-open
+current_boundary=run-15-regular-baseline-plus-pro-test3-on-one-console-bluetooth-clocks-gpu-temperature-games-and-broader-coverage-open
 
 sonic_display.run11_to_run13_source_commit=5f922ead8859e2229d92e3d074e24fddf3f7932e
 sonic_display.last_tested_source_commit=815b1fdc5c76088762e42ad0ad80b0099a54e60d

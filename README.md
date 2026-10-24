@@ -13,27 +13,32 @@ data on the Linux USB drive.
 
 | Goal | Link |
 |---|---|
+| Test Linux on a PS5 Pro running 11.60 | Use [Pro Linux Test 3 with Ubuntu Image 3](docs/ps5-pro-1160-test3.md); do not use the older regular-console loaders |
 | Test the unified CachyOS Image 4 prerelease | [Download Image 4](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-4) and follow the [Image 4 tester guide](docs/cachyos1160-k73-image-4-tester-guide.md); the exact image is CI-verified but not yet hardware-booted |
 | Use the latest hardware-booted CachyOS image | [Download Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/cachyos1160-k73-image-3) and follow the [Image 3 tester guide](docs/cachyos1160-k73-image-3-tester-guide.md) |
-| Boot the hardware-tested Ubuntu pair | [Ubuntu 24.04 tester guide](docs/ubuntu2404-tester-guide.md) |
+| Reproduce the older regular-console Ubuntu 7.1.7 pair | [Legacy Ubuntu 24.04 tester guide](docs/ubuntu2404-tester-guide.md) |
 | Test the older public CachyOS prerelease | [Image 2 tester guide](docs/cachyos1160-k73-image-2-tester-guide.md) |
 | Read the complete 11.60 result | [Firmware 11.60 status](docs/11.60-status.md) |
 | Review the sanitized hardware records | [Evidence index](evidence/README.md) |
 
 ## Current 11.60 status
 
-Linux, wired SSH, and physical HDMI output have been observed on one regular
-CFI-1115B running firmware 11.60. Run 15 remains the loader and display
-baseline. Ubuntu and CachyOS have both booted through the upstream
-`ps5-linux-loader` architecture with the Sonic-derived 11.60 display path.
+Linux, wired SSH and physical HDMI output have been observed on both a regular
+CFI-1115B and a PS5 Pro running firmware 11.60. Run 15 remains the regular
+console loader/display baseline. Pro Linux Test 3 is the current Pro path: on
+one Pro, the exact Test 3 loader and Ubuntu 24.04/Linux 7.3 Image 3 reached a
+1920x1080 desktop from two cold boots. Wired SSH, Wi-Fi and USB input with the
+documented autosuspend workaround also passed.
 
-Current gaming work is based on CachyOS and Linux 7.3 with rmux's PS5 patch
-set. Keep these artifact boundaries separate:
+The regular-console gaming work below is based on CachyOS and Linux 7.3 with
+rmux's PS5 patch set. The Pro result uses the separate Ubuntu Image 3 path.
+Keep these artifact boundaries separate:
 
 | Area | Current evidence |
 |---|---|
 | Loader, HDMI, and SSH | Passed on the tested CFI-1115B. Other models and repeated cold-boot coverage remain open. |
-| Ubuntu 24.04 build 3 | The exact CI image and DMA E820 loader pair booted once with visible HDMI, SSH, and the guide's 12 GiB USB check. |
+| PS5 Pro Linux Test 3 | Passed two cold boots to a 1920x1080 Ubuntu desktop on one Pro. SSH and Wi-Fi worked. USB input needs `usbcore.autosuspend=-1`. Bluetooth was absent; Pro clock control, GPU temperature and games remain untested. |
+| Legacy Ubuntu 7.1.7 build 3 | The exact CI image and DMA E820 loader pair booted once on the regular CFI-1115B with visible HDMI, SSH, and the guide's 12 GiB USB check. It is unrelated to the newer Ubuntu/Linux 7.3 Image 3 used on Pro. |
 | Local CachyOS Image 3 base | One exact unpublished raw image booted with HDMI and SSH. Its in-image Bluetooth path paired a wireless DualSense and exposed buttons, motion, and touchpad input. |
 | Image 3 Wi-Fi follow-up | A stable-MAC NetworkManager configuration resolved the Plasma menu failure on the running system; WPA3, DHCP, and HTTPS passed. This live change was not in the original raw image. |
 | Image 3 desktop round trip | Live source changes made Steam's **Switch to Desktop** action and the desktop shortcut back to Gaming Mode pass without compositor overlap. These changes were not in the original raw image. |
@@ -45,7 +50,7 @@ hashes. Their results remain separate. The downloadable prerelease now has its
 own exact-image hardware result; the earlier local boot and live follow-ups are
 still supporting evidence rather than substitutes for it.
 
-Still pending for Image 3:
+Still pending for CachyOS Image 3:
 
 - two to four more cold boots and broader console coverage;
 - Wi-Fi and DualSense reconnect after a cold boot;
@@ -57,7 +62,17 @@ Still pending for Image 3:
 
 ## Downloads and tester guides
 
-### Hardware-tested Ubuntu pair
+### PS5 Pro on firmware 11.60
+
+Use the Pro Linux Test 3 loader with Ubuntu 24.04/Linux 7.3 Image 3. The image
+release itself is unchanged and needs the tester guide's manual `cmdline.txt`
+blacklists and `usbcore.autosuspend=-1` edit before booting on a Pro.
+
+- [Pro Linux Test 3 release](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-pro-linux-test-3)
+- [Ubuntu 24.04/Linux 7.3 Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/ubuntu2404-k73-image-3)
+- [Pro Test 3 status and routing guide](docs/ps5-pro-1160-test3.md)
+
+### Legacy hardware-tested Ubuntu 7.1.7 pair
 
 Run 19 booted this exact pair once on the CFI-1115B:
 
@@ -120,8 +135,9 @@ limit.
 
 ## Before testing
 
-- Use only a regular retail PS5 on firmware 11.60. Do not use a PS5 Pro or a
-  different firmware.
+- Confirm the console type before choosing a guide. Regular-console Run 18 and
+  Run 21 loaders must not be sent to a Pro. The only documented Pro 11.60 pair
+  is Pro Linux Test 3 with Ubuntu 24.04/Linux 7.3 Image 3.
 - Flashing erases the selected USB drive. Confirm the whole device before
   writing an image.
 - Use the exact image and loader pair named by its tester guide. Do not mix
@@ -163,6 +179,7 @@ limit.
 | Topic | Document |
 |---|---|
 | Full current result and evidence limits | [Firmware 11.60 status](docs/11.60-status.md) |
+| PS5 Pro Linux Test 3 | [Pro Test 3 status and tester routing](docs/ps5-pro-1160-test3.md) |
 | Image 3 public CI artifact | [Image 3 CI, release and exact-image hardware evidence](evidence/11.60-cachyos-image3-ci.md) |
 | Image 4 unified CI artifact | [Image 4 CI, release and unbooted hardware boundary](evidence/11.60-cachyos-image4-ci.md) |
 | Image 3 local boot and live follow-ups | [Image 3 local evidence](evidence/11.60-cachyos-image3-local.md) |

@@ -70,6 +70,17 @@ class ToolTests(unittest.TestCase):
         self.assertFalse(bounded["stage2a"]["executed"])
         self.assertTrue(data["linux_booted"])
         self.assertTrue(data["checkpoints"]["authenticated_linux_userspace"])
+        pro = data["ps5_pro_linux_test3"]
+        self.assertEqual(pro["console_count"], 1)
+        self.assertEqual(pro["cold_boots_with_visible_hdmi"], 2)
+        self.assertEqual(pro["display_resolution"], "1920x1080")
+        self.assertTrue(pro["authenticated_wired_ssh"])
+        self.assertTrue(pro["onboard_wifi_working"])
+        self.assertTrue(pro["usb_input_working_with_autosuspend_disabled"])
+        self.assertFalse(pro["bluetooth_working"])
+        self.assertFalse(pro["pro_frequency_control_tested"])
+        self.assertFalse(pro["gpu_temperature_available"])
+        self.assertFalse(pro["games_tested"])
         display = data["sonic_display_diagnostics"]
         self.assertEqual(
             display["last_tested_source_commit"],
@@ -888,8 +899,23 @@ class ToolTests(unittest.TestCase):
             data = load_pinned_manifest()
             data["latest_tested_run"] = "run19-ubuntu-ci-dma-e820-pass"
             path.write_text(json.dumps(data))
-            self.assertTrue(any("latest tested run must be Run 21" in error
+            self.assertTrue(any("latest tested result must be PS5 Pro Test 3" in error
                                 for error in validate(path)))
+
+    def test_manifest_rejects_overstated_ps5_pro_test3_scope(self):
+        for field in ("bluetooth_working", "pro_frequency_control_tested",
+                      "gpu_temperature_available", "games_tested",
+                      "boot_report_service_passed",
+                      "regular_console_hardware_tested_with_this_image"):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ps5_pro_linux_test3"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(
+                    f"unexpected PS5 Pro Test 3 {field}" in error
+                    for error in validate(path)
+                ))
 
     def test_manifest_records_run21_cachyos_k73(self):
         data = load_pinned_manifest()
@@ -1033,7 +1059,11 @@ class ToolTests(unittest.TestCase):
             data["sonic_display_diagnostics"]["run15"]["release_loader_baseline"])
         self.assertEqual(data["dma_e820_build"]["run"], 18)
         self.assertEqual(data["ubuntu_ci_dma_run"]["run"], 19)
-        self.assertEqual(data["latest_tested_run"], "run21-cachyos-k73-bounded-wifi-pass")
+        self.assertEqual(
+            data["latest_authenticated_working_run_scope"],
+            "numbered-regular-console-run-only",
+        )
+        self.assertEqual(data["latest_tested_run"], "ps5-pro-linux-test3-pass")
 
     def test_manifest_records_public_image3_hardware_result(self):
         data = load_pinned_manifest()
