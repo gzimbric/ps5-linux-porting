@@ -74,6 +74,9 @@ class ToolTests(unittest.TestCase):
         self.assertEqual(pro["console_count"], 1)
         self.assertEqual(pro["cold_boots_with_visible_hdmi"], 2)
         self.assertEqual(pro["display_resolution"], "1920x1080")
+        self.assertEqual(pro["kernel_memory_total_kib"], 16220248)
+        self.assertEqual(pro["kernel_memory_available_at_boot_kib"], 14189596)
+        self.assertFalse(pro["pro_low_memory_storage_stress_tested"])
         self.assertTrue(pro["authenticated_wired_ssh"])
         self.assertTrue(pro["onboard_wifi_working"])
         self.assertTrue(pro["usb_input_working_with_autosuspend_disabled"])
@@ -925,6 +928,7 @@ class ToolTests(unittest.TestCase):
         for field in ("bluetooth_working", "pro_frequency_control_tested",
                       "gpu_temperature_available", "games_tested",
                       "sustained_gpu_load_tested",
+                      "pro_low_memory_storage_stress_tested",
                       "boot_report_service_passed",
                       "regular_console_hardware_tested_with_this_image"):
             with self.subTest(field=field), TemporaryDirectory() as temp:

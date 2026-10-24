@@ -38,6 +38,9 @@ load, or a GPU-temperature measurement.
 - The tested Image 3 run exposed no GPU-temperature reading.
 - Games and sustained GPU load have not been tested beyond the bounded
   30-second Vulkan smoke test described above.
+- The kernel reported 16,220,248 KiB total and 14,189,596 KiB available at
+  early boot. The Pro low-memory map has not had the regular path's storage
+  stress test, so this is an observation rather than a verified memory limit.
 - The Linux drive negotiated USB 2 speed in the tested port.
 - `ps5-boot-report.service` fails on the released Image 3. An unbuilt and
   untested timeout mitigation and a default USB autosuspend workaround are in
