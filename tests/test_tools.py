@@ -93,6 +93,12 @@ class ToolTests(unittest.TestCase):
         self.assertFalse(pro["bluetooth_working"])
         self.assertFalse(pro["pro_frequency_control_tested"])
         self.assertFalse(pro["gpu_temperature_available"])
+        self.assertEqual(pro["vulkan_smoke_test_program"], "vkcube-wayland")
+        self.assertEqual(pro["vulkan_smoke_test_seconds"], 30)
+        self.assertTrue(pro["vulkan_smoke_test_completed"])
+        self.assertEqual(pro["vulkan_smoke_test_new_kernel_messages"], 0)
+        self.assertEqual(pro["vulkan_smoke_test_tctl_c"], 44.8)
+        self.assertFalse(pro["sustained_gpu_load_tested"])
         self.assertFalse(pro["games_tested"])
         display = data["sonic_display_diagnostics"]
         self.assertEqual(
@@ -918,6 +924,7 @@ class ToolTests(unittest.TestCase):
     def test_manifest_rejects_overstated_ps5_pro_test3_scope(self):
         for field in ("bluetooth_working", "pro_frequency_control_tested",
                       "gpu_temperature_available", "games_tested",
+                      "sustained_gpu_load_tested",
                       "boot_report_service_passed",
                       "regular_console_hardware_tested_with_this_image"):
             with self.subTest(field=field), TemporaryDirectory() as temp:

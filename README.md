@@ -38,7 +38,7 @@ Keep these artifact boundaries separate:
 | Area | Current evidence |
 |---|---|
 | Loader, HDMI, and SSH | Passed on the tested CFI-1115B. Other models and repeated cold-boot coverage remain open. |
-| PS5 Pro Linux Test 3 | Passed two cold boots to a 1920x1080 Ubuntu desktop on one Pro. SSH and Wi-Fi worked. USB input needs `usbcore.autosuspend=-1`. Bluetooth was absent; Pro clock control, GPU temperature and games remain untested. |
+| PS5 Pro Linux Test 3 | Passed two cold boots to a 1920x1080 Ubuntu desktop on one Pro. SSH, Wi-Fi and a bounded 30-second Vulkan cube test worked. USB input needs `usbcore.autosuspend=-1`. Bluetooth was absent; Pro clock control, GPU temperature, games and sustained load remain untested. |
 | Legacy Ubuntu 7.1.7 build 3 | The exact CI image and DMA E820 loader pair booted once on the regular CFI-1115B with visible HDMI, SSH, and the guide's 12 GiB USB check. It is unrelated to the newer Ubuntu/Linux 7.3 Image 3 used on Pro. |
 | Local CachyOS Image 3 base | One exact unpublished raw image booted with HDMI and SSH. Its in-image Bluetooth path paired a wireless DualSense and exposed buttons, motion, and touchpad input. |
 | Image 3 Wi-Fi follow-up | A stable-MAC NetworkManager configuration resolved the Plasma menu failure on the running system; WPA3, DHCP, and HTTPS passed. This live change was not in the original raw image. |

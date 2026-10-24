@@ -23,9 +23,12 @@ required preparation step, not a property of the downloadable image.
 On one PS5 Pro, the exact Test 3 loader and Ubuntu Image 3 reached the Ubuntu
 desktop at 1920x1080 over HDMI from two cold boots. Wired SSH and onboard
 Wi-Fi worked. USB input remained available with `usbcore.autosuspend=-1`.
+A bounded `vkcube-wayland` smoke test also ran for 30 seconds through RADV.
+It completed without adding a kernel message, while Tctl read 44.8 C.
 
 That is the full hardware scope. It is one console and one display, not broad
-model or display coverage.
+model or display coverage. The short cube run is not a game, a sustained GPU
+load, or a GPU-temperature measurement.
 
 ## What is still open
 
@@ -33,7 +36,8 @@ model or display coverage.
 - Pro CPU/GPU frequency control has not been validated and the regular-console
   frequency modules must remain blacklisted.
 - The tested Image 3 run exposed no GPU-temperature reading.
-- Games and sustained GPU load have not been tested.
+- Games and sustained GPU load have not been tested beyond the bounded
+  30-second Vulkan smoke test described above.
 - The Linux drive negotiated USB 2 speed in the tested port.
 - `ps5-boot-report.service` fails on the released Image 3. An unbuilt and
   untested timeout mitigation and a default USB autosuspend workaround are in
