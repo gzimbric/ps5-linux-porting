@@ -77,6 +77,19 @@ class ToolTests(unittest.TestCase):
         self.assertTrue(pro["authenticated_wired_ssh"])
         self.assertTrue(pro["onboard_wifi_working"])
         self.assertTrue(pro["usb_input_working_with_autosuspend_disabled"])
+        self.assertEqual(pro["loader_asset_name"],
+                         "ps5-linux-loader-1160-dma-e820-bounded.elf")
+        self.assertEqual(pro["loader_asset_size"], 189816)
+        self.assertEqual(
+            pro["loader_asset_sha256"],
+            "3ab6609fb36edec23d3964215690563cb92071a0831f00608d977d9d7be7ce0b",
+        )
+        self.assertEqual(pro["image_asset_name"], "ps5-ubuntu2404-k73.img.xz")
+        self.assertEqual(pro["image_asset_size"], 1726066320)
+        self.assertEqual(
+            pro["image_asset_sha256"],
+            "9f038b316be5595b5b1629a86470cd7b955cf977741e022d9e1135898746de04",
+        )
         self.assertFalse(pro["bluetooth_working"])
         self.assertFalse(pro["pro_frequency_control_tested"])
         self.assertFalse(pro["gpu_temperature_available"])
@@ -911,6 +924,22 @@ class ToolTests(unittest.TestCase):
                 path = Path(temp) / "manifest.json"
                 data = load_pinned_manifest()
                 data["ps5_pro_linux_test3"][field] = True
+                path.write_text(json.dumps(data))
+                self.assertTrue(any(
+                    f"unexpected PS5 Pro Test 3 {field}" in error
+                    for error in validate(path)
+                ))
+
+    def test_manifest_rejects_ps5_pro_test3_artifact_identity_drift(self):
+        for field, value in (
+                ("loader_asset_size", 189815),
+                ("loader_asset_sha256", "0" * 64),
+                ("image_asset_size", 1726066319),
+                ("image_asset_sha256", "0" * 64)):
+            with self.subTest(field=field), TemporaryDirectory() as temp:
+                path = Path(temp) / "manifest.json"
+                data = load_pinned_manifest()
+                data["ps5_pro_linux_test3"][field] = value
                 path.write_text(json.dumps(data))
                 self.assertTrue(any(
                     f"unexpected PS5 Pro Test 3 {field}" in error

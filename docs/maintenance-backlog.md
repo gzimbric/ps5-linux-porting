@@ -16,11 +16,11 @@ image for both IW620 and MediaTek consoles, is now a public tester prerelease.
 CI verified it, but it has not been booted; see
 [Image 4 public prerelease](#image-4-public-prerelease).
 
-PS5 Pro work has since reached Linux Test 3. With the unchanged Ubuntu
-24.04/Linux 7.3 Image 3 and the required manual command-line edit, one Pro
-reached a 1920x1080 desktop from two cold boots; SSH, Wi-Fi and USB input with
-autosuspend disabled passed. The bounded result and remaining work are in the
-[Pro Test 3 guide](ps5-pro-1160-test3.md).
+PS5 Pro work has since reached Linux Test 3. A drive flashed from the exact
+Ubuntu 24.04/Linux 7.3 Image 3 release and then given the required manual
+command-line edit reached a 1920x1080 desktop on one Pro from two cold boots;
+SSH, Wi-Fi and USB input with autosuspend disabled passed. The bounded result
+and remaining work are in the [Pro Test 3 guide](ps5-pro-1160-test3.md).
 
 ## PS5 Pro Linux Test 3 follow-up
 
@@ -36,9 +36,9 @@ working through these boundaries:
    round trip and a longer idle period.
 5. Run games or sustained GPU load only after temperature visibility and a
    safe recovery plan exist.
-6. Build and hardware-test a later image containing the boot-report timeout
-   and default autosuspend changes. Those source fixes are not in released
-   Image 3.
+6. Finish, build and hardware-test the boot-report timeout mitigation together
+   with the default autosuspend change. Neither is in released Image 3, and
+   the current mitigation remains unbuilt and untested.
 
 ## Run 15 CachyOS loader baseline
 

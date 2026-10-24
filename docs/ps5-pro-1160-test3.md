@@ -6,8 +6,8 @@ pair together:
 - [Pro Linux Test 3 loader release](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-pro-linux-test-3)
 - [Ubuntu 24.04/Linux 7.3 Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/ubuntu2404-k73-image-3)
 
-The complete preparation and boot steps live in the loader repository's
-[PS5 Pro 11.60 tester guide](https://github.com/gzimbric/ps5-linux-loader/blob/main/PS5_PRO_1160_TESTING.md).
+The complete preparation and boot steps are preserved with the release in the
+[PS5 Pro 11.60 tester guide](https://github.com/gzimbric/ps5-linux-loader/releases/download/firmware-11.60-pro-linux-test-3/PS5-PRO-11.60-TESTING.md).
 Follow that guide exactly. In particular, Image 3 needs this text added to the
 single line in `cmdline.txt` before it is used on a Pro:
 
@@ -32,12 +32,12 @@ model or display coverage.
 - Bluetooth did not produce a usable controller on the tested Pro.
 - Pro CPU/GPU frequency control has not been validated and the regular-console
   frequency modules must remain blacklisted.
-- Linux does not expose a GPU temperature reading on the Pro.
+- The tested Image 3 run exposed no GPU-temperature reading.
 - Games and sustained GPU load have not been tested.
 - The Linux drive negotiated USB 2 speed in the tested port.
-- `ps5-boot-report.service` fails on the released Image 3. The timeout fix and
-  a default USB autosuspend workaround are in newer image source, not in this
-  release.
+- `ps5-boot-report.service` fails on the released Image 3. An unbuilt and
+  untested timeout mitigation and a default USB autosuspend workaround are in
+  newer image source, not in this release.
 - Other displays, longer idle periods, text-console switching and display
   power/input cycling still need coverage.
 

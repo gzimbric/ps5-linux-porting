@@ -88,12 +88,23 @@ def validate(path: Path) -> list[str]:
                 "https://github.com/gzimbric/ps5-linux-loader/releases/tag/"
                 "firmware-11.60-pro-linux-test-3"
             ),
+            "loader_asset_name": "ps5-linux-loader-1160-dma-e820-bounded.elf",
+            "loader_asset_size": 189816,
+            "loader_asset_sha256": (
+                "3ab6609fb36edec23d3964215690563cb92071a0831f00608d977d9d7be7ce0b"
+            ),
             "image_release_tag": "ubuntu2404-k73-image-3",
             "image_release_url": (
                 "https://github.com/gzimbric/ps5-linux-image/releases/tag/"
                 "ubuntu2404-k73-image-3"
             ),
-            "released_image_unchanged": True,
+            "image_asset_name": "ps5-ubuntu2404-k73.img.xz",
+            "image_asset_size": 1726066320,
+            "image_asset_sha256": (
+                "9f038b316be5595b5b1629a86470cd7b955cf977741e022d9e1135898746de04"
+            ),
+            "release_asset_rebuilt": False,
+            "boot_partition_cmdline_edited": True,
             "console_count": 1,
             "cold_boots_with_visible_hdmi": 2,
             "display_resolution": "1920x1080",

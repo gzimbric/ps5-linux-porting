@@ -26,7 +26,8 @@ data on the Linux USB drive.
 Linux, wired SSH and physical HDMI output have been observed on both a regular
 CFI-1115B and a PS5 Pro running firmware 11.60. Run 15 remains the regular
 console loader/display baseline. Pro Linux Test 3 is the current Pro path: on
-one Pro, the exact Test 3 loader and Ubuntu 24.04/Linux 7.3 Image 3 reached a
+one Pro, the exact Test 3 loader and a drive flashed from Ubuntu 24.04/Linux
+7.3 Image 3, then prepared with the documented command-line edit, reached a
 1920x1080 desktop from two cold boots. Wired SSH, Wi-Fi and USB input with the
 documented autosuspend workaround also passed.
 
@@ -64,9 +65,10 @@ Still pending for CachyOS Image 3:
 
 ### PS5 Pro on firmware 11.60
 
-Use the Pro Linux Test 3 loader with Ubuntu 24.04/Linux 7.3 Image 3. The image
-release itself is unchanged and needs the tester guide's manual `cmdline.txt`
-blacklists and `usbcore.autosuspend=-1` edit before booting on a Pro.
+Use the Pro Linux Test 3 loader with Ubuntu 24.04/Linux 7.3 Image 3. The release
+asset was not rebuilt with the Pro options, so its boot partition needs the
+tester guide's manual `cmdline.txt` blacklists and `usbcore.autosuspend=-1`
+edit before booting on a Pro.
 
 - [Pro Linux Test 3 release](https://github.com/gzimbric/ps5-linux-loader/releases/tag/firmware-11.60-pro-linux-test-3)
 - [Ubuntu 24.04/Linux 7.3 Image 3](https://github.com/gzimbric/ps5-linux-image/releases/tag/ubuntu2404-k73-image-3)

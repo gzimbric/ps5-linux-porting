@@ -15,6 +15,12 @@ latest_followup=pro-test3-second-cold-boot-display-ssh-wifi-usb-pass
 
 ps5_pro_test3.console_count=1
 ps5_pro_test3.cold_boots_with_visible_hdmi=2
+ps5_pro_test3.loader_asset=ps5-linux-loader-1160-dma-e820-bounded.elf
+ps5_pro_test3.loader_size=189816
+ps5_pro_test3.loader_sha256=3ab6609fb36edec23d3964215690563cb92071a0831f00608d977d9d7be7ce0b
+ps5_pro_test3.image_asset=ps5-ubuntu2404-k73.img.xz
+ps5_pro_test3.image_size=1726066320
+ps5_pro_test3.image_sha256=9f038b316be5595b5b1629a86470cd7b955cf977741e022d9e1135898746de04
 ps5_pro_test3.display_resolution=1920x1080
 ps5_pro_test3.authenticated_wired_ssh=true
 ps5_pro_test3.onboard_wifi_working=true
@@ -23,7 +29,8 @@ ps5_pro_test3.bluetooth_working=false
 ps5_pro_test3.frequency_control_tested=false
 ps5_pro_test3.gpu_temperature_available=false
 ps5_pro_test3.games_tested=false
-ps5_pro_test3.released_image_unchanged=true
+ps5_pro_test3.release_asset_rebuilt=false
+ps5_pro_test3.boot_partition_cmdline_edited=true
 ps5_pro_test3.regular_console_hardware_tested_with_image=false
 
 bypass.error=0
